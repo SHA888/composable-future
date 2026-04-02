@@ -166,6 +166,15 @@ uv run search.py all     # search all 5 domains
 uv run search.py 3       # single domain
 ```
 
+### Refinement Passes
+
+```bash
+uv run refinement.py list          # show defined refinements per domain
+uv run refinement.py 4 --seeds    # add manual seeds only
+uv run refinement.py 4 --queries  # run refined queries only
+uv run refinement.py 4            # both
+```
+
 Results are written to `audit/domain-N-*.md`. Synthesis sections are filled manually after reading.
 
 ---
@@ -175,14 +184,44 @@ Results are written to `audit/domain-N-*.md`. Synthesis sections are filled manu
 ```
 composable-future/
 ├── README.md
-├── search.py                        # audit search automation
+├── search.py          # initial audit search — run first
+├── refinement.py      # merge refined queries + manual seeds
 └── audit/
     ├── domain-1-category-theory.md
     ├── domain-2-paradigm-change.md
     ├── domain-3-process-algebra.md
     ├── domain-4-affordance-theory.md
     ├── domain-5-futures-formalization.md
-    └── gap-summary.md               # feeds positioning paper intro
+    └── gap-summary.md
+```
+
+---
+
+## Current State
+
+| Domain | Papers | Refinement run | Synthesis filled |
+|--------|--------|---------------|-----------------|
+| 1 | 26 | — | — |
+| 2 | 37 | — | — |
+| 3 | 32 | — | — |
+| 4 | 28 | ✓ seeds | — |
+| 5 | 43 | — | — |
+
+---
+
+## What's Next
+
+The tooling is complete. The work is now manual — reading in priority order and filling synthesis sections.
+
+Start with these seven in sequence, everything else waits:
+```
+1. D5 #35  Credible Futures (Iacona & Iaquinto, 2021)
+2. D1 #2   Composable Uncertainty in SMCs (Furter et al., 2025)
+3. D2 #30  Formalized Conceptual Spaces (Bechberger & Kühnberger, 2018)
+4. D3 #24  Span(Graph) process algebra (Katis et al., 2009)
+5. D2 #13  Are Programming Paradigms Paradigms? (Kiasari, 2025)
+6. D1 #25  Semantic marriage of monads and effects (Orchard et al., 2014)
+7. D4 #25  Chemero (2003) — manual seed, no network needed
 ```
 
 ---

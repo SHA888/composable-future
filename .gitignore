@@ -1,0 +1,54 @@
+# LaTeX build artifacts
+*.aux
+*.bbl
+*.bcf
+*.blg
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*.run.xml
+*.synctex.gz
+*.toc
+*.figlist
+*.makefile
+*.fls
+*.fdb_latexmk
+*.idx
+*.ind
+*.ilg
+*.lot
+*.lof
+
+# PDF builds
+*.pdf
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+.env
+
+# uv
+.uv/
+
+# IDE
+.vscode/
+.idea/
+.windsurf/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp

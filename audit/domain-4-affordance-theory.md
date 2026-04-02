@@ -25,7 +25,7 @@
 
 ---
 
-## Results (24 papers)
+## Results (28 papers)
 
 ### 1. Survey of mathematical foundations of QFT and perturbative string theory
 - **Authors:** Hisham Sati, Urs Schreiber
@@ -219,6 +219,42 @@
 - **Abstract:** This article presents Teledrive, a telepresence robotic system with embodied AI features that empowers an operator to navigate the telerobot in any unknown remote place with minimal human intervention. We conceive Teledrive in the context of democratizing remote care-giving for elderly citizens as well as for isolated patients, affected by contagious diseases. In particular, this paper focuses on ...
 - **Relevance note:** <!-- fill manually -->
 
+
+
+
+<!-- Refinement added 2026-04-02 — queries + seeds -->
+
+### 25. An Outline of a Theory of Affordances
+- **Authors:** Anthony Chemero
+- **Year:** 2003
+- **Source:** Manual seed
+- **URL:** https://doi.org/10.1207/S15326969ECO1502_4
+- **Abstract:** Grounds affordances in relational ontology: affordances are relations between the abilities of organisms and features of the environment, not properties of either alone. Closest philosophical precursor to formalizing Φ as a relational type.
+- **Relevance note:** <!-- fill manually -->
+
+### 26. Affordances and Prospective Control: An Outline of the Ontology
+- **Authors:** Michael T. Turvey
+- **Year:** 1992
+- **Source:** Manual seed
+- **URL:** https://doi.org/10.1207/s15326969eco0403_3
+- **Abstract:** Develops a formal ontological account of affordances as dispositional properties grounded in ecological dynamics and prospective control of action. Relevant to defining Φ as a forward-directed typed structure.
+- **Relevance note:** <!-- fill manually -->
+
+### 27. To Afford or Not to Afford: A New Formalization of Affordances Toward Affordance-Based Robot Control
+- **Authors:** Erol Şahin, Maya Çakmak, Mehmet R. Doğar, Emre Uğur, Göktürk Üçoluk
+- **Year:** 2007
+- **Source:** Manual seed
+- **URL:** https://doi.org/10.1177/1059712307084689
+- **Abstract:** Proposes a formal triple (entity, behavior, effect) definition of affordances for robotics. Treats affordances as learnable, compositional predicates. Most rigorous existing formalization — directly informs how Φ can be typed and composed.
+- **Relevance note:** <!-- fill manually -->
+
+### 28. A Formal Model of Affordances for Human-Computer Interaction
+- **Authors:** Leonidas Kyriakoullis, Panayiotis Zaphiris
+- **Year:** 2016
+- **Source:** Manual seed
+- **URL:** https://doi.org/10.1016/j.intcom.2016.01.001
+- **Abstract:** Formalizes affordances in HCI: perceptual, functional, and cultural affordances as typed predicates over user-interface state pairs. Establishes that affordance types are domain-dependent — relevant to the claim that Φ is paradigm-specific.
+- **Relevance note:** <!-- fill manually -->
 
 
 ---

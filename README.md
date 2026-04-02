@@ -200,4 +200,4 @@ composable-future/
 ## License
 
 Theory and audit materials: [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)  
-Code (`search.py`): MIT
+Code: MIT

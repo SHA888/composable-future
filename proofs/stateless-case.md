@@ -3,6 +3,24 @@
 This document focuses on the restricted domain where trajectories τ are stateless
 (path-independent). In this case, associativity of sequential bind should hold.
 
+## Phase 1 Prerequisite: Trajectory Refactor
+
+**Note**: The Lean implementation sketches in this document anticipate a Phase 2 refactor where `Trajectory` becomes indexed:
+
+```lean
+-- Current (Phase 1):
+structure Trajectory where
+  source : ParadigmaticState
+  target : ParadigmaticState
+
+-- Phase 2 refactor (required for stateless proofs):
+structure Trajectory (S₀ S₁ : ParadigmaticState) where
+  -- source and target become type parameters, not fields
+  -- This enables proper categorical composition
+```
+
+This refactor is a prerequisite for the formal stateless associativity proof.
+
 ## Definition of Stateless
 
 A trajectory τ : S₀ → S₁ is **stateless** if it does not depend on the history of

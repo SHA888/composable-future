@@ -21,6 +21,20 @@
 [ ]  arXiv submission — pending endorsement
 ```
 
+## PROGRESS TRACKING
+
+| Phase | Description                    | Status          | Gate condition               |
+|------|--------------------------------|----------------|------------------------------|
+| 0    | Audit + repo foundation         | ✅ complete     | Syntheses filled              |
+| 1    | Lean 4 scaffold                 | ✅ complete     | lake build passes            |
+| 2    | Stateless associativity proof   | ⬜ not started   | assoc_stateless proved/disproved |
+
+## IMMEDIATE NEXT ACTIONS
+
+1.  Begin Phase 2: Define `isStateless` predicate (P2.1)
+2.  Write `proofs/stateless-case.md` informal proof sketch (P2.2)
+3.  Find math.CT arXiv endorser before 2026-04-19
+
 ---
 
 ## PHASE 0 — Audit Completion + Repository Foundation

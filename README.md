@@ -11,7 +11,7 @@ A formal theory of paradigmatic futures as composable algebraic structures.
 
 > **Composable Future: Toward an Algebraic Theory of Paradigmatic Transitions**  
 > I Made Agus Kresna Sucandra — Fakultas Kedokteran, Universitas Udayana  
-> Version 0.1 — April 5, 2026  
+> Version 0.1 — April 6, 2026  
 >
 > 📄 [doi.org/10.5281/zenodo.19433811](https://doi.org/10.5281/zenodo.19433811)  
 >

@@ -106,7 +106,7 @@ Read in this order. Everything else waits until all 7 are done.
 
 - [x] 🟢 Zenodo preprint live — https://zenodo.org/records/19433811
   - DOI: 10.5281/zenodo.19433811
-  - Version 0.1 — April 5, 2026
+  - Version 0.1 — April 6, 2026
 
 - [ ] 🟡 arXiv submission — complete if endorser found before 2026-04-19
   - Submission ID: 7444737 (saved, expires 2026-04-19)

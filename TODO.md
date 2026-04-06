@@ -13,7 +13,7 @@
 [x]  Domain files generated (5 domains, 166 papers)
 [x]  Preprint written and compiled (composable-future.tex)
 [x]  All 14 citations verified — no hallucinations
-[x]  Zenodo preprint live — doi.org/10.5281/zenodo.19433811
+[x]  Zenodo preprint live — https://zenodo.org/records/19433811
 [x]  Domain synthesis sections — COMPLETE (all 5 domains filled)
 [x]  Lean 4 scaffold — COMPLETE (full project structure created)
 [ ]  arXiv submission — pending endorsement
@@ -103,6 +103,10 @@ Read in this order. Everything else waits until all 7 are done.
   - [x] Proof contribution guidelines (sorry policy, naming conventions)
 
 ### P0.4 — Publication
+
+- [x] 🟢 Zenodo preprint live — https://zenodo.org/records/19433811
+  - DOI: 10.5281/zenodo.19433811
+  - Version 0.1 — April 5, 2026
 
 - [ ] 🟡 arXiv submission — complete if endorser found before 2026-04-19
   - Submission ID: 7444737 (saved, expires 2026-04-19)

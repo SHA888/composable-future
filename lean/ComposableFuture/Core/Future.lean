@@ -15,16 +15,16 @@ structure ParadigmaticState where
   assumptions : Type
   constraints : Type
   infrastructure : Type
-  deriving Repr, BEq
+  deriving Repr
 
 /-- A trajectory represents a transition between paradigmatic states. -/
 structure Trajectory where
   source : ParadigmaticState
   target : ParadigmaticState
-  deriving Repr, BEq
+  deriving Repr
 
 /-- An affordance set represents what futures are accessible from a given state. -/
-def AffordanceSet (S : ParadigmaticState) : Type := Finset (Type)
+def AffordanceSet (S : ParadigmaticState) : Type := sorry
 
 /-- A composable future is a 4-tuple (S₀, τ, S₁, Φ). -/
 structure ComposableFuture where
@@ -32,7 +32,6 @@ structure ComposableFuture where
   τ  : Trajectory
   S₁ : ParadigmaticState
   Φ  : AffordanceSet S₁
-  deriving Repr, BEq
 
 /-- Well-formedness condition: trajectory matches the states -/
 def ComposableFuture.wellFormed (F : ComposableFuture) : Prop :=

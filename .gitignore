@@ -37,6 +37,14 @@ venv/
 # uv
 .uv/
 
+# Lean 4
+.lake/
+*.olean
+*.ilean
+*.c
+*.ir
+*.setup.json
+
 # IDE
 .vscode/
 .idea/

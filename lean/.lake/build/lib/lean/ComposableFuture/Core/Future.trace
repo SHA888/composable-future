@@ -1,0 +1,59 @@
+{"synthetic": false,
+ "schemaVersion": "2025-09-10",
+ "outputs":
+ {"o": ["5b1a60cdf4f8bf0b.olean"],
+  "m": false,
+  "i": "ce296c39bd4d1abd.ilean",
+  "c": "7ada873dcaa0c7a0.c"},
+ "log":
+ [{"message":
+   ".> LEAN_PATH=/home/kd/composable-future/lean/.lake/packages/Cli/.lake/build/lib/lean:/home/kd/composable-future/lean/.lake/packages/batteries/.lake/build/lib/lean:/home/kd/composable-future/lean/.lake/packages/Qq/.lake/build/lib/lean:/home/kd/composable-future/lean/.lake/packages/aesop/.lake/build/lib/lean:/home/kd/composable-future/lean/.lake/packages/proofwidgets/.lake/build/lib/lean:/home/kd/composable-future/lean/.lake/packages/importGraph/.lake/build/lib/lean:/home/kd/composable-future/lean/.lake/packages/LeanSearchClient/.lake/build/lib/lean:/home/kd/composable-future/lean/.lake/packages/plausible/.lake/build/lib/lean:/home/kd/composable-future/lean/.lake/packages/mathlib/.lake/build/lib/lean:/home/kd/composable-future/lean/.lake/build/lib/lean /home/kd/.elan/toolchains/leanprover--lean4---v4.30.0-rc1/bin/lean /home/kd/composable-future/lean/ComposableFuture/Core/Future.lean -o /home/kd/composable-future/lean/.lake/build/lib/lean/ComposableFuture/Core/Future.olean -i /home/kd/composable-future/lean/.lake/build/lib/lean/ComposableFuture/Core/Future.ilean -c /home/kd/composable-future/lean/.lake/build/ir/ComposableFuture/Core/Future.c --setup /home/kd/composable-future/lean/.lake/build/ir/ComposableFuture/Core/Future.setup.json --json",
+   "level": "trace"},
+  {"message":
+   "ComposableFuture/Core/Future.lean:27:4: declaration uses `sorry`",
+   "level": "warning"},
+  {"message":
+   "ComposableFuture/Core/Future.lean:33:2: The namespace 'ComposableFuture' is duplicated in the declaration 'ComposableFuture.ComposableFuture.S₁'\n\nNote: This linter can be disabled with `set_option linter.dupNamespace false`",
+   "level": "warning"},
+  {"message":
+   "ComposableFuture/Core/Future.lean:32:2: The namespace 'ComposableFuture' is duplicated in the declaration 'ComposableFuture.ComposableFuture.τ'\n\nNote: This linter can be disabled with `set_option linter.dupNamespace false`",
+   "level": "warning"},
+  {"message":
+   "ComposableFuture/Core/Future.lean:30:10: The namespace 'ComposableFuture' is duplicated in the declaration 'ComposableFuture.ComposableFuture.mk'\n\nNote: This linter can be disabled with `set_option linter.dupNamespace false`",
+   "level": "warning"},
+  {"message":
+   "ComposableFuture/Core/Future.lean:31:2: The namespace 'ComposableFuture' is duplicated in the declaration 'ComposableFuture.ComposableFuture.S₀'\n\nNote: This linter can be disabled with `set_option linter.dupNamespace false`",
+   "level": "warning"},
+  {"message":
+   "ComposableFuture/Core/Future.lean:34:2: The namespace 'ComposableFuture' is duplicated in the declaration 'ComposableFuture.ComposableFuture.Φ'\n\nNote: This linter can be disabled with `set_option linter.dupNamespace false`",
+   "level": "warning"},
+  {"message":
+   "ComposableFuture/Core/Future.lean:30:10: The namespace 'ComposableFuture' is duplicated in the declaration 'ComposableFuture.ComposableFuture'\n\nNote: This linter can be disabled with `set_option linter.dupNamespace false`",
+   "level": "warning"},
+  {"message":
+   "ComposableFuture/Core/Future.lean:37:4: The namespace 'ComposableFuture' is duplicated in the declaration 'ComposableFuture.ComposableFuture.wellFormed'\n\nNote: This linter can be disabled with `set_option linter.dupNamespace false`",
+   "level": "warning"}],
+ "inputs":
+ [["ComposableFuture.Core.Future:deps",
+   [["deps",
+     [["«composable-future»/ComposableFuture:extraDep",
+       [["@«composable-future»:extraDep", "00000000000006bb"]]],
+      ["imports",
+       [["Mathlib.Data.Finset.Basic transitive imports (legacy)",
+         "29847239e15f5a80"],
+        ["Mathlib.Data.Finset.Basic:importAllArts", "b9c7599f6f7959b2"]]]]],
+    ["libs",
+     [["import dynlibs", "00000000000006bb"],
+      ["package external libraries", "00000000000006bb"],
+      ["module dynlibs", "00000000000006bb"],
+      ["module plugins", "00000000000006bb"]]]]],
+  ["Lean 4.30.0, commit 714601baf118066cbf3f282361339c6d06665b2a",
+   "a22979b798cee25b"],
+  ["/home/kd/composable-future/lean/ComposableFuture/Core/Future.lean",
+   "7eb39ffbd31be9aa"],
+  ["options", "00000000000006bb"],
+  ["isModule: false", "feefd2a0d3a1847e"],
+  ["Module.name: ComposableFuture.Core.Future", "e38e530ac09f2649"],
+  ["Package.id?: (some composable-future)", "52e46c78208cf350"],
+  ["Module.leanArgs: #[]", "00000000000006bb"]],
+ "depHash": "412b0c90f85d9de7"}

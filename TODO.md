@@ -15,7 +15,7 @@
 [x]  All 14 citations verified — no hallucinations
 [x]  Zenodo preprint live — https://zenodo.org/records/19433811
 [x]  Domain synthesis sections — COMPLETE (all 5 domains filled)
-[x]  Lean 4 scaffold — COMPLETE (full project structure created)
+[~]  Lean 4 scaffold — structure created, compilation blockers present (see P1.1)
 [ ]  arXiv submission — pending endorsement
 ```
 

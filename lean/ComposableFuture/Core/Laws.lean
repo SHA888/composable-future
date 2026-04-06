@@ -13,27 +13,25 @@ This module states the fundamental laws of the Composable Future theory:
 
 namespace ComposableFuture
 
-open ComposableFuture
-
 /-- Left identity law: Id >>= F = F -/
 theorem left_identity (F : ComposableFuture) : 
-  (idFuture F.S₀) >>= F = F := by sorry
+  seqBind (idFuture F.S₀) F (by rfl) = F := by sorry
 
 /-- Right identity law: F >>= Id = F -/
 theorem right_identity (F : ComposableFuture) : 
-  F >>= (idFuture F.S₁) = F := by sorry
+  seqBind F (idFuture F.S₁) (by rfl) = F := by sorry
 
 /-- Closure law: sequential composition produces a valid future -/
 theorem closure (F G : ComposableFuture) (h : F.S₁ = G.S₀) : 
-  ∃ H : ComposableFuture, F >>= G = H := by sorry
+  ∃ H : ComposableFuture, seqBind F G h = H := by sorry
 
-/-- Associativity law for stateless case [Open Problem 1] -/
-theorem assoc_stateless (F G H : ComposableFuture)
-  (hτ_F : sorry) (hτ_G : sorry) (hτ_H : sorry) : 
-  (F >>= G) >>= H = F >>= (G >>= H) := by sorry
+/- TODO Phase 2: stateless associativity theorem once isStateless is defined -/
+-- theorem assoc_stateless (F G H : ComposableFuture)
+--   (hτ_F : F.τ.isStateless) (hτ_G : G.τ.isStateless) (hτ_H : H.τ.isStateless) : 
+--   seqBind (seqBind F G (by sorry)) H (by sorry) = seqBind F (seqBind G H (by sorry)) (by sorry) := by sorry
 
-/-- Non-commutativity of parallel tensor -/
-theorem parTensor_not_comm : 
-  ∃ F G : ComposableFuture, F ⊗ G ≠ G ⊗ F := by sorry
+/- TODO Phase 4: non-commutativity of parallel tensor once parTensor is defined -/
+-- theorem parTensor_not_comm : 
+--   ∃ F G : ComposableFuture, parTensor F G ≠ parTensor G F := by sorry
 
 end ComposableFuture

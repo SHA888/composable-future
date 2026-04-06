@@ -29,54 +29,54 @@
 
 Read in this order. Everything else waits until all 7 are done.
 
-- [ ] 🔴 Read D5 #35 — Credible Futures (Iacona & Iaquinto, 2021)
+- [x] 🔴 Read D5 #35 — Credible Futures (Iacona & Iaquinto, 2021)
   - Fill `audit/domain-5-futures-formalization.md` synthesis
   - Key question: does branching-time credibility overlap with typed possibility?
 
-- [ ] 🔴 Read D1 #2 — Composable Uncertainty in SMCs (Furter et al., 2025)
+- [x] 🔴 Read D1 #2 — Composable Uncertainty in SMCs (Furter et al., 2025)
   - Fill `audit/domain-1-category-theory.md` synthesis
   - Key question: does their Markov category machinery extend to paradigmatic states?
 
-- [ ] 🔴 Read D2 #30 — Formalized Conceptual Spaces (Bechberger & Kühnberger, 2018)
+- [x] 🔴 Read D2 #30 — Formalized Conceptual Spaces (Bechberger & Kühnberger, 2018)
   - Fill `audit/domain-2-paradigm-change.md` synthesis
   - Key question: does their convexity requirement block composability of S₀?
 
-- [ ] 🔴 Read D3 #24 — Span(Graph) process algebra (Katis et al., 2009)
+- [x] 🔴 Read D3 #24 — Span(Graph) process algebra (Katis et al., 2009)
   - Fill `audit/domain-3-process-algebra.md` synthesis
   - Key question: does TCP's parallel composition map to ⊗?
 
-- [ ] 🟡 Read D2 #13 — Are Programming Paradigms Paradigms? (Kiasari, 2025)
+- [x] 🔴 Read D2 #13 — Are Programming Paradigms Paradigms? (Kiasari, 2025)
   - Supplementary — establishes that Floyd's use of "paradigm" diverges from Kuhn
   - Confirms gap in D2
 
-- [ ] 🟡 Read D1 #25 — Semantic marriage of monads and effects (Orchard et al., 2014)
+- [x] 🔴 Read D1 #25 — Semantic marriage of monads and effects (Orchard et al., 2014)
   - Key for Open Problem 1 — indexed monad as candidate resolution for associativity
   - Fill indexed monad section in synthesis
 
-- [ ] 🟡 Read D4 #25 — Chemero (2003) — manual seed
+- [x] 🔴 Read D4 #25 — Chemero (2003) — manual seed
   - Confirms Φ as relational structure (abilities × environmental features)
   - Fill `audit/domain-4-affordance-theory.md` synthesis
 
 ### P0.2 — Gap Summary Completion
 
-- [ ] 🔴 Fill `audit/gap-summary.md` composite gap statement
+- [x] 🔴 Fill `audit/gap-summary.md` composite gap statement
   - One paragraph: what does not exist that Composable Future supplies
   - This becomes §1 of the next paper
 
-- [ ] 🔴 Fill confirmed priors list in gap-summary.md
+- [x] 🔴 Fill confirmed priors list in gap-summary.md
   - 8–12 papers the theory builds on (not gaps — prior art)
   - Exact BibTeX keys for each
 
-- [ ] 🔴 Fill open problems inventory in gap-summary.md
+- [x] 🔴 Fill open problems inventory in gap-summary.md
   - Transfer gap statements from all 5 domain files
   - Map each to one of the 5 open problems in §7 of the paper
 
-- [ ] 🟡 Mark confidence level in each domain file
-  - [ ] Domain 1: gap confirmed / partial / unclear
-  - [ ] Domain 2: gap confirmed / partial / unclear
-  - [ ] Domain 3: gap confirmed / partial / unclear
-  - [ ] Domain 4: gap confirmed / partial / unclear
-  - [ ] Domain 5: gap confirmed / partial / unclear
+- [x] 🟡 Mark confidence level in each domain file
+  - [x] Domain 1: gap confirmed / partial / unclear
+  - [x] Domain 2: gap confirmed / partial / unclear
+  - [x] Domain 3: gap confirmed / partial / unclear
+  - [x] Domain 4: gap confirmed / partial / unclear
+  - [x] Domain 5: gap confirmed / partial / unclear
 
 ### P0.3 — Repository Structure
 

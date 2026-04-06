@@ -7,6 +7,18 @@ A formal theory of paradigmatic futures as composable algebraic structures.
 
 ---
 
+## Preprint
+
+> **Composable Future: Toward an Algebraic Theory of Paradigmatic Transitions**  
+> I Made Agus Kresna Sucandra — Fakultas Kedokteran, Universitas Udayana  
+> Version 0.1 — April 5, 2026  
+>
+> 📄 [doi.org/10.5281/zenodo.19433811](https://doi.org/10.5281/zenodo.19433811)  
+>
+> *Comments welcome.*
+
+---
+
 ## The Claim
 
 *Composable Future* is a coined term for a structure not currently named in the literature.
@@ -130,7 +142,9 @@ Positioning paper
 - State open problems explicitly
 - 8–12 pages
        ↓
-arXiv preprint (cs.LO or math.CT)   ← claim staked
+Zenodo preprint                     ← doi.org/10.5281/zenodo.19433811
+       ↓
+arXiv submission (math.CT / cs.LO)  ← pending endorsement
        ↓
 Peer-reviewed submission
        ↓
@@ -233,6 +247,24 @@ Start with these seven in sequence, everything else waits:
 3. What is the correct equivalence relation between futures — bisimulation?
 4. Does composition of affordance sets `Φ ∘ Φ'` hold?
 5. Are all paradigmatic futures reachable by finite composition (completeness)?
+
+---
+
+## Citation
+
+```bibtex
+@misc{sucandra2026composable,
+  author    = {Sucandra, I Made Agus Kresna},
+  title     = {Composable Future: Toward an Algebraic Theory 
+               of Paradigmatic Transitions},
+  year      = {2026},
+  month     = {April},
+  version   = {0.1},
+  doi       = {10.5281/zenodo.19433811},
+  url       = {https://doi.org/10.5281/zenodo.19433811},
+  note      = {Preprint. Zenodo.}
+}
+```
 
 ---
 

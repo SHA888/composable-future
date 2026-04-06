@@ -9,10 +9,20 @@
 # ///
 """
 Composable Future — Foundational Audit Search
-Usage: uv run search.py [domain_id|all]
+
+⚠️ IMPORTANT: Phase 0 audit synthesis is COMPLETE. 
+This script is for versioned extensions only (e.g., audit-v2/).
+
+Usage for new versions:
+    uv run search.py --version audit-v2 [domain_id|all]
+    uv run search.py --version audit-updates 3
+
+Legacy usage (deprecated):
+    uv run search.py [domain_id|all]
+
 Example:
-    uv run search.py all
-    uv run search.py 3
+    uv run search.py --version audit-v2 all
+    uv run search.py --version audit-updates 3
 """
 
 import sys
@@ -21,6 +31,7 @@ import json
 import hashlib
 from datetime import date
 from pathlib import Path
+from typing import Optional
 
 import arxiv
 import httpx
@@ -30,12 +41,48 @@ from rich.table import Table
 
 console = Console()
 
+# ── Version Management ───────────────────────────────────────────────────────
+
+def parse_args() -> tuple[Optional[str], Optional[str]]:
+    """Parse command line arguments with version support."""
+    args = sys.argv[1:]
+    
+    if not args:
+        return None, None
+    
+    if args[0] == "--version" and len(args) >= 2:
+        return args[1], args[2] if len(args) > 2 else "all"
+    
+    # Legacy mode - warn about completion
+    console.print("\n[red]⚠️ WARNING:[/red] Phase 0 audit synthesis is COMPLETE.")
+    console.print("[yellow]Running this will overwrite completed work![/yellow]")
+    console.print("Use --version flag for new audit versions:\n")
+    console.print("  uv run search.py --version audit-v2 all")
+    console.print("  uv run search.py --version audit-updates 3\n")
+    
+    response = console.input("[bold]Continue anyway? [y/N]: [/bold]")
+    if response.lower() != 'y':
+        console.print("[green]Aborted.[/green]")
+        sys.exit(0)
+    
+    return None, args[0] if args else "all"
+
+def get_versioned_paths(version: str) -> dict:
+    """Get file paths for a specific version."""
+    base_dir = Path(version)
+    return {
+        domain_id: {
+            "file": base_dir / f"domain-{domain_id}-{domain['name'].lower().replace(' ', '-').replace(',', '').replace('applied', 'ct')}.md",
+            **{k: v for k, v in domain.items() if k != "file"}
+        }
+        for domain_id, domain in DOMAINS.items()
+    }
+
 # ── Domain Configuration ──────────────────────────────────────────────────────
 
 DOMAINS = {
     1: {
         "name": "Category Theory Applied to Complex Systems",
-        "file": "audit/domain-1-category-theory.md",
         "seeds": [
             # Spivak — Category Theory for the Sciences
             "https://arxiv.org/abs/1302.6946",
@@ -58,7 +105,6 @@ DOMAINS = {
     },
     2: {
         "name": "Formal Models of Paradigm Change",
-        "file": "audit/domain-2-paradigm-change.md",
         "seeds": [
             # Gärdenfors — Conceptual Spaces (geometric concept formalization)
             "https://arxiv.org/abs/1503.08929",
@@ -79,7 +125,6 @@ DOMAINS = {
     },
     3: {
         "name": "Process Algebra and Concurrent Systems",
-        "file": "audit/domain-3-process-algebra.md",
         "seeds": [
             # Baeten — A brief history of process algebra
             "https://arxiv.org/abs/cs/0410033",
@@ -101,7 +146,6 @@ DOMAINS = {
     },
     4: {
         "name": "Affordance Theory — Formal Treatments",
-        "file": "audit/domain-4-affordance-theory.md",
         "seeds": [
             # Chemero 2003 — An Outline of a Theory of Affordances (via S2)
             # Şahin et al. 2007 — To Afford or Not to Afford (robotics)
@@ -122,7 +166,6 @@ DOMAINS = {
     },
     5: {
         "name": "Futures Studies Formalization",
-        "file": "audit/domain-5-futures-formalization.md",
         "seeds": [],
         "arxiv_queries": [
             "futures studies formal model scenario planning mathematical",
@@ -295,14 +338,22 @@ def format_papers(papers: list[dict]) -> str:
     )
 
 
-def write_domain_file(domain_id: int, papers: list[dict]) -> None:
-    domain = DOMAINS[domain_id]
-    path = Path(domain["file"])
+def write_domain_file(domain_id: int, papers: list[dict], version: Optional[str] = None) -> None:
+    if version:
+        versioned_domains = get_versioned_paths(version)
+        domain = versioned_domains[domain_id]
+        path = domain["file"]
+    else:
+        domain = DOMAINS[domain_id]
+        path = Path(domain["file"])
+    
     path.parent.mkdir(parents=True, exist_ok=True)
 
     arxiv_q_list = "\n".join(f"- `{q}`" for q in domain["arxiv_queries"])
     s2_q_list = "\n".join(f"- `{q}`" for q in domain["semantic_scholar_queries"])
 
+    version_header = f"\n> Version: {version}\n" if version else ""
+    
     content = DOMAIN_TEMPLATE.format(
         id=domain_id,
         name=domain["name"],
@@ -313,6 +364,11 @@ def write_domain_file(domain_id: int, papers: list[dict]) -> None:
         count=len(papers),
         papers=format_papers(papers),
     )
+    
+    # Add version header if this is a versioned run
+    if version:
+        content = content.replace("# Domain {id} — {name}", f"# Domain {id} — {name}{version_header}")
+    
     path.write_text(content, encoding="utf-8")
     console.print(f"  [green]Written:[/green] {path} ({len(papers)} papers)")
 
@@ -376,20 +432,32 @@ Status: IN PROGRESS — fill after reading all domain files
 """
 
 
-def write_gap_summary() -> None:
-    path = Path("audit/gap-summary.md")
-    path.write_text(
-        GAP_SUMMARY_TEMPLATE.format(date=date.today().isoformat()),
-        encoding="utf-8",
-    )
+def write_gap_summary(version: Optional[str] = None) -> None:
+    if version:
+        path = Path(version) / "gap-summary.md"
+        template = GAP_SUMMARY_TEMPLATE.replace("Gap Summary — Composable Future Foundational Audit", 
+                                                 f"Gap Summary — Composable Future Foundational Audit ({version})")
+    else:
+        path = Path("audit/gap-summary.md")
+        template = GAP_SUMMARY_TEMPLATE
+    
+    content = template.format(date=date.today().isoformat())
+    path.write_text(content, encoding="utf-8")
     console.print(f"  [green]Written:[/green] {path}")
 
 
 # ── Main ──────────────────────────────────────────────────────────────────────
 
-def run_domain(domain_id: int) -> None:
-    domain = DOMAINS[domain_id]
+def run_domain(domain_id: int, version: Optional[str] = None) -> None:
+    if version:
+        versioned_domains = get_versioned_paths(version)
+        domain = versioned_domains[domain_id]
+    else:
+        domain = DOMAINS[domain_id]
+    
     console.rule(f"[bold]Domain {domain_id} — {domain['name']}[/bold]")
+    if version:
+        console.print(f"[dim]Version: {version}[/dim]")
     all_papers: list[dict] = []
 
     with Progress(
@@ -416,27 +484,39 @@ def run_domain(domain_id: int) -> None:
 
     deduped = deduplicate(all_papers)
     console.print(f"  Raw: {len(all_papers)} → Deduplicated: {len(deduped)}")
-    write_domain_file(domain_id, deduped)
+    write_domain_file(domain_id, deduped, version)
 
 
 def main() -> None:
-    args = sys.argv[1:]
-    target = args[0] if args else "all"
+    version, target = parse_args()
+    
+    if not version and not target:
+        console.print("[red]Error:[/red] No arguments provided")
+        console.print("Usage:")
+        console.print("  uv run search.py --version audit-v2 [domain_id|all]")
+        console.print("  uv run search.py --version audit-updates 3")
+        sys.exit(1)
 
     console.print("\n[bold cyan]Composable Future — Foundational Audit Search[/bold cyan]\n")
+    if version:
+        console.print(f"[dim]Version: {version}[/dim]\n")
 
     if target == "all":
         for domain_id in DOMAINS:
-            run_domain(domain_id)
-        write_gap_summary()
+            run_domain(domain_id, version)
+        if version:
+            write_gap_summary(version)
     elif target.isdigit() and int(target) in DOMAINS:
-        run_domain(int(target))
+        run_domain(int(target), version)
     else:
         console.print(f"[red]Unknown target:[/red] {target}")
         console.print(f"Valid: all | {' | '.join(str(k) for k in DOMAINS)}")
         sys.exit(1)
 
-    console.print("\n[bold green]Done.[/bold green] Open audit/ files and fill synthesis sections manually.\n")
+    if version:
+        console.print(f"\n[bold green]Done.[/bold green] Open {version}/ files and fill synthesis sections manually.\n")
+    else:
+        console.print("\n[bold green]Done.[/bold green] Open audit/ files and fill synthesis sections manually.\n")
 
 
 if __name__ == "__main__":

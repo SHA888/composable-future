@@ -14,8 +14,8 @@
 [x]  Preprint written and compiled (composable-future.tex)
 [x]  All 14 citations verified — no hallucinations
 [x]  Zenodo preprint live — doi.org/10.5281/zenodo.19433811
-[ ]  Domain synthesis sections — unfilled
-[ ]  Lean 4 scaffold — does not exist
+[x]  Domain synthesis sections — COMPLETE (all 5 domains filled)
+[x]  Lean 4 scaffold — COMPLETE (full project structure created)
 [ ]  arXiv submission — pending endorsement
 ```
 
@@ -23,7 +23,7 @@
 
 ## PHASE 0 — Audit Completion + Repository Foundation
 > Gate: all 5 synthesis sections filled, repo structure supports live development
-> Status: in progress
+> Status: ✅ COMPLETE
 
 ### P0.1 — Audit Synthesis (manual reading work)
 
@@ -80,27 +80,27 @@ Read in this order. Everything else waits until all 7 are done.
 
 ### P0.3 — Repository Structure
 
-- [ ] 🔴 Create `/lean/` directory scaffold
-  - [ ] `lean/lakefile.lean` — Lean 4 project file
-  - [ ] `lean/ComposableFuture.lean` — top-level module
-  - [ ] `lean/Core/Future.lean` — F = (S₀, τ, S₁, Φ) as Lean structure (stub)
-  - [ ] `lean/Core/Operators.lean` — >>=, ⊗, |, ⊕ as definitions (stub)
-  - [ ] `lean/Core/Laws.lean` — identity, closure as axioms; associativity as sorry
-  - [ ] `lean/Core/Probabilistic.lean` — Kleisli extension stub (empty)
+- [x] 🔴 Create `/lean/` directory scaffold
+  - [x] `lean/lakefile.lean` — Lean 4 project file
+  - [x] `lean/ComposableFuture.lean` — top-level module
+  - [x] `lean/Core/Future.lean` — F = (S₀, τ, S₁, Φ) as Lean structure (stub)
+  - [x] `lean/Core/Operators.lean` — >>=, ⊗, |, ⊕ as definitions (stub)
+  - [x] `lean/Core/Laws.lean` — identity, closure as axioms; associativity as sorry
+  - [x] `lean/Core/Probabilistic.lean` — Kleisli extension stub (empty)
 
-- [ ] 🔴 Create `/proofs/` directory
-  - [ ] `proofs/notes.md` — running informal proof attempts
-  - [ ] `proofs/stateless-case.md` — restricted domain: τ stateless
-  - [ ] `proofs/attempt-associativity.md` — dead ends, partial progress, conjectures
+- [x] 🔴 Create `/proofs/` directory
+  - [x] `proofs/notes.md` — running informal proof attempts
+  - [x] `proofs/stateless-case.md` — restricted domain: τ stateless
+  - [x] `proofs/attempt-associativity.md` — dead ends, partial progress, conjectures
 
-- [ ] 🟡 Update `README.md` repo structure section
-  - Add `/lean` and `/proofs` to directory tree
-  - Add "How to contribute" section (proof attempts, reading notes)
+- [x] 🟡 Update `README.md` repo structure section
+  - [x] Add `/lean` and `/proofs` to directory tree
+  - [x] Add "How to contribute" section (proof attempts, reading notes)
 
-- [ ] 🟡 Add `CONTRIBUTING.md`
-  - How to run audit scripts (`uv run search.py`, `uv run refinement.py`)
-  - How to build Lean proofs (`lake build`)
-  - Proof contribution guidelines (sorry policy, naming conventions)
+- [x] 🟡 Add `CONTRIBUTING.md`
+  - [x] How to run audit scripts (`uv run search.py`, `uv run refinement.py`)
+  - [x] How to build Lean proofs (`lake build`)
+  - [x] Proof contribution guidelines (sorry policy, naming conventions)
 
 ### P0.4 — Publication
 

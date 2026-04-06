@@ -198,16 +198,52 @@ Results are written to `audit/domain-N-*.md`. Synthesis sections are filled manu
 ```
 composable-future/
 ├── README.md
+├── TODO.md              # 5-phase development roadmap
+├── CONTRIBUTING.md       # How to contribute (audit scripts, Lean proofs)
 ├── search.py          # initial audit search — run first
 ├── refinement.py      # merge refined queries + manual seeds
-└── audit/
-    ├── domain-1-category-theory.md
-    ├── domain-2-paradigm-change.md
-    ├── domain-3-process-algebra.md
-    ├── domain-4-affordance-theory.md
-    ├── domain-5-futures-formalization.md
-    └── gap-summary.md
+├── audit/
+│   ├── domain-1-category-theory.md
+│   ├── domain-2-paradigm-change.md
+│   ├── domain-3-process-algebra.md
+│   ├── domain-4-affordance-theory.md
+│   ├── domain-5-futures-formalization.md
+│   └── gap-summary.md
+├── lean/               # Lean 4 formalization (Phase 1+)
+│   ├── lakefile.lean   # Lean 4 project configuration
+│   ├── ComposableFuture.lean
+│   └── Core/
+│       ├── Future.lean      # Basic type definitions
+│       ├── Operators.lean   # >>=, ⊗, |, ⊕ operators
+│       ├── Laws.lean        # Identity, closure, associativity
+│       └── Probabilistic.lean # Kleisli extension
+└── proofs/             # Informal proof attempts and notes
+    ├── notes.md            # Running proof attempts
+    ├── stateless-case.md    # Restricted domain analysis
+    └── attempt-associativity.md # Failed attempts and insights
 ```
+
+---
+
+## How to Contribute
+
+### Audit Contributions
+- **⚠️ Phase 0 audit synthesis is COMPLETE** - do not run audit scripts
+- Read and extend existing synthesis in `audit/domain-N-*.md` files
+- Add new domains or literature updates in separate directories
+- See `CONTRIBUTING.md` for detailed guidelines on preserving completed work
+
+### Lean Formalization
+- Install Lean 4: `curl https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -sSf | sh`
+- Build project: `cd lean && lake build`
+- Fill `sorry` proofs in `Core/Laws.lean`
+- Add proof attempts to `proofs/notes.md`
+- Follow naming conventions and sorry policy in `CONTRIBUTING.md`
+
+### Proof Attempts
+- Document dead ends in `proofs/attempt-associativity.md`
+- Explore restricted cases in `proofs/stateless-case.md`
+- Test conjectures and provide counterexamples
 
 ---
 

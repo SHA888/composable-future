@@ -9,14 +9,21 @@
 # ///
 """
 Composable Future — Audit Refinement
+
+⚠️ IMPORTANT: Phase 0 audit synthesis is COMPLETE. 
+This script is for versioned extensions only (e.g., audit-v2/).
+
 Merges additional queries and manual seeds into existing domain files.
 Never overwrites existing content or relevance notes.
 
-Usage:
-    uv run refinement.py <domain_id>              # queries + seeds
-    uv run refinement.py <domain_id> --seeds      # manual seeds only
-    uv run refinement.py <domain_id> --queries    # refined queries only
-    uv run refinement.py list                     # show all refinements defined
+Usage for new versions:
+    uv run refinement.py --version audit-v2 <domain_id>
+    uv run refinement.py --version audit-updates 4 --seeds
+    uv run refinement.py --version audit-v2 list
+
+Legacy usage (deprecated):
+    uv run refinement.py <domain_id>
+    uv run refinement.py list
 """
 
 import re
@@ -25,6 +32,7 @@ import time
 import hashlib
 from pathlib import Path
 from datetime import date
+from typing import Optional, Tuple
 
 import arxiv
 import httpx
@@ -33,6 +41,43 @@ from rich.table import Table
 from rich.progress import Progress, SpinnerColumn, TextColumn
 
 console = Console()
+
+# ── Version Management ───────────────────────────────────────────────────────
+
+def parse_args() -> Tuple[Optional[str], Optional[str], Optional[str]]:
+    """Parse command line arguments with version support."""
+    args = sys.argv[1:]
+    
+    if not args:
+        return None, None, None
+    
+    if args[0] == "--version" and len(args) >= 2:
+        version = args[1]
+        domain_id = args[2] if len(args) > 2 else None
+        mode = args[3] if len(args) > 3 else None
+        return version, domain_id, mode
+    
+    # Legacy mode - warn about completion
+    console.print("\n[red]⚠️ WARNING:[/red] Phase 0 audit synthesis is COMPLETE.")
+    console.print("[yellow]Running this will overwrite completed work![/yellow]")
+    console.print("Use --version flag for new audit versions:\n")
+    console.print("  uv run refinement.py --version audit-v2 4")
+    console.print("  uv run refinement.py --version audit-updates list\n")
+    
+    response = console.input("[bold]Continue anyway? [y/N]: [/bold]")
+    if response.lower() != 'y':
+        console.print("[green]Aborted.[/green]")
+        sys.exit(0)
+    
+    return None, args[0] if args else None, args[1] if len(args) > 1 else None
+
+def get_versioned_file(version: str, domain_id: int) -> Path:
+    """Get the file path for a specific version and domain."""
+    from search import DOMAINS  # Import domain configuration
+    domain = DOMAINS[domain_id]
+    base_dir = Path(version)
+    filename = f"domain-{domain_id}-{domain['name'].lower().replace(' ', '-').replace(',', '').replace('applied', 'ct')}.md"
+    return base_dir / filename
 
 # ── Refinement Config ─────────────────────────────────────────────────────────
 # Add new domains here as you identify gaps from the first search pass.
@@ -301,13 +346,15 @@ def get_domain_file(domain_id: int) -> Path:
     return Path(files[domain_id])
 
 
-def run_refinement(domain_id: int, do_queries: bool = True, do_seeds: bool = True) -> None:
+def run_refinement(domain_id: int, do_queries: bool = True, do_seeds: bool = True, version: Optional[str] = None) -> None:
     if domain_id not in REFINEMENTS:
         console.print(f"[red]No refinement config for domain {domain_id}[/red]")
         return
 
-    ref = REFINEMENTS[domain_id]
-    filepath = get_domain_file(domain_id)
+    if version:
+        filepath = get_versioned_file(version, domain_id)
+    else:
+        filepath = get_domain_file(domain_id)  # Legacy fallback
 
     if not filepath.exists():
         console.print(f"[red]Domain file not found:[/red] {filepath}")
@@ -403,30 +450,40 @@ def list_refinements() -> None:
 # ── CLI ───────────────────────────────────────────────────────────────────────
 
 def main() -> None:
-    args = sys.argv[1:]
-
-    if not args or args[0] == "list":
+    version, domain_id, mode = parse_args()
+    
+    if not version and not domain_id:
+        console.print("[red]Error:[/red] No arguments provided")
+        console.print("Usage:")
+        console.print("  uv run refinement.py --version audit-v2 <domain_id>")
+        console.print("  uv run refinement.py --version audit-updates list")
+        sys.exit(1)
+    
+    if domain_id == "list":
         list_refinements()
         return
-
-    domain_str = args[0]
-    flags = set(args[1:])
-
-    if not domain_str.isdigit():
-        console.print(f"[red]Expected domain id (integer) or 'list', got:[/red] {domain_str}")
+    
+    if not domain_id or not domain_id.isdigit():
+        console.print(f"[red]Expected domain id (integer) or 'list', got:[/red] {domain_id}")
         sys.exit(1)
 
-    domain_id = int(domain_str)
-
-    do_queries = "--queries" in flags or "--seeds" not in flags
-    do_seeds = "--seeds" in flags or "--queries" not in flags
+    domain_id_int = int(domain_id)
+    
+    # Determine what to do based on mode
+    do_queries = mode != "--seeds"  # Default to queries unless --seeds only
+    do_seeds = mode != "--queries"  # Default to seeds unless --queries only
 
     console.print(f"\n[bold cyan]Composable Future — Audit Refinement[/bold cyan]")
-    console.print(f"Domain: {domain_id} | Queries: {do_queries} | Seeds: {do_seeds}\n")
+    if version:
+        console.print(f"[dim]Version: {version}[/dim]")
+    console.print(f"Domain: {domain_id_int} | Queries: {do_queries} | Seeds: {do_seeds}\n")
 
-    run_refinement(domain_id, do_queries=do_queries, do_seeds=do_seeds)
+    run_refinement(domain_id_int, do_queries=do_queries, do_seeds=do_seeds, version=version)
 
-    console.print("\n[bold green]Done.[/bold green] Fill in relevance notes in the updated domain file.\n")
+    if version:
+        console.print(f"\n[bold green]Done.[/bold green] Fill in relevance notes in the updated {version}/ file.\n")
+    else:
+        console.print("\n[bold green]Done.[/bold green] Fill in relevance notes in the updated domain file.\n")
 
 
 if __name__ == "__main__":

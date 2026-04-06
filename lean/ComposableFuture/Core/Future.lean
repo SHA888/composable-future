@@ -22,7 +22,7 @@ structure Trajectory where
   deriving Repr
 
 /-- An affordance set represents what futures are accessible from a given state. -/
-def AffordanceSet (S : ParadigmaticState) : Type := sorry
+def AffordanceSet (S : ParadigmaticState) : Type := sorry -- Open Problem 1: Affordance set structure (Phase 4)
 
 /-- A composable future is a 4-tuple (S₀, τ, S₁, Φ). -/
 structure ComposableFuture where

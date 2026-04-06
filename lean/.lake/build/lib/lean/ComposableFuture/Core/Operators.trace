@@ -41,10 +41,10 @@
   ["Lean 4.30.0, commit 714601baf118066cbf3f282361339c6d06665b2a",
    "a22979b798cee25b"],
   ["/home/kd/composable-future/lean/ComposableFuture/Core/Operators.lean",
-   "45c70f802b176032"],
+   "5847f16f7faa9636"],
   ["options", "00000000000006bb"],
   ["isModule: false", "feefd2a0d3a1847e"],
   ["Module.name: ComposableFuture.Core.Operators", "c282b4874f3ac94b"],
   ["Package.id?: (some composable-future)", "52e46c78208cf350"],
   ["Module.leanArgs: #[]", "00000000000006bb"]],
- "depHash": "1f77fef0f70319b1"}
+ "depHash": "cf652801f30cc8b7"}

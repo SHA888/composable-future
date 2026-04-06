@@ -15,20 +15,20 @@ namespace ComposableFuture
 
 /-- Left identity law: Id >>= F = F -/
 theorem left_identity (F : ComposableFuture) : 
-  seqBind (idFuture F.S₀) F (by rfl) = F := by sorry
+  seqBind (idFuture F.S₀) F (by rfl) = F := by sorry -- Open Problem 9: Left identity proof
 
 /-- Right identity law: F >>= Id = F -/
 theorem right_identity (F : ComposableFuture) : 
-  seqBind F (idFuture F.S₁) (by rfl) = F := by sorry
+  seqBind F (idFuture F.S₁) (by rfl) = F := by sorry -- Open Problem 10: Right identity proof
 
 /-- Closure law: sequential composition produces a valid future -/
 theorem closure (F G : ComposableFuture) (h : F.S₁ = G.S₀) : 
-  ∃ H : ComposableFuture, seqBind F G h = H := by sorry
+  ∃ H : ComposableFuture, seqBind F G h = H := by sorry -- Open Problem 11: Closure proof
 
 /-- Well-formedness preservation: seqBind preserves well-formed futures -/
 theorem seqBind_well_formed (F G : ComposableFuture) (h : F.S₁ = G.S₀) 
   (hF : F.well_formed) (hG : G.well_formed) :
-  (seqBind F G h).well_formed := by sorry
+  (seqBind F G h).well_formed := by sorry -- Open Problem 12: Well-formedness preservation proof
 
 /- TODO Phase 2: stateless associativity theorem once isStateless is defined -/
 -- theorem assoc_stateless (F G H : ComposableFuture)

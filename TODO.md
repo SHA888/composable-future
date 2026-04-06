@@ -15,8 +15,9 @@
 [x]  All 14 citations verified — no hallucinations
 [x]  Zenodo preprint live — https://zenodo.org/records/19433811
 [x]  Domain synthesis sections — COMPLETE (all 5 domains filled)
-[x]  Lean 4 scaffold — COMPILATION FIXED (lake build passes)
+[x]  Lean 4 scaffold — COMPLETE (lake build passes, all sorry documented)
 [x]  Lean 4 + Mathlib installation — COMPLETE
+[x]  Phase 1 gate check — COMPLETE (build passes, sorry documented, notes updated)
 [ ]  arXiv submission — pending endorsement
 ```
 
@@ -218,9 +219,9 @@ Every `sorry` is an explicit open problem. No vague mathematics allowed.
 
 ### P1.5 — Gate Check
 
-- [ ] 🔴 `lake build` passes — all files type-check
-- [ ] 🔴 All `sorry` are documented with their open problem number
-- [ ] 🔴 Update `proofs/notes.md` with current understanding of each sorry
+- [x] 🔴 `lake build` passes — all files type-check
+- [x] 🔴 All `sorry` are documented with their open problem number
+- [x] 🔴 Update `proofs/notes.md` with current understanding of each sorry
 
 ---
 

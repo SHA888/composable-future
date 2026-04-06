@@ -38,10 +38,10 @@
   ["Lean 4.30.0, commit 714601baf118066cbf3f282361339c6d06665b2a",
    "a22979b798cee25b"],
   ["/home/kd/composable-future/lean/ComposableFuture/Core/Probabilistic.lean",
-   "818ce2868f5cf62f"],
+   "e72ccd8fb6b5fb30"],
   ["options", "00000000000006bb"],
   ["isModule: false", "feefd2a0d3a1847e"],
   ["Module.name: ComposableFuture.Core.Probabilistic", "18448636cbcc7300"],
   ["Package.id?: (some composable-future)", "52e46c78208cf350"],
   ["Module.leanArgs: #[]", "00000000000006bb"]],
- "depHash": "700a76d06ac24b3b"}
+ "depHash": "6374a7a980c65045"}

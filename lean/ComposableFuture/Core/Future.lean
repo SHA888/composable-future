@@ -1,5 +1,3 @@
-import Mathlib.Data.Finset.Basic
-
 /-!
 # Core Future Types
 
@@ -34,7 +32,7 @@ structure ComposableFuture where
   Φ  : AffordanceSet S₁
 
 /-- Well-formedness condition: trajectory matches the states -/
-def ComposableFuture.wellFormed (F : ComposableFuture) : Prop :=
+def ComposableFuture.well_formed (F : ComposableFuture) : Prop :=
   F.τ.source = F.S₀ ∧ F.τ.target = F.S₁
 
 end ComposableFuture

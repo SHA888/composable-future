@@ -28,8 +28,8 @@
        [["@«composable-future»:extraDep", "00000000000006bb"]]],
       ["imports",
        [["ComposableFuture.Core.Future transitive imports (legacy)",
-         "1c1832d789a2e0cc"],
-        ["ComposableFuture.Core.Future:importAllArts", "1ff3707645db2d07"]]]]],
+         "00000000000006bb"],
+        ["ComposableFuture.Core.Future:importAllArts", "496f647304b2113d"]]]]],
     ["libs",
      [["import dynlibs", "00000000000006bb"],
       ["package external libraries", "00000000000006bb"],
@@ -44,4 +44,4 @@
   ["Module.name: ComposableFuture.Core.Probabilistic", "18448636cbcc7300"],
   ["Package.id?: (some composable-future)", "52e46c78208cf350"],
   ["Module.leanArgs: #[]", "00000000000006bb"]],
- "depHash": "110030fd847f8c27"}
+ "depHash": "700a76d06ac24b3b"}

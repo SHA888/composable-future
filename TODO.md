@@ -15,7 +15,8 @@
 [x]  All 14 citations verified — no hallucinations
 [x]  Zenodo preprint live — https://zenodo.org/records/19433811
 [x]  Domain synthesis sections — COMPLETE (all 5 domains filled)
-[~]  Lean 4 scaffold — structure created, compilation blockers present (see P1.1)
+[x]  Lean 4 scaffold — COMPILATION FIXED (lake build passes)
+[x]  Lean 4 + Mathlib installation — COMPLETE
 [ ]  arXiv submission — pending endorsement
 ```
 
@@ -135,32 +136,32 @@ Every `sorry` is an explicit open problem. No vague mathematics allowed.
 
 ### P1.1 — Lean 4 Setup
 
-- [ ] 🔴 Install Lean 4 + Mathlib
+- [x] 🔴 Install Lean 4 + Mathlib
   - `curl https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -sSf | sh`
   - `lake +leanprover/lean4:stable new composable-future`
   - Add Mathlib dependency to `lakefile.lean`
 
-- [ ] 🔴 Verify build passes on empty project
+- [x] 🔴 Verify build passes on empty project
   - `lake build` completes without errors
 
 ### P1.2 — Core Types
 
-- [ ] 🔴 Define `ParadigmaticState` in Lean
+- [x] 🔴 Define `ParadigmaticState` in Lean
   - `structure ParadigmaticState where`
   - `  assumptions : Type`
   - `  constraints : Type`
   - `  infrastructure : Type`
 
-- [ ] 🔴 Define `AffordanceSet` in Lean
+- [x] 🔴 Define `AffordanceSet` in Lean
   - `def AffordanceSet (S : ParadigmaticState) : Type`
   - Typed over realized state — captures dependency
 
-- [ ] 🔴 Define `Trajectory` in Lean
+- [x] 🔴 Define `Trajectory` in Lean
   - `structure Trajectory where`
   - `  source : ParadigmaticState`
   - `  target : ParadigmaticState`
 
-- [ ] 🔴 Define `ComposableFuture` 4-tuple in Lean
+- [x] 🔴 Define `ComposableFuture` 4-tuple in Lean
   - `structure ComposableFuture where`
   - `  S₀ : ParadigmaticState`
   - `  τ  : Trajectory`
@@ -169,48 +170,51 @@ Every `sorry` is an explicit open problem. No vague mathematics allowed.
 
 ### P1.3 — Operators
 
-- [ ] 🔴 Define sequential bind `>>=`
+- [x] 🔴 Define sequential bind `>>=`
   - `def seqBind (F G : ComposableFuture) : ComposableFuture`
   - Requires: `F.S₁ = G.S₀`
   - Returns: future from `F.S₀` to `G.S₁`
 
-- [ ] 🔴 Define parallel tensor `⊗`
+- [x] 🔴 Define parallel tensor `⊗`
   - `def parTensor (F G : ComposableFuture) : ComposableFuture`
   - Both proceed; affordance sets combined
   - Type: product of affordances
 
-- [ ] 🔴 Define fork `|`
+- [x] 🔴 Define fork `|`
   - `def fork (F G : ComposableFuture) : ComposableFuture`
   - Branch point — one path realized
   - Type: sum/coproduct of affordances
 
-- [ ] 🔴 Define merge `⊕`
+- [x] 🔴 Define merge `⊕`
   - `def merge (F G : ComposableFuture) : ComposableFuture`
   - Two independent futures reconverge
   - Requires: compatible target states
 
-- [ ] 🔴 Define identity future `Id`
+- [x] 🔴 Define identity future `Id`
   - `def idFuture (S : ParadigmaticState) : ComposableFuture`
   - Null transition — changes nothing
 
 ### P1.4 — Laws (Typed, Proofs as sorry)
 
-- [ ] 🔴 State left identity law
+- [x] 🔴 State left identity law
   - `theorem left_identity (F : ComposableFuture) : seqBind idFuture F = F := by sorry`
 
-- [ ] 🔴 State right identity law
+- [x] 🔴 State right identity law
   - `theorem right_identity (F : ComposableFuture) : seqBind F idFuture = F := by sorry`
 
-- [ ] 🔴 State closure law
-  - `theorem closure (F G : ComposableFuture) : ∃ H : ComposableFuture, seqBind F G = H := by sorry`
+- [x] 🔴 State closure law
+  - `theorem closure (F G : ComposableFuture) : ∃ H, seqBind F G = H := by sorry`
 
-- [ ] 🔴 State associativity conjecture (as sorry — central open problem)
-  - `theorem assoc_stateless (F G H : ComposableFuture)`
-  - `  (hτ_F : F.τ.isStateless) (hτ_G : G.τ.isStateless) (hτ_H : H.τ.isStateless) :`
-  - `  seqBind (seqBind F G) H = seqBind F (seqBind G H) := by sorry`
+- [x] 🔴 State well-formedness preservation law
+  - `theorem seqBind_well_formed : seqBind preserves well_formed futures := by sorry`
 
-- [ ] 🔴 State non-commutativity of ⊗
+- [ ] 🔴 State associativity law [Open Problem 1]
+  - `theorem assoc (F G H : ComposableFuture) : seqBind (seqBind F G) H = seqBind F (seqBind G H) := by sorry`
+  - Requires: stateless trajectories (Phase 2)
+
+- [ ] 🔴 State non-commutativity law
   - `theorem parTensor_not_comm : ∃ F G, parTensor F G ≠ parTensor G F := by sorry`
+  - Requires: affordance set structure (Phase 4)
 
 ### P1.5 — Gate Check
 

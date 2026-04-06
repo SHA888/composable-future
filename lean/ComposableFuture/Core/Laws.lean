@@ -25,6 +25,11 @@ theorem right_identity (F : ComposableFuture) :
 theorem closure (F G : ComposableFuture) (h : F.S₁ = G.S₀) : 
   ∃ H : ComposableFuture, seqBind F G h = H := by sorry
 
+/-- Well-formedness preservation: seqBind preserves well-formed futures -/
+theorem seqBind_well_formed (F G : ComposableFuture) (h : F.S₁ = G.S₀) 
+  (hF : F.well_formed) (hG : G.well_formed) :
+  (seqBind F G h).well_formed := by sorry
+
 /- TODO Phase 2: stateless associativity theorem once isStateless is defined -/
 -- theorem assoc_stateless (F G H : ComposableFuture)
 --   (hτ_F : F.τ.isStateless) (hτ_G : G.τ.isStateless) (hτ_H : H.τ.isStateless) : 

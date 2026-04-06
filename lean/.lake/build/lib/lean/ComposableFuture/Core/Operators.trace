@@ -1,16 +1,28 @@
 {"synthetic": false,
  "schemaVersion": "2025-09-10",
  "outputs":
- {"o": ["24bb71658ed99b52.olean"],
+ {"o": ["c4cb6489ebb77005.olean"],
   "m": false,
-  "i": "e69d9b45f370abb8.ilean",
-  "c": "324b052e380b0c62.c"},
+  "i": "460c778832b41d53.ilean",
+  "c": "24a7a6c89299ddda.c"},
  "log":
  [{"message":
    ".> LEAN_PATH=/home/kd/composable-future/lean/.lake/packages/Cli/.lake/build/lib/lean:/home/kd/composable-future/lean/.lake/packages/batteries/.lake/build/lib/lean:/home/kd/composable-future/lean/.lake/packages/Qq/.lake/build/lib/lean:/home/kd/composable-future/lean/.lake/packages/aesop/.lake/build/lib/lean:/home/kd/composable-future/lean/.lake/packages/proofwidgets/.lake/build/lib/lean:/home/kd/composable-future/lean/.lake/packages/importGraph/.lake/build/lib/lean:/home/kd/composable-future/lean/.lake/packages/LeanSearchClient/.lake/build/lib/lean:/home/kd/composable-future/lean/.lake/packages/plausible/.lake/build/lib/lean:/home/kd/composable-future/lean/.lake/packages/mathlib/.lake/build/lib/lean:/home/kd/composable-future/lean/.lake/build/lib/lean /home/kd/.elan/toolchains/leanprover--lean4---v4.30.0-rc1/bin/lean /home/kd/composable-future/lean/ComposableFuture/Core/Operators.lean -o /home/kd/composable-future/lean/.lake/build/lib/lean/ComposableFuture/Core/Operators.olean -i /home/kd/composable-future/lean/.lake/build/lib/lean/ComposableFuture/Core/Operators.ilean -c /home/kd/composable-future/lean/.lake/build/ir/ComposableFuture/Core/Operators.c --setup /home/kd/composable-future/lean/.lake/build/ir/ComposableFuture/Core/Operators.setup.json --json",
    "level": "trace"},
   {"message":
-   "ComposableFuture/Core/Operators.lean:17:4: declaration uses `sorry`",
+   "ComposableFuture/Core/Operators.lean:10:38: unused variable `h`\n\nNote: This linter can be disabled with `set_option linter.unusedVariables false`",
+   "level": "warning"},
+  {"message":
+   "ComposableFuture/Core/Operators.lean:19:4: declaration uses `sorry`",
+   "level": "warning"},
+  {"message":
+   "ComposableFuture/Core/Operators.lean:26:4: declaration uses `sorry`",
+   "level": "warning"},
+  {"message":
+   "ComposableFuture/Core/Operators.lean:33:4: declaration uses `sorry`",
+   "level": "warning"},
+  {"message":
+   "ComposableFuture/Core/Operators.lean:40:4: declaration uses `sorry`",
    "level": "warning"}],
  "inputs":
  [["ComposableFuture.Core.Operators:deps",
@@ -19,8 +31,8 @@
        [["@«composable-future»:extraDep", "00000000000006bb"]]],
       ["imports",
        [["ComposableFuture.Core.Future transitive imports (legacy)",
-         "1c1832d789a2e0cc"],
-        ["ComposableFuture.Core.Future:importAllArts", "1ff3707645db2d07"]]]]],
+         "00000000000006bb"],
+        ["ComposableFuture.Core.Future:importAllArts", "496f647304b2113d"]]]]],
     ["libs",
      [["import dynlibs", "00000000000006bb"],
       ["package external libraries", "00000000000006bb"],
@@ -29,10 +41,10 @@
   ["Lean 4.30.0, commit 714601baf118066cbf3f282361339c6d06665b2a",
    "a22979b798cee25b"],
   ["/home/kd/composable-future/lean/ComposableFuture/Core/Operators.lean",
-   "9c4b1db50a44e6b2"],
+   "45c70f802b176032"],
   ["options", "00000000000006bb"],
   ["isModule: false", "feefd2a0d3a1847e"],
   ["Module.name: ComposableFuture.Core.Operators", "c282b4874f3ac94b"],
   ["Package.id?: (some composable-future)", "52e46c78208cf350"],
   ["Module.leanArgs: #[]", "00000000000006bb"]],
- "depHash": "0b8325edc296ca06"}
+ "depHash": "1f77fef0f70319b1"}

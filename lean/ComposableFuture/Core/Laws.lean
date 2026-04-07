@@ -33,8 +33,8 @@ theorem seqBind_well_formed (F G : ComposableFuture) (h : F.S₁ = G.S₀)
 /-- Associativity of sequential bind [Open Problem 1]
     Proof requires stateless trajectories — deferred to Phase 2. -/
 theorem assoc (F G H : ComposableFuture) (hFG : F.S₁ = G.S₀) (hGH : G.S₁ = H.S₀) :
-    seqBind (seqBind F G hFG) H (by simp [seqBind, hGH]) =
-    seqBind F (seqBind G H hGH) (by simp [seqBind, hFG]) := by
+    seqBind (seqBind F G hFG) H (by exact hGH) =
+    seqBind F (seqBind G H hGH) (by exact hFG) := by
   sorry -- Open Problem 1: Associativity proof (Phase 2 — requires stateless trajectory assumption)
 
 /-- Non-commutativity of parallel tensor [Open Problem 3]

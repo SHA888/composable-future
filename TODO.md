@@ -223,11 +223,11 @@ Every `sorry` is an explicit open problem. No vague mathematics allowed.
 - [x] 🔴 State well-formedness preservation law
   - `theorem seqBind_well_formed : seqBind preserves well_formed futures := by sorry`
 
-- [ ] 🔴 State associativity law [Open Problem 1]
+- [x] 🔴 State associativity law [Open Problem 1]
   - `theorem assoc (F G H : ComposableFuture) : seqBind (seqBind F G) H = seqBind F (seqBind G H) := by sorry`
   - Proof deferred — Open Problem 1 (see Phase 2)
 
-- [ ] 🔴 State non-commutativity law
+- [x] 🔴 State non-commutativity law
   - `theorem parTensor_not_comm : ∃ F G, parTensor F G ≠ parTensor G F := by sorry`
   - Proof deferred — Open Problem 3 (see Phase 4)
 

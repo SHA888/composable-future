@@ -33,8 +33,12 @@ theorem prob_assoc {S₀ S₁ S₂ S₃ : ParadigmaticState}
   (τ₃ : ProbabilisticTrajectory S₂ S₃) :
   kleisliBind (kleisliBind τ₁ τ₂) τ₃ = kleisliBind τ₁ (kleisliBind τ₂ τ₃) := by sorry -- Open Problem 15: Probabilistic associativity proof
 
-/-- Probabilistic identity - Phase 3 target -/
-theorem prob_id {S₀ S₁ : ParadigmaticState} (τ : ProbabilisticTrajectory S₀ S₁) :
-  kleisliBind τ τ = τ := by sorry -- Open Problem 16: Probabilistic identity proof
+/-- Probabilistic left identity - Phase 3 target -/
+theorem prob_id_left {S₀ S₁ : ParadigmaticState} (τ : ProbabilisticTrajectory S₀ S₁) :
+  kleisliBind (sorry) τ = τ := by sorry -- Open Problem 16: Left identity — id kernel ∘ τ = τ (Phase 3)
+
+/-- Probabilistic right identity - Phase 3 target -/
+theorem prob_id_right {S₀ S₁ : ParadigmaticState} (τ : ProbabilisticTrajectory S₀ S₁) :
+  kleisliBind τ (sorry) = τ := by sorry -- Open Problem 16: Right identity — τ ∘ id kernel = τ (Phase 3)
 
 end ComposableFuture

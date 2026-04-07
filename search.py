@@ -17,8 +17,8 @@ Usage for new versions:
     uv run search.py --version audit-v2 [domain_id|all]
     uv run search.py --version audit-updates 3
 
-Legacy usage (deprecated):
-    uv run search.py [domain_id|all]
+Legacy usage (requires confirmation prompt):
+    uv run search.py [domain_id|all]  # warns and prompts before overwriting
 
 Example:
     uv run search.py --version audit-v2 all
@@ -352,8 +352,10 @@ def write_domain_file(domain_id: int, papers: list[dict], version: Optional[str]
     arxiv_q_list = "\n".join(f"- `{q}`" for q in domain["arxiv_queries"])
     s2_q_list = "\n".join(f"- `{q}`" for q in domain["semantic_scholar_queries"])
 
-    version_header = f"\n> Version: {version}\n" if version else ""
-    
+    heading = f"# Domain {domain_id} \u2014 {domain['name']}"
+    if version:
+        heading += f"\n\n> Version: {version}"
+
     content = DOMAIN_TEMPLATE.format(
         id=domain_id,
         name=domain["name"],
@@ -364,10 +366,9 @@ def write_domain_file(domain_id: int, papers: list[dict], version: Optional[str]
         count=len(papers),
         papers=format_papers(papers),
     )
-    
-    # Add version header if this is a versioned run
+
     if version:
-        content = content.replace("# Domain {id} — {name}", f"# Domain {id} — {name}{version_header}")
+        content = content.replace(f"# Domain {domain_id} \u2014 {domain['name']}", heading, 1)
     
     path.write_text(content, encoding="utf-8")
     console.print(f"  [green]Written:[/green] {path} ({len(papers)} papers)")

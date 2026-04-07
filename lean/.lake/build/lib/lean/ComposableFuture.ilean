@@ -1,1 +1,0 @@
-{"decls":{},"directImports":[["ComposableFuture.Core.Future",false,false,false],["ComposableFuture.Core.Operators",false,false,false],["ComposableFuture.Core.Laws",false,false,false],["ComposableFuture.Core.Probabilistic",false,false,false]],"module":"ComposableFuture","references":{},"version":5}

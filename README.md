@@ -234,7 +234,16 @@ composable-future/
 - See `CONTRIBUTING.md` for detailed guidelines on preserving completed work
 
 ### Lean Formalization
-- Install Lean 4: `curl https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -sSf | sh`
+
+Install elan (Lean toolchain manager):
+
+| Platform | Command |
+|----------|---------|
+| Linux / macOS | `curl -sSf https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \| sh` |
+| Windows | Download installer from https://github.com/leanprover/elan/releases |
+
+After install, restart your terminal (or `source ~/.bashrc` on Linux) so `lake` is in PATH.
+
 - Build project: `cd lean && lake build`
 - Fill `sorry` proofs in `Core/Laws.lean`
 - Add proof attempts to `proofs/notes.md`

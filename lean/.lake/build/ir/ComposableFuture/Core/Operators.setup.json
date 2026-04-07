@@ -1,9 +1,0 @@
-{"plugins": [],
- "package": "composable-future",
- "options": {},
- "name": "ComposableFuture.Core.Operators",
- "isModule": false,
- "importArts":
- {"ComposableFuture.Core.Future":
-  ["/home/kd/composable-future/lean/.lake/build/lib/lean/ComposableFuture/Core/Future.olean"]},
- "dynlibs": []}

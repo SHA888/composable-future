@@ -48,14 +48,23 @@ Always preserve the completed Phase 0 synthesis as the foundation.
 
 ### Lean 4 Setup
 
+**Linux / macOS**
 ```bash
-# Install Lean 4 and elan
-curl https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -sSf | sh
+curl -sSf https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh | sh
+source ~/.bashrc   # or restart terminal — adds ~/.elan/bin to PATH
+```
 
-# Navigate to lean directory and build
+**Windows**
+Download and run the installer from https://github.com/leanprover/elan/releases  
+(adds `lake` to PATH automatically via the installer)
+
+**All platforms — build the project**
+```bash
 cd lean
 lake build
 ```
+
+> **Note:** elan manages Lean toolchain versions. The correct Lean version is pinned in `lean/lean-toolchain` and will be downloaded automatically on first `lake build`.
 
 ### Proof Development Guidelines
 

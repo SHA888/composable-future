@@ -30,13 +30,17 @@ theorem seqBind_well_formed (F G : ComposableFuture) (h : F.S₁ = G.S₀)
   (hF : F.well_formed) (hG : G.well_formed) :
   (seqBind F G h).well_formed := by sorry -- Open Problem 12: Well-formedness preservation proof
 
-/- TODO Phase 2: stateless associativity theorem once isStateless is defined -/
--- theorem assoc_stateless (F G H : ComposableFuture)
---   (hτ_F : F.τ.isStateless) (hτ_G : G.τ.isStateless) (hτ_H : H.τ.isStateless) : 
---   seqBind (seqBind F G (by sorry)) H (by sorry) = seqBind F (seqBind G H (by sorry)) (by sorry) := by sorry
+/-- Associativity of sequential bind [Open Problem 1]
+    Proof requires stateless trajectories — deferred to Phase 2. -/
+theorem assoc (F G H : ComposableFuture) (hFG : F.S₁ = G.S₀) (hGH : G.S₁ = H.S₀) :
+    seqBind (seqBind F G hFG) H (by simp [seqBind, hGH]) =
+    seqBind F (seqBind G H hGH) (by simp [seqBind, hFG]) := by
+  sorry -- Open Problem 1: Associativity proof (Phase 2 — requires stateless trajectory assumption)
 
-/- TODO Phase 4: non-commutativity of parallel tensor once parTensor is defined -/
--- theorem parTensor_not_comm : 
---   ∃ F G : ComposableFuture, parTensor F G ≠ parTensor G F := by sorry
+/-- Non-commutativity of parallel tensor [Open Problem 3]
+    Proof requires affordance set structure — deferred to Phase 4. -/
+theorem parTensor_not_comm :
+    ∃ F G : ComposableFuture, parTensor F G ≠ parTensor G F := by
+  sorry -- Open Problem 3: Non-commutativity proof (Phase 4 — requires affordance product structure)
 
 end ComposableFuture

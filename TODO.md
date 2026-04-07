@@ -225,11 +225,11 @@ Every `sorry` is an explicit open problem. No vague mathematics allowed.
 
 - [ ] 🔴 State associativity law [Open Problem 1]
   - `theorem assoc (F G H : ComposableFuture) : seqBind (seqBind F G) H = seqBind F (seqBind G H) := by sorry`
-  - Requires: stateless trajectories (Phase 2)
+  - Proof deferred — Open Problem 1 (see Phase 2)
 
 - [ ] 🔴 State non-commutativity law
   - `theorem parTensor_not_comm : ∃ F G, parTensor F G ≠ parTensor G F := by sorry`
-  - Requires: affordance set structure (Phase 4)
+  - Proof deferred — Open Problem 3 (see Phase 4)
 
 ### P1.5 — Gate Check
 

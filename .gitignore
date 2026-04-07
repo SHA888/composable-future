@@ -36,9 +36,18 @@ venv/
 
 # uv
 .uv/
+.uv-cache/
+uv.lock
+
+# Python package build
+dist/
+build/
+*.egg-info/
+*.whl
 
 # Lean 4
 .lake/
+**/.lake/
 *.olean
 *.ilean
 *.c

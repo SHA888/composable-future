@@ -25,10 +25,11 @@ def StatelessFuture.mk (F : ComposableFuture) (h : F.isStateless) : StatelessFut
 theorem seqBind_preserves_stateless
   (F G : ComposableFuture)
   (h : F.S₁ = G.S₀)
-  (hF : F.isStateless)
-  (hG : G.isStateless) :
+  (_hF : F.isStateless)
+  (_hG : G.isStateless) :
   (seqBind F G h).isStateless := by
   -- Trivial proof since isStateless is currently True for all trajectories
+  -- TODO Phase 2.2: Replace with actual proof after trajectory refactor
   simp [ComposableFuture.isStateless, Trajectory.isStateless]
 
 /-- Sequential bind as an operation on stateless futures. -/
@@ -77,9 +78,17 @@ When restricted to stateless futures, Composable Future forms a category:
 straightforward once the indexed trajectory refactor is complete.
 -/
 
-/-- Placeholder for the main Phase 2 theorem.
-    This will be implemented after the trajectory refactor. -/
-theorem assoc_stateless_placeholder :
-  True := trivial
+/- Main Phase 2 theorem: Associativity for stateless futures.
+   To be proved after trajectory refactor to indexed type.
+   
+theorem assoc_stateless
+  (F G H : StatelessFuture)
+  (h₁ : F.val.S₁ = G.val.S₀)
+  (h₂ : G.val.S₁ = H.val.S₀)
+  (h₃ : F.val.S₁ = (StatelessFuture.seqBind G H h₂).val.S₀) :
+  (StatelessFuture.seqBind (StatelessFuture.seqBind F G h₁) H h₂).val =
+  (StatelessFuture.seqBind F (StatelessFuture.seqBind G H h₂) h₃).val := by
+  sorry
+-/
 
 end ComposableFuture

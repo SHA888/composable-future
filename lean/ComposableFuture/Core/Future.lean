@@ -36,8 +36,13 @@ def ComposableFuture.well_formed (F : ComposableFuture) : Prop :=
   F.τ.source = F.S₀ ∧ F.τ.target = F.S₁
 
 /-- A trajectory is stateless if it does not depend on history.
-    Phase 2: Formal definition requires trajectory refactor to indexed type.
-    For now, this is a placeholder predicate. -/
+    Phase 2.1: Placeholder - all trajectories currently considered stateless.
+    Phase 2.2: Replace with actual definition after trajectory refactor to indexed type.
+    
+    Formal definition will be:
+    ∀ {S₀ S₁ S₂} (h₁ h₂ : List ParadigmaticState),
+      h₁.getLast? = some S₀ → h₂.getLast? = some S₀ →
+      τ.apply h₁ = τ.apply h₂ -/
 def Trajectory.isStateless (_τ : Trajectory) : Prop := True
 
 /-- A composable future is stateless if its trajectory is stateless. -/

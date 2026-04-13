@@ -27,12 +27,12 @@
 |------|--------------------------------|----------------|------------------------------|
 | 0    | Audit + repo foundation         | ✅ complete     | Syntheses filled              |
 | 1    | Lean 4 scaffold                 | ✅ complete     | lake build passes            |
-| 2    | Stateless associativity proof   | ⬜ not started   | assoc_stateless proved/disproved |
+| 2    | Stateless associativity proof   | 🟡 in progress  | assoc_stateless proved/disproved |
 
 ## IMMEDIATE NEXT ACTIONS
 
-1.  Begin Phase 2: Define `isStateless` predicate (P2.1)
-2.  Write `proofs/stateless-case.md` informal proof sketch (P2.2)
+1.  Complete Phase 2: Write `proofs/stateless-case.md` informal proof sketch (P2.2)
+2.  Attempt Lean proof of `assoc_stateless` theorem
 3.  Find math.CT arXiv endorser before 2026-04-19
 
 ---
@@ -241,7 +241,7 @@ Every `sorry` is an explicit open problem. No vague mathematics allowed.
 
 ## PHASE 2 — Stateless Associativity Proof
 > Gate: associativity proved or disproved for stateless case (τ path-independent)
-> Status: not started
+> Status: 🟡 in progress
 > Estimated effort: 2–4 months solo
 
 **What this phase produces:**
@@ -250,15 +250,15 @@ showing associativity breaks. Both outcomes resolve Open Problem 1.
 
 ### P2.1 — Formal Setup
 
-- [ ] 🔴 Define `isStateless` predicate for trajectories
+- [x] 🔴 Define `isStateless` predicate for trajectories
   - `τ` is stateless if it does not depend on the history of prior transitions
   - Precise definition required before any proof attempt
 
-- [ ] 🔴 Restrict `ComposableFuture` to stateless case
+- [x] 🔴 Restrict `ComposableFuture` to stateless case
   - Define `StatelessFuture` as subtype of `ComposableFuture`
   - Prove all operators close over `StatelessFuture`
 
-- [ ] 🔴 Map stateless case to existing CT literature
+- [x] 🔴 Map stateless case to existing CT literature
   - If stateless: F is a category (objects = states, morphisms = futures)
   - Identify which category axioms are already proved by P1 laws
 

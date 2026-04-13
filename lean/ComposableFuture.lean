@@ -1,6 +1,7 @@
 import ComposableFuture.Core.Future
 import ComposableFuture.Core.Operators
 import ComposableFuture.Core.Laws
+import ComposableFuture.Core.Stateless
 import ComposableFuture.Core.Probabilistic
 
 /-!
@@ -16,6 +17,7 @@ The main components are:
 - Core.Future: Basic type definitions
 - Core.Operators: Sequential, parallel, and branching operators
 - Core.Laws: Identity, closure, and associativity laws
+- Core.Stateless: Stateless case formalization and category theory mapping
 - Core.Probabilistic: Kleisli extension for probabilistic trajectories
 -/
 

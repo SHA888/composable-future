@@ -2,6 +2,8 @@ import ComposableFuture.Core.Future
 import ComposableFuture.Core.Operators
 import ComposableFuture.Core.Laws
 import ComposableFuture.Core.Stateless
+import ComposableFuture.Core.Indexed
+import ComposableFuture.Core.WeakAssoc
 import ComposableFuture.Core.Probabilistic
 
 /-!
@@ -18,6 +20,8 @@ The main components are:
 - Core.Operators: Sequential, parallel, and branching operators
 - Core.Laws: Identity, closure, and associativity laws
 - Core.Stateless: Stateless case formalization and category theory mapping
+- Core.Indexed: Indexed/graded monad construction for general case (Orchard et al. 2020)
+- Core.WeakAssoc: Weak associativity theorems for path-dependent case
 - Core.Probabilistic: Kleisli extension for probabilistic trajectories
 -/
 

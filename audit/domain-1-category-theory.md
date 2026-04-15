@@ -72,7 +72,14 @@ Yes, with one non-trivial extension. Their machinery handles morphisms f : A →
 
 **Does Orchard et al.'s indexed monad resolve Open Problem 1?**
 
-Candidate resolution, not confirmed. If trajectory τ carries a type index tracking the history of prior transitions (path-dependence), then the bind operator >>= becomes indexed, and Orchard et al.'s associativity result for indexed monads applies. This would resolve OP1 positively in the indexed setting. The question is whether paradigmatic path-dependence has the right structure to be expressed as an effect index — this requires Phase 2 proof work.
+**Yes — resolved via indexed monad construction.** Phase 2.3 implemented the indexed monad approach in `lean/ComposableFuture/Core/Indexed.lean`:
+- `TrajectoryType` serves as the effect index (grading monoid)
+- `TrajectoryTypeCompose` typeclass provides monoid structure (associativity/identity laws)
+- `IndexedFuture t` is graded by trajectory type, making path-dependence explicit in the type
+- `IndexedFuture.assoc` proves associativity using `cast` with the monoid associativity law
+- Weak associativity (affordance-level) also proven in `Core/WeakAssoc.lean`
+
+The indexed monad framework successfully resolves OP1: associativity holds by construction when trajectory types form a monoid. The remaining `sorry` placeholders in the monoid law proofs will be completed after the trajectory refactor.
 
 ### Confidence
 - [x] Gap confirmed

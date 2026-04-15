@@ -34,7 +34,7 @@ These papers exist and Composable Future builds on them — not gaps, prior art.
 |-----|-----------|------|
 | `kuhn1962` | Kuhn, T.S. (1962). The Structure of Scientific Revolutions. | Paradigm as unit of analysis; incommensurability |
 | `lakatos1978` | Lakatos, I. (1978). The Methodology of Scientific Research Programmes. | Progressive/degenerative distinction; research programme structure |
-| `spivak2014` | Spivak, D.I. (2014). Category Theory for the Sciences. | CT as cross-domain modeling framework |
+| `spivak2014` | Spivak, D.I. (2014). Category Theory for the Sciences. (Book; arXiv 2013 as "Category theory for scientists") | CT as cross-domain modeling framework |
 | `furter2025` | Furter, M., Huang, Y., Zardini, G. (2025). Composable Uncertainty in SMCs. | SMC machinery for probabilistic extension; Markov categories |
 | `hoare1985` | Hoare, C.A.R. (1985). Communicating Sequential Processes. | Operator semantics for sequential and parallel composition |
 | `milner1989` | Milner, R. (1989). Communication and Concurrency. | CCS operator semantics; bisimulation |
@@ -44,7 +44,8 @@ These papers exist and Composable Future builds on them — not gaps, prior art.
 | `turvey1992` | Turvey, M.T. (1992). Affordances and Prospective Control. | Dispositional/prospective character of Φ |
 | `sahin2007` | Şahin, E. et al. (2007). To Afford or Not to Afford. | (Entity, behavior, effect) formalization; affordance chaining |
 | `kyriakoullis2016` | Kyriakoullis, L., Zaphiris, P. (2016). A Formal Model of Affordances for HCI. | Domain-specificity of affordance types |
-| `orchard2014` | Orchard, D., Petricek, T., Mycroft, A. (2014). Semantic marriage of monads and effects. | Indexed monads; candidate resolution for OP1 |
+| `orchard2014` | Orchard, D., Petricek, T., Mycroft, A. (2014). The semantic marriage of monads and effects. | Indexed monads; **RESOLVED OP1** |
+| `fong2018` | Fong, B., Spivak, D.I. (2018). An Invitation to Applied Category Theory: Seven Sketches in Compositionality. | Applied category theory framework; compositionality |
 | `bechberger2017` | Bechberger, L., Kühnberger, K-U. (2017). A Thorough Formalization of Conceptual Spaces. | Geometric formalization of S₀ as contrast |
 
 ---

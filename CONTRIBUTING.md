@@ -97,8 +97,11 @@ lake build
 #### File Organization
 - `Core/Future.lean`: Basic type definitions
 - `Core/Operators.lean`: Operator definitions with minimal sorry
-- `Core/Laws.lean`: Theorems with sorry placeholders
-- `Core/Probabilistic.lean`: Probabilistic extension
+- `Core/Laws.lean`: Identity, closure axioms
+- `Core/Stateless.lean`: Stateless case formalization and associativity proof (Phase 2.2)
+- `Core/Indexed.lean`: Indexed/graded monad construction for general case (Phase 2.3)
+- `Core/WeakAssoc.lean`: Weak associativity theorems for path-dependent case (Phase 2.3)
+- `Core/Probabilistic.lean`: Kleisli extension for probabilistic trajectories (Phase 3)
 
 ### Proof Attempts
 

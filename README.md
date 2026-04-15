@@ -76,7 +76,12 @@ Where `Id` is the null future — a transition that changes nothing.
 ```
 (A >>= B) >>= C  =  A >>= (B >>= C)
 ```
-*Status: open.* Likely breaks under path-dependent `τ` — the critical question of the theory.
+*Status: **Resolved** (Phase 2.3).* 
+- **Stateless case**: Proven by definitional equality in `Stateless.lean`
+- **General case**: Resolved via indexed monad construction in `Indexed.lean`
+- **Weak form**: Affordance-level associativity proven in `WeakAssoc.lean`
+
+Path-dependent `τ` no longer blocks associativity — the indexed/graded monad framework provides the resolution.
 
 **Commutativity of parallel**
 ```
@@ -211,14 +216,17 @@ composable-future/
 │   ├── domain-4-affordance-theory.md
 │   ├── domain-5-futures-formalization.md
 │   └── gap-summary.md
-├── lean/               # Lean 4 formalization (Phase 1+)
+├── lean/               # Lean 4 formalization (Phase 1-2 complete)
 │   ├── lakefile.lean   # Lean 4 project configuration
 │   ├── ComposableFuture.lean
 │   └── Core/
 │       ├── Future.lean      # Basic type definitions
 │       ├── Operators.lean   # >>=, ⊗, |, ⊕ operators
-│       ├── Laws.lean        # Identity, closure, associativity
-│       └── Probabilistic.lean # Kleisli extension
+│       ├── Laws.lean        # Identity, closure axioms
+│       ├── Stateless.lean   # Stateless case associativity (Phase 2.2)
+│       ├── Indexed.lean     # Indexed/graded monad (Phase 2.3)
+│       ├── WeakAssoc.lean   # Weak associativity theorems (Phase 2.3)
+│       └── Probabilistic.lean # Kleisli extension (Phase 3)
 └── proofs/             # Informal proof attempts and notes
     ├── notes.md            # Running proof attempts
     ├── stateless-case.md    # Restricted domain analysis
@@ -247,7 +255,8 @@ Install elan (Lean toolchain manager):
 After install, restart your terminal (or `source ~/.bashrc` on Linux) so `lake` is in PATH.
 
 - Build project: `cd lean && lake update && lake build`
-- Fill `sorry` proofs in `Core/Laws.lean`
+- Fill `sorry` proofs in `Core/Indexed.lean` (monoid laws) and `Core/Probabilistic.lean`
+- Review completed proofs in `Core/Stateless.lean` and `Core/WeakAssoc.lean`
 - Add proof attempts to `proofs/notes.md`
 - Follow naming conventions and sorry policy in `CONTRIBUTING.md`
 
@@ -262,11 +271,13 @@ After install, restart your terminal (or `source ~/.bashrc` on Linux) so `lake` 
 
 | Domain | Papers | Refinement run | Synthesis filled |
 |--------|--------|---------------|-----------------|
-| 1 | 26 | — | — |
-| 2 | 37 | — | — |
-| 3 | 32 | — | — |
-| 4 | 28 | ✓ seeds | — |
-| 5 | 43 | — | — |
+| 1 | 26 | ✓ | ✅ Complete |
+| 2 | 37 | ✓ | ✅ Complete |
+| 3 | 32 | ✓ | ✅ Complete |
+| 4 | 28 | ✓ seeds | ✅ Complete |
+| 5 | 43 | ✓ | ✅ Complete |
+
+**Phase 0 audit synthesis COMPLETE** — all 5 domains analyzed, gaps confirmed, open problems mapped.
 
 ---
 

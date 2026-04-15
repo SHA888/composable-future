@@ -18,6 +18,8 @@
 [x]  Lean 4 scaffold — COMPLETE (lake build passes, all sorry documented)
 [x]  Lean 4 + Mathlib installation — COMPLETE
 [x]  Phase 1 gate check — COMPLETE (build passes, sorry documented, notes updated)
+[x]  Phase 2 gate check — COMPLETE (assoc proved, paper drafted)
+[x]  Level 1 positioning paper — COMPLETE (8 pages, 16 priors, PDF compiled)
 [ ]  arXiv submission — pending endorsement
 ```
 
@@ -27,7 +29,7 @@
 |------|--------------------------------|----------------|------------------------------|
 | 0    | Audit + repo foundation         | ✅ complete     | Syntheses filled              |
 | 1    | Lean 4 scaffold                 | ✅ complete     | lake build passes            |
-| 2    | Stateless associativity proof   | 🟡 in progress  | assoc_stateless proved/disproved |
+| 2    | Stateless associativity proof   | ✅ complete     | assoc_stateless proved + paper drafted |
 
 ## IMMEDIATE NEXT ACTIONS
 
@@ -305,7 +307,10 @@ showing associativity breaks. Both outcomes resolve Open Problem 1.
   - `Core/WeakAssoc.lean` provides weak associativity theorems
 - [x] 🔴 `proofs/stateless-case.md` contains full readable proof argument
 - [x] 🔴 Lean file updated: theorems with `sorry` + explanatory comments
-- [ ] 🟡 Level 1 paper drafted (8–12 pages, targets ACT 2027 or similar venue)
+- [x] 🟡 Level 1 paper drafted (8–12 pages, targets ACT 2027 or similar venue)
+  - `paper/composable-future-level1.tex` — 8-page positioning paper
+  - `paper/references.bib` — 16 confirmed priors
+  - `paper/composable-future-level1.pdf` — compiled PDF (236 KB)
 
 ---
 

@@ -9,8 +9,12 @@ type, and trajectory type composition is associative by construction, then
 associativity holds in the indexed setting.
 
 Based on:
+- Orchard, Petricek, Mycroft (2014): "The semantic marriage of monads and effects"
+  (Primary reference for indexed monads — the candidate resolution for OP1)
 - Orchard, Wadler, Eades (2020): "Unifying graded and parameterised monads"
+  (Follow-up work unifying graded and parameterised monad frameworks)
 - Fujii (2019): "A 2-Categorical Study of Graded and Indexed Monads"
+  (Mathematical foundation for Kleisli/Eilenberg-Moore constructions)
 
 ## Graded Monad Definition
 

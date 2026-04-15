@@ -65,7 +65,7 @@ Read in this order. Everything else waits until all 7 are done.
   - Supplementary — establishes that Floyd's use of "paradigm" diverges from Kuhn
   - Confirms gap in D2
 
-- [x] 🔴 Read D1 #25 — Semantic marriage of monads and effects (Orchard et al., 2014)
+- [x] 🔴 Read D1 #25 — The semantic marriage of monads and effects (Orchard et al., 2014)
   - Key for Open Problem 1 — indexed monad as candidate resolution for associativity
   - Fill indexed monad section in synthesis
 

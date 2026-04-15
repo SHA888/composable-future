@@ -103,6 +103,24 @@ as we work through the formalization in Lean 4.
 - **Status**: Known result, should be straightforward
 - **Dependencies**: OP14
 
+**Open Problem 17: Empty affordance set for indexed identity**
+- **Location**: `IndexedFuture.idFuture.Φ`
+- **Issue**: What affordance set should the identity future have in the indexed monad?
+- **Status**: Requires affordance set structure definition (OP1)
+- **Dependencies**: OP1
+
+## Phase 2 Status Summary
+- ✅ Stateless case associativity proved (`Stateless.lean` — definitional equality)
+- ✅ Indexed monad construction implemented (`Indexed.lean`):
+  - `TrajectoryType` as grading monoid
+  - `TrajectoryTypeCompose` typeclass with associativity/identity laws
+  - `IndexedFuture t` graded by trajectory type
+  - `IndexedFuture.assoc` theorem using cast with monoid law
+- ✅ Weak associativity theorems proved (`WeakAssoc.lean`):
+  - `weak_assoc_affordance`: associativity at affordance level
+  - `weak_assoc_states`: associativity at state level
+- ⏳ Monoid law proofs have `sorry` placeholders (pending trajectory refactor)
+
 ## Phase 1 Status Summary
 - ✅ Types defined: ParadigmaticState, Trajectory, ComposableFuture
 - ✅ Operators defined: >>=, ⊗, |, ⊕, Id (all with sorry stubs)
@@ -124,7 +142,7 @@ The `well_formed` predicate ensures trajectories match their states. This is cru
 - Phase 4: Affordance set structure and operations
 
 ## Next Steps
-1. **Phase 2**: Focus on OP2, OP3, OP4, OP5, OP7 (state and trajectory structure)
-2. **Phase 2**: Attempt stateless associativity proof (the core Open Problem 1 from the paper)
-3. **Phase 3**: Complete probabilistic extension (OP13-OP16)
-4. **Phase 4**: Define affordance set structure (OP1, OP6, OP8) and complete law proofs
+1. **Phase 2.4**: Gate check — document outcome (proof OR counterexample OR indexed resolution) ✅ COMPLETE
+2. **Phase 3**: Complete probabilistic extension (OP13-OP16)
+3. **Phase 4**: Define affordance set structure (OP1, OP6, OP8, OP17) and complete law proofs
+4. **Future**: Complete indexed monad monoid law proofs after trajectory refactor

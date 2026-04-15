@@ -21,9 +21,11 @@ theorem left_identity (F : ComposableFuture) :
 theorem right_identity (F : ComposableFuture) : 
   seqBind F (idFuture F.S₁) (by rfl) = F := by sorry -- Open Problem 10: Right identity proof
 
-/-- Closure law: sequential composition produces a valid future -/
+/-- Closure law: sequential composition produces a valid future.
+    This is trivially satisfied by the existence of `seqBind` itself. -/
 theorem closure (F G : ComposableFuture) (h : F.S₁ = G.S₀) : 
-  ∃ H : ComposableFuture, seqBind F G h = H := by sorry -- Open Problem 11: Closure proof
+  ∃ H : ComposableFuture, seqBind F G h = H := by
+  exact ⟨seqBind F G h, rfl⟩
 
 /-- Well-formedness preservation: seqBind preserves well-formed futures -/
 theorem seqBind_well_formed (F G : ComposableFuture) (h : F.S₁ = G.S₀) 

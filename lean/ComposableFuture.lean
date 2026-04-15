@@ -20,9 +20,22 @@ The main components are:
 - Core.Operators: Sequential, parallel, and branching operators
 - Core.Laws: Identity, closure, and associativity laws
 - Core.Stateless: Stateless case formalization and category theory mapping
-- Core.Indexed: Indexed/graded monad construction for general case (Orchard et al. 2020)
+- Core.Indexed: Indexed/graded monad construction for general case (Orchard, Petricek, Mycroft 2014; Orchard, Wadler, Eades 2020)
 - Core.WeakAssoc: Weak associativity theorems for path-dependent case
 - Core.Probabilistic: Kleisli extension for probabilistic trajectories
+
+## Note on Open Problem Numbering
+
+The Lean code uses internal OP numbering (proofs/notes.md):
+- OP1-OP12: Core definitions and laws
+- OP13-OP16: Probabilistic extension
+- OP17: Indexed monad identity affordance
+
+This differs from the paper's §7 OP numbering (gap-summary.md):
+- OP1 = Associativity (resolved via indexed monad)
+- OP2 = Φ well-definedness, OP3 = Equivalence, etc.
+
+The mapping is documented in proofs/notes.md under each open problem.
 -/
 
 namespace ComposableFuture

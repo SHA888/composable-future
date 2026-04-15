@@ -67,11 +67,11 @@ as we work through the formalization in Lean 4.
 - **Status**: Requires Open Problem 8 completion
 - **Dependencies**: OP8
 
-**Open Problem 11: Closure proof**
+**Open Problem 11: Closure proof** ✅ RESOLVED
 - **Location**: `closure` theorem
 - **Issue**: Prove sequential composition produces valid future
-- **Status**: Should follow from well-formedness preservation
-- **Dependencies**: OP12
+- **Status**: ✅ Resolved — trivial existence proof (`⟨seqBind F G h, rfl⟩`)
+- **Note**: The meaningful closure property is well-formedness preservation (OP12)
 
 **Open Problem 12: Well-formedness preservation proof**
 - **Location**: `seqBind_well_formed` theorem

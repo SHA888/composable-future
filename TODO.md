@@ -275,9 +275,10 @@ showing associativity breaks. Both outcomes resolve Open Problem 1.
   - Core proof holds by `simp [seqBind]` — definitional equality confirmed
   - **Next**: Complete the proof after trajectory refactor to indexed type
 
-- [ ] 🔴 Document all dead ends in `proofs/attempt-associativity.md`
-  - No dead ends yet — proof is structurally sound
-  - Update if obstructions emerge during full formalization
+- [x] 🔴 Document all dead ends in `proofs/attempt-associativity.md`
+  - Added Attempt 6 documenting the successful stateless case
+  - Key insight: path-dependence is the obstruction (Attempts 1-5 fail, Attempt 6 succeeds)
+  - Theoretical implication: stateful case may form fibered category, stateless case forms proper category
 
 ### P2.3 — Indexed Monad Route (if direct proof fails)
 

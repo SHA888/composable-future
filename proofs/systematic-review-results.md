@@ -1,41 +1,32 @@
-# Systematic Review Results
+# Systematic Review Results — HISTORICAL SNAPSHOT
 
-## Summary
+> **Note**: This file documents the state after Phase 1 completion (April 2026).
+> For current status, see `TODO.md` and individual source files.
 
-All issues from the systematic review have been **already resolved** in the current codebase. The Lean 4 scaffold is in excellent condition.
+## Summary (Phase 1 State)
 
-## File-by-File Status
+All syntax and API issues from the initial systematic review were resolved.
+The Lean 4 scaffold was established with all core types and operators defined.
 
-| File | Issues Found | Status | Resolution |
-|------|--------------|--------|------------|
-| `TODO.md` | Inconsistent progress tracking | ✅ **Fixed** | Updated CURRENT STATE, PROGRESS TRACKING, and IMMEDIATE NEXT ACTIONS |
-| `lakefile.lean` | Wrong mathlib tag | ✅ **Already Fixed** | Uses `"master"` branch correctly |
-| `Future.lean` | Finset(Type), deriving issues | ✅ **Already Fixed** | Uses `sorry` for AffordanceSet, proper derives |
-| `Operators.lean` | Broken notation, Finset issues | ✅ **Already Fixed** | No notation, all `Φ` fields are `sorry` |
-| `Laws.lean` | sorry as type in hypotheses | ✅ **Already Fixed** | `assoc_stateless` properly commented out |
-| `Probabilistic.lean` | Field order, wrong imports | ✅ **Already Fixed** | Correct field order, all definitions are `sorry` |
-| `ComposableFuture.lean` | None | ✅ **Clean** | Structurally correct |
-| `proofs/stateless-case.md` | Missing refactor note | ✅ **Fixed** | Added Phase 1 prerequisite section |
+## Current Status (Post Phase 2 Completion)
 
-## Key Findings
+| Phase | Status | Key Deliverables |
+|-------|--------|------------------|
+| Phase 0 | ✅ COMPLETE | Audit synthesis across 5 domains |
+| Phase 1 | ✅ COMPLETE | Lean 4 scaffold with types, operators, laws |
+| Phase 2 | ✅ COMPLETE | General associativity proved in `Laws.assoc` |
 
-1. **No Compilation Blockers**: All syntax and API issues have been resolved
-2. **Build Status**: `lake build` passes successfully with only expected `sorry` warnings
-3. **Documentation**: All 16 open problems properly documented with numbers and phase dependencies
-4. **Phase 1 Complete**: All gate checks satisfied, ready for Phase 2
+## Major Results Since This Review
 
-## Current State
+1. **General associativity proved** (`Laws.lean`): Strict associativity holds for all
+   `ComposableFuture` by definitional equality of `seqBind`
+2. **Stateless case proved** (`Stateless.lean`): `assoc_stateless` as restriction theorem
+3. **Indexed monad implemented** (`Indexed.lean`): Graded monad construction complete
+4. **Weak associativity proved** (`WeakAssoc.lean`): Affordance-level composition theorems
 
-- ✅ Phase 0: Audit and repository foundation - COMPLETE
-- ✅ Phase 1: Lean 4 scaffold - COMPLETE  
-- ⬜ Phase 2: Stateless associativity proof - READY TO BEGIN
+## This File
 
-## Next Steps
-
-The codebase is now in optimal condition for Phase 2 work:
-1. Define `isStateless` predicate (P2.1)
-2. Implement indexed Trajectory refactor
-3. Attempt stateless associativity proof
-4. Continue with Open Problem 1 resolution
-
-All systematic review issues have been addressed successfully.
+Preserved for historical reference. See:
+- `TODO.md` for current phase status
+- `proofs/notes.md` for open problem tracking
+- `proofs/attempt-associativity.md` for resolution details

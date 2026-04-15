@@ -73,11 +73,11 @@ as we work through the formalization in Lean 4.
 - **Status**: ✅ Resolved — trivial existence proof (`⟨seqBind F G h, rfl⟩`)
 - **Note**: The meaningful closure property is well-formedness preservation (OP12)
 
-**Open Problem 12: Well-formedness preservation proof**
+**Open Problem 12: Well-formedness preservation proof** ✅ RESOLVED
 - **Location**: `seqBind_well_formed` theorem
 - **Issue**: Prove `seqBind` preserves well-formed futures
-- **Status**: Straightforward given well-formedness definitions
-- **Dependencies**: None (should be provable now)
+- **Status**: ✅ Resolved — proved by `simp [seqBind, ComposableFuture.well_formed]` then `constructor` with `exact hF.1` and `exact hG.2`
+- **Dependencies**: None
 
 **Open Problem 13: Probabilistic trajectory definition (Phase 3)**
 - **Location**: `ProbabilisticTrajectory` type
@@ -110,6 +110,7 @@ as we work through the formalization in Lean 4.
 - **Dependencies**: OP1
 
 ## Phase 2 Status Summary
+- ✅ General associativity proved (`Laws.lean` — holds for all futures by definitional equality)
 - ✅ Stateless case associativity proved (`Stateless.lean` — definitional equality)
 - ✅ Indexed monad construction implemented (`Indexed.lean`):
   - `TrajectoryType` as grading monoid

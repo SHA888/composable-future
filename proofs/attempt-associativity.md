@@ -165,27 +165,31 @@ ignoring the trajectory differences.
 
 ---
 
-## Conjectures Based on Failures
+## Results Summary
 
-### C1: Path-Dependence is the Obstruction
-The failure of direct attempts suggests that path-dependence itself prevents
-associativity. This may be a feature, not a bug - paradigmatic change may be
-fundamentally non-associative.
+### R1: General Associativity Holds (Unexpected)
+Contrary to initial conjectures, **strict associativity holds for all futures**
+(not just stateless) in the current `seqBind` implementation. The proof in
+`Laws.lean` shows associativity by definitional equality because `seqBind`
+does not actually compose trajectories — it directly extracts source/target.
 
-### C2: Indexed Resolution is the Right Direction
-The indexed monad framework is the most promising approach, as it directly
-addresses the issue of tracking prior effects.
+### R2: Indexed Monad Provides Structured Resolution ✅
+The indexed monad framework (Orchard et al.) was successfully implemented in
+`Core/Indexed.lean`. It provides a graded monad structure where associativity
+holds at the type level via `TrajectoryType` composition.
 
-### C3: Weak Associativity Holds
-Some form of weak associativity likely holds, possibly at the affordance set
-level even when trajectories differ.
+### R3: Weak Associativity Holds ✅
+Affordance-level associativity was proven in `WeakAssoc.lean`. Even if
+trajectories differ due to path-dependence, the states and affordance sets
+compose associatively.
 
-## Next Steps
+## Attempts 1-5 → Attempt 6: Resolution Path
 
-1. **Develop indexed monad construction**: Formalize trajectory types and composition
-2. **Test weak associativity**: Define appropriate equivalence relation
-3. **Explore counterexamples**: Find concrete cases where associativity fails
-4. **Connect to Orchard et al.**: Map their framework to paradigmatic transitions
+Attempts 1-5 explored the general case and identified challenges. Attempt 6
+(stateless case) succeeded immediately. However, the **deeper insight** from
+`Laws.lean` is that the current `seqBind` implementation makes associativity
+hold universally — the "obstruction" from Attempts 1-2 assumed functional
+trajectory composition (τ₂∘τ₁), which the actual implementation avoids.
 
 ---
 
@@ -224,22 +228,26 @@ unfolding definitions.
 
 ## Key Insights
 
-### Path-Dependence is the Obstruction
-The failures in Attempts 1-5 (general case) vs. success in Attempt 6 (stateless case)
-suggest that **path-dependence itself prevents associativity**. This may be a
-feature, not a bug — paradigmatic change may be fundamentally non-associative
-in the general case, but associative when restricted to path-independent transitions.
+### Initial Conjecture vs. Actual Result
+The failures in Attempts 1-5 assumed **functional trajectory composition** (τ₂∘τ₁),
+where path-dependence creates an obstruction. However, the actual `seqBind`
+implementation avoids this by directly using `F.τ.source` and `G.τ.target`.
+
+**Result**: Strict associativity holds for **all** futures in the current implementation,
+not just stateless ones. The `Laws.assoc` proof confirms this.
 
 ### Theoretical Implications
-- **Stateful case**: Composable Future may form a fibered category (not a standard category)
-- **Stateless case**: Forms a proper category (objects = states, morphisms = futures)
-- The distinction validates the theory's focus on path-dependence as the key
-  structural property
+- **Current implementation**: Forms a proper category (strict associativity holds)
+- **Indexed approach** (`Core/Indexed.lean`): Provides graded monad structure for
+  fine-grained effect tracking when needed
+- **Weak associativity** (`Core/WeakAssoc.lean`): Affordance-level composition
+  is well-behaved even under equivalence relations
 
 ## Next Steps
 
-1. ✅ **Stateless proof complete**: `assoc_stateless` proved by `simp [StatelessFuture.seqBind, ComposableFuture.seqBind]`
-2. ✅ **Indexed monad construction complete**: `Core/Indexed.lean` formalizes the approach
-3. ✅ **Weak associativity defined**: `Core/WeakAssoc.lean` proves affordance-level result
-4. **Future**: Complete indexed monad monoid law proofs (trajectory refactor)
-5. **Future**: Explore concrete counterexamples for strict general case
+1. ✅ **General associativity proved**: `Laws.assoc` holds for all futures
+2. ✅ **Stateless proof complete**: `assoc_stateless` provides the restriction result
+3. ✅ **Indexed monad construction complete**: `Core/Indexed.lean` formalizes graded monad
+4. ✅ **Weak associativity defined**: `Core/WeakAssoc.lean` proves affordance-level result
+5. **Future**: Complete indexed monad monoid law proofs (pending trajectory refactor)
+6. **Future**: Explore alternative `seqBind` implementations where strict associativity might fail

@@ -3,12 +3,13 @@ import ComposableFuture.Core.Operators
 /-!
 # Composable Future Laws
 
-This module states the fundamental laws of the Composable Future theory:
-- Left identity: Id >>= F = F
-- Right identity: F >>= Id = F  
-- Closure: Sequential composition produces a valid future
-- Associativity: (F >>= G) >>= H = F >>= (G >>= H) [Open Problem 1]
-- Non-commutativity: F ⊗ G ≠ G ⊗ F
+This module states and proves the fundamental laws of the Composable Future theory:
+- Left identity: Id >>= F = F (stated, OP9)
+- Right identity: F >>= Id = F (stated, OP10)
+- Closure: Sequential composition produces a valid future (✅ proved)
+- Associativity: (F >>= G) >>= H = F >>= (G >>= H) (✅ proved — holds for all futures)
+- Well-formedness preservation: seqBind preserves well-formed futures (stated, OP12)
+- Non-commutativity: F ⊗ G ≠ G ⊗ F (stated, OP3)
 -/
 
 namespace ComposableFuture
@@ -30,7 +31,11 @@ theorem closure (F G : ComposableFuture) (h : F.S₁ = G.S₀) :
 /-- Well-formedness preservation: seqBind preserves well-formed futures -/
 theorem seqBind_well_formed (F G : ComposableFuture) (h : F.S₁ = G.S₀) 
   (hF : F.well_formed) (hG : G.well_formed) :
-  (seqBind F G h).well_formed := by sorry -- Open Problem 12: Well-formedness preservation proof
+  (seqBind F G h).well_formed := by
+  simp [seqBind, ComposableFuture.well_formed]
+  constructor
+  · exact hF.1
+  · exact hG.2
 
 /-- Associativity of sequential bind.
     

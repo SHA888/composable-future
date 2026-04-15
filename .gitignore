@@ -20,8 +20,9 @@
 *.lot
 *.lof
 
-# PDF builds
+# PDF builds (except final papers)
 *.pdf
+!paper/*.pdf
 
 # Python
 __pycache__/

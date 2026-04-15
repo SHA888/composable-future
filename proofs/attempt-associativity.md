@@ -98,7 +98,11 @@ Can paradigmatic path-dependence be expressed as an effect index? Need to define
 - Proof that paradigmatic composition respects this structure
 
 ### Status
-**IN PROGRESS** - Promising but requires deeper type-theoretic work.
+**RESOLVED** — Implemented in `lean/ComposableFuture/Core/Indexed.lean` (Phase 2.3):
+- `TrajectoryType` serves as the effect index
+- `TrajectoryTypeCompose` typeclass provides the monoid structure
+- `IndexedFuture.assoc` proves associativity via `cast` with the monoid law
+- Monoid law proofs have `sorry` stubs pending trajectory refactor
 
 ---
 
@@ -154,7 +158,10 @@ where ≡ is some appropriate equivalence relation (not equality).
 ignoring the trajectory differences.
 
 ### Status
-**OPEN** - Need to explore which weak form is most meaningful.
+**RESOLVED** — Implemented in `lean/ComposableFuture/Core/WeakAssoc.lean` (Phase 2.3):
+- Weak form 5.3 (affordance-level) proven in `weak_assoc_affordance` and `weak_assoc_states`
+- `FutureEquiv` defined as equivalence relation (same S₀, S₁, Φ)
+- Proved: `(F >>= G) >>= H ≡ F >>= (G >>= H)` under `FutureEquiv`
 
 ---
 
@@ -231,7 +238,8 @@ in the general case, but associative when restricted to path-independent transit
 
 ## Next Steps
 
-1. **Complete stateless proof**: Fill `sorry` in `assoc_stateless` after trajectory refactor
-2. **Develop indexed monad construction**: For the general path-dependent case (Attempt 3)
-3. **Test weak associativity**: Define appropriate equivalence relation (Attempt 5)
-4. **Explore counterexamples**: Find concrete cases where associativity fails
+1. ✅ **Stateless proof complete**: `assoc_stateless` proved by `simp [StatelessFuture.seqBind, ComposableFuture.seqBind]`
+2. ✅ **Indexed monad construction complete**: `Core/Indexed.lean` formalizes the approach
+3. ✅ **Weak associativity defined**: `Core/WeakAssoc.lean` proves affordance-level result
+4. **Future**: Complete indexed monad monoid law proofs (trajectory refactor)
+5. **Future**: Explore concrete counterexamples for strict general case

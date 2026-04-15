@@ -107,7 +107,7 @@ theorem assoc_stateless
   -- Proof: Both sides construct the same future:
   -- {S₀ := F.val.S₀, τ := {source := F.val.τ.source, target := H.val.τ.target}, S₁ := H.val.S₁, Φ := H.val.Φ}
   -- This holds by definitional equality of `seqBind`.
-  -- The compatibility proofs h₃ and h₄ are derivable from h₁ and h₂.
-  sorry -- Phase 2.2: Complete the proof by unfolding definitions
+  simp [StatelessFuture.seqBind, ComposableFuture.seqBind] at h₃ h₄
+  simp [StatelessFuture.seqBind, ComposableFuture.seqBind]
 
 end ComposableFuture

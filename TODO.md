@@ -239,10 +239,10 @@ Every `sorry` is an explicit open problem. No vague mathematics allowed.
 
 ---
 
-## PHASE 2 — Stateless Associativity Proof
+## PHASE 2 — Stateless Associativity Proof ✅ COMPLETE
 > Gate: associativity proved or disproved for stateless case (τ path-independent)
-> Status: 🟡 in progress
-> Estimated effort: 2–4 months solo
+> Status: ✅ COMPLETE
+> Actual effort: 2 weeks (completed April 2026)
 
 **What this phase produces:**
 Either a Lean proof of `assoc_stateless`, or a formal counterexample

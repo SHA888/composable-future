@@ -144,23 +144,21 @@ These two approaches are complementary:
 - Use weak associativity when you want to work with unindexed futures
 -/
 
-/-- The weak associativity result is compatible with the indexed approach:
-    Indexed futures satisfy FutureEquiv when their indices are composed.
-    -/
-theorem indexed_implies_weak
-    {t₁ t₂ t₃ : Type}  -- Placeholder for actual TrajectoryType
+/-- Weak associativity follows directly from the definition of seqBind,
+    for any compatible ComposableFutures (regardless of trajectory type).
+    
+    Note: `weak_assoc_affordance` and `weak_assoc_affordance_explicit` above
+    already prove the full result. This corollary names the key consequence:
+    the two groupings are indistinguishable under FutureEquiv. -/
+theorem weak_assoc_corollary
     (F G H : ComposableFuture)
     (h₁ : F.S₁ = G.S₀)
     (h₂ : G.S₁ = H.S₀)
     (h₃ : (ComposableFuture.seqBind F G h₁).S₁ = H.S₀)
     (h₄ : F.S₁ = (ComposableFuture.seqBind G H h₂).S₀) :
-    -- If F, G, H come from indexed futures with composed index,
-    -- then weak associativity holds at the underlying level
     FutureEquiv
       (ComposableFuture.seqBind (ComposableFuture.seqBind F G h₁) H h₃)
-      (ComposableFuture.seqBind F (ComposableFuture.seqBind G H h₂) h₄) := by
-  simp [ComposableFuture.seqBind] at h₃ h₄
-  simp [ComposableFuture.seqBind, FutureEquiv]
-  <;> constructor <;> rfl
+      (ComposableFuture.seqBind F (ComposableFuture.seqBind G H h₂) h₄) :=
+  weak_assoc_affordance F G H h₁ h₂ h₃ h₄
 
 end ComposableFuture

@@ -87,9 +87,14 @@ straightforward once the indexed trajectory refactor is complete.
     For the stateful case (Open Problem 1), this proof would fail because trajectory
     composition would need to consider the path history.
     
-    **Status**: Proof skeleton in place. The actual proof requires:
-    1. Unfolding `seqBind` definitions on both sides
-    2. Showing both construct identical futures by definitional equality
+    **Note on compatibility proofs**: 
+    - For `(F >>= G) >>= H`, we need `(F >>= G).S₁ = H.S₀`
+      This follows from `(F >>= G).S₁ = G.S₁` (by seqBind definition) and `h₂: G.S₁ = H.S₀`
+    - For `F >>= (G >>= H)`, we need `F.S₁ = (G >>= H).S₀`
+      This follows from `(G >>= H).S₀ = G.S₀` (by seqBind definition) and `h₁: F.S₁ = G.S₀`
+    
+    **Status**: Proof skeleton uses minimal hypotheses h₁ and h₂.
+    The outer compatibility proofs are derivable from these.
     -/
 theorem assoc_stateless
     (F G H : StatelessFuture)
@@ -102,6 +107,7 @@ theorem assoc_stateless
   -- Proof: Both sides construct the same future:
   -- {S₀ := F.val.S₀, τ := {source := F.val.τ.source, target := H.val.τ.target}, S₁ := H.val.S₁, Φ := H.val.Φ}
   -- This holds by definitional equality of `seqBind`.
+  -- The compatibility proofs h₃ and h₄ are derivable from h₁ and h₂.
   sorry -- Phase 2.2: Complete the proof by unfolding definitions
 
 end ComposableFuture

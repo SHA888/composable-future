@@ -41,15 +41,21 @@ def Trajectory.isStateless (τ : Trajectory) : Prop :=
 
 ## Simplified Sequential Bind
 
-In the stateless case, sequential bind reduces to ordinary categorical composition:
+In the current implementation, `seqBind` constructs a new future by extracting
+components from the input futures:
 
 ```
 F >>= G = (S₀, τ₁, S₁, Φ₁) >>= (S₁, τ₂, S₂, Φ₂)
-         = (S₀, τ₂ ∘ τ₁, S₂, Φ₂)
+         = (S₀, {source := τ₁.source, target := τ₂.target}, S₂, Φ₂)
 ```
 
-The key insight: when τ₁ and τ₂ are stateless, the composed trajectory τ₂ ∘ τ₁
-is well-defined and independent of the order of composition.
+**Key insight**: The trajectory in the result is *not* composed via function
+composition. Instead, `seqBind` directly uses `F.τ.source` and `G.τ.target`.
+This makes associativity hold by **definitional equality**:
+both `(F >>= G) >>= H` and `F >>= (G >>= H)` construct the same structure:
+```
+{S₀ := F.S₀, τ := {source := F.τ.source, target := H.τ.target}, S₁ := H.S₁, Φ := H.Φ}
+```
 
 ## Associativity Proof Sketch
 
@@ -63,24 +69,24 @@ Given three stateless futures F, G, H with compatibility conditions:
 
 ```
 F >>= G
-= (S₀, τ₁, S₁, Φ₁) >>= (S₁, τ₂, S₂, Φ₂)     [by definition of F, G]
-= (S₀, τ₂ ∘ τ₁, S₂, Φ₂)                     [by seqBind definition]
+= (S₀, τ₁, S₁, Φ₁) >>= (S₁, τ₂, S₂, Φ₂)          [by definition of F, G]
+= (S₀, {source := τ₁.source, target := τ₂.target}, S₂, Φ₂)  [by seqBind]
 
 (F >>= G) >>= H
-= (S₀, τ₂ ∘ τ₁, S₂, Φ₂) >>= (S₂, τ₃, S₃, Φ₃)  [where H = (S₂, τ₃, S₃, Φ₃)]
-= (S₀, τ₃ ∘ (τ₂ ∘ τ₁), S₃, Φ₃)               [by seqBind definition]
+= (S₀, {source := τ₁.source, target := τ₂.target}, S₂, Φ₂) >>= (S₂, τ₃, S₃, Φ₃)
+= (S₀, {source := τ₁.source, target := τ₃.target}, S₃, Φ₃)  [by seqBind: uses original source, H's target]
 ```
 
 **Right side: F >>= (G >>= H)**
 
 ```
 G >>= H
-= (S₁, τ₂, S₂, Φ₂) >>= (S₂, τ₃, S₃, Φ₃)     [by definition of G, H]
-= (S₁, τ₃ ∘ τ₂, S₃, Φ₃)                     [by seqBind definition]
+= (S₁, τ₂, S₂, Φ₂) >>= (S₂, τ₃, S₃, Φ₃)          [by definition of G, H]
+= (S₁, {source := τ₂.source, target := τ₃.target}, S₃, Φ₃)  [by seqBind]
 
 F >>= (G >>= H)
-= (S₀, τ₁, S₁, Φ₁) >>= (S₁, τ₃ ∘ τ₂, S₃, Φ₃)  [compatibility: F.S₁ = (G>>=H).S₀ = S₁]
-= (S₀, (τ₃ ∘ τ₂) ∘ τ₁, S₃, Φ₃)               [by seqBind definition]
+= (S₀, τ₁, S₁, Φ₁) >>= (S₁, {source := τ₂.source, target := τ₃.target}, S₃, Φ₃)
+= (S₀, {source := τ₁.source, target := τ₃.target}, S₃, Φ₃)  [by seqBind: uses original source, H's target]
 ```
 
 **S₁ Compatibility Condition**
@@ -95,16 +101,17 @@ This is satisfied by the compatibility hypothesis `h₂ : G.S₁ = H.S₀`.
 
 **Conclusion**
 
-Since composition of stateless trajectories is associative:
+Both sides construct identical futures:
 ```
-τ₃ ∘ (τ₂ ∘ τ₁) = (τ₃ ∘ τ₂) ∘ τ₁   [standard function composition]
+Left side:  (S₀, {source := τ₁.source, target := τ₃.target}, S₃, Φ₃)
+Right side: (S₀, {source := τ₁.source, target := τ₃.target}, S₃, Φ₃)
 ```
 
 Therefore:
 ```
 (F >>= G) >>= H = F >>= (G >>= H)
 ```
-QED.
+QED by definitional equality of `seqBind`.
 
 ## Formalization Challenges
 

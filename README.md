@@ -175,6 +175,8 @@ The `gap-summary.md` aggregates all five into the composite gap statement that o
 
 ### Running the Audit Search
 
+First install dependencies: `uv sync` (or `pip install -e .`)
+
 ```bash
 uv run search.py all     # search all 5 domains
 uv run search.py 3       # single domain
@@ -244,7 +246,7 @@ Install elan (Lean toolchain manager):
 
 After install, restart your terminal (or `source ~/.bashrc` on Linux) so `lake` is in PATH.
 
-- Build project: `cd lean && lake build`
+- Build project: `cd lean && lake update && lake build`
 - Fill `sorry` proofs in `Core/Laws.lean`
 - Add proof attempts to `proofs/notes.md`
 - Follow naming conventions and sorry policy in `CONTRIBUTING.md`

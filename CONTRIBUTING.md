@@ -46,6 +46,18 @@ Always preserve the completed Phase 0 synthesis as the foundation.
 
 ## Formalization Track Contributions
 
+### Python Setup (for audit tooling)
+
+The audit scripts require Python 3.12+ and `uv`:
+
+```bash
+# Install dependencies
+uv sync
+
+# Or with pip
+pip install -e .
+```
+
 ### Lean 4 Setup
 
 **Linux / macOS**
@@ -61,6 +73,7 @@ Download and run the installer from https://github.com/leanprover/elan/releases
 **All platforms — build the project**
 ```bash
 cd lean
+lake update   # fetch dependencies (one-time)
 lake build
 ```
 

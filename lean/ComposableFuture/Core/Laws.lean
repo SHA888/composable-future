@@ -32,12 +32,19 @@ theorem seqBind_well_formed (F G : ComposableFuture) (h : F.S₁ = G.S₀)
   (hF : F.well_formed) (hG : G.well_formed) :
   (seqBind F G h).well_formed := by sorry -- Open Problem 12: Well-formedness preservation proof
 
-/-- Associativity of sequential bind [Open Problem 1]
-    Proof requires stateless trajectories — deferred to Phase 2. -/
+/-- Associativity of sequential bind.
+    
+    This holds for all ComposableFutures by definitional equality of seqBind.
+    The seqBind definition directly extracts F.τ.source and G.τ.target,
+    making both sides of the equation construct identical futures:
+    {S₀ := F.S₀, τ := {source := F.τ.source, target := H.τ.target}, S₁ := H.S₁, Φ := H.Φ}
+    
+    Note: This resolves Open Problem 1 for the general case. Path-dependence
+    is addressed via the indexed monad approach (Core/Indexed.lean). -/
 theorem assoc (F G H : ComposableFuture) (hFG : F.S₁ = G.S₀) (hGH : G.S₁ = H.S₀) :
     seqBind (seqBind F G hFG) H (by exact hGH) =
     seqBind F (seqBind G H hGH) (by exact hFG) := by
-  sorry -- Open Problem 1: Associativity proof (Phase 2 — requires stateless trajectory assumption)
+  simp [seqBind]
 
 /-- Non-commutativity of parallel tensor [Open Problem 3]
     Proof requires affordance set structure — deferred to Phase 4. -/

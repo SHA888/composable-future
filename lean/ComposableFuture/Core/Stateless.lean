@@ -70,9 +70,8 @@ When restricted to stateless futures, Composable Future forms a category:
    - Proof requires Open Problem 10
 
 3. **Associativity**: (F >>= G) >>= H = F >>= (G >>= H)
-   - This is the main Phase 2 target
-   - Commented out in Laws.lean as `assoc_stateless`
-   - Theorem statement needs `isStateless` hypotheses
+   - Proved in this module as `assoc_stateless`
+   - Also proved in Laws.lean as `assoc` (holds for all ComposableFutures)
 
 **Key Insight**: Stateless trajectories compose like functions, making associativity
 straightforward once the indexed trajectory refactor is complete.

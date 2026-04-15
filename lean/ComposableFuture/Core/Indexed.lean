@@ -122,11 +122,12 @@ def IndexedFuture.seqBind
         simp [G.well_formed.2] }
 
 /-- Identity indexed future at the unit trajectory type.
-    This is the graded monad unit η : A → T_I A. -/
+    This is the graded monad unit η : A → T_I A.
+    The identity future is always indexed by the unit trajectory type. -/
 def IndexedFuture.idFuture
-    (t : TrajectoryType)
+    [TrajectoryTypeCompose TrajectoryType]
     (S : ParadigmaticState) :
-    IndexedFuture t :=
+    IndexedFuture (TrajectoryTypeCompose.unit (T := TrajectoryType)) :=
   { S₀ := S
     S₁ := S
     τ := { source := S, target := S }
@@ -191,7 +192,7 @@ theorem IndexedFuture.left_id
     (h : S = F.S₀) :
     cast (congr_arg IndexedFuture (tc.left_id t))
       (IndexedFuture.seqBind
-        (IndexedFuture.idFuture (TrajectoryTypeCompose.unit (T := TrajectoryType)) S) F
+        (IndexedFuture.idFuture S) F
         (by simp [IndexedFuture.idFuture, h])) = F := by
   sorry -- Phase 2.3: Complete after affordance set structure defined
 
@@ -207,7 +208,7 @@ theorem IndexedFuture.right_id
     (h : F.S₁ = S) :
     cast (congr_arg IndexedFuture (tc.right_id t))
       (IndexedFuture.seqBind F
-        (IndexedFuture.idFuture (TrajectoryTypeCompose.unit (T := TrajectoryType)) S)
+        (IndexedFuture.idFuture S)
         (by simp [IndexedFuture.idFuture, h])) = F := by
   sorry -- Phase 2.3: Complete after affordance set structure defined
 

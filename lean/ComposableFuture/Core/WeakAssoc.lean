@@ -95,23 +95,6 @@ theorem weak_assoc_affordance
   simp [ComposableFuture.seqBind, FutureEquiv]
   <;> constructor <;> rfl
 
-/-- **Theorem: Weak Associativity with Explicit Proof Terms**
-
-    Same as weak_assoc_affordance but with explicit compatibility proofs.
-    Useful for Lean automation. -/
-theorem weak_assoc_affordance_explicit
-    (F G H : ComposableFuture)
-    (h₁ : F.S₁ = G.S₀)
-    (h₂ : G.S₁ = H.S₀)
-    (h₃ : (ComposableFuture.seqBind F G h₁).S₁ = H.S₀)
-    (h₄ : F.S₁ = (ComposableFuture.seqBind G H h₂).S₀) :
-    FutureEquiv
-      (ComposableFuture.seqBind (ComposableFuture.seqBind F G h₁) H h₃)
-      (ComposableFuture.seqBind F (ComposableFuture.seqBind G H h₂) h₄) := by
-  simp [ComposableFuture.seqBind] at h₃ h₄
-  simp [ComposableFuture.seqBind, FutureEquiv]
-  <;> constructor <;> rfl
-
 /-- **Theorem: State-Level Weak Associativity**
 
     A weaker form: just the states compose associatively.

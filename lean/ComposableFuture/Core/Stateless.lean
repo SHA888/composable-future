@@ -78,17 +78,30 @@ When restricted to stateless futures, Composable Future forms a category:
 straightforward once the indexed trajectory refactor is complete.
 -/
 
-/- Main Phase 2 theorem: Associativity for stateless futures.
-   To be proved after trajectory refactor to indexed type.
-   
+/-- Main Phase 2 theorem: Associativity for stateless futures.
+    
+    The associativity proof relies on the fact that `seqBind` constructs futures
+    by directly extracting source from F and target from G. This makes the
+    composition definitionally associative in the stateless case.
+    
+    For the stateful case (Open Problem 1), this proof would fail because trajectory
+    composition would need to consider the path history.
+    
+    **Status**: Proof skeleton in place. The actual proof requires:
+    1. Unfolding `seqBind` definitions on both sides
+    2. Showing both construct identical futures by definitional equality
+    -/
 theorem assoc_stateless
-  (F G H : StatelessFuture)
-  (h₁ : F.val.S₁ = G.val.S₀)
-  (h₂ : G.val.S₁ = H.val.S₀)
-  (h₃ : F.val.S₁ = (StatelessFuture.seqBind G H h₂).val.S₀) :
-  (StatelessFuture.seqBind (StatelessFuture.seqBind F G h₁) H h₂).val =
-  (StatelessFuture.seqBind F (StatelessFuture.seqBind G H h₂) h₃).val := by
-  sorry
--/
+    (F G H : StatelessFuture)
+    (h₁ : F.val.S₁ = G.val.S₀)
+    (h₂ : G.val.S₁ = H.val.S₀)
+    (h₃ : (StatelessFuture.seqBind F G h₁).val.S₁ = H.val.S₀)
+    (h₄ : F.val.S₁ = (StatelessFuture.seqBind G H h₂).val.S₀) :
+    (StatelessFuture.seqBind (StatelessFuture.seqBind F G h₁) H h₃).val =
+    (StatelessFuture.seqBind F (StatelessFuture.seqBind G H h₂) h₄).val := by
+  -- Proof: Both sides construct the same future:
+  -- {S₀ := F.val.S₀, τ := {source := F.val.τ.source, target := H.val.τ.target}, S₁ := H.val.S₁, Φ := H.val.Φ}
+  -- This holds by definitional equality of `seqBind`.
+  sorry -- Phase 2.2: Complete the proof by unfolding definitions
 
 end ComposableFuture

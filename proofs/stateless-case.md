@@ -53,30 +53,58 @@ is well-defined and independent of the order of composition.
 
 ## Associativity Proof Sketch
 
-Given three stateless futures F, G, H:
+### Equational Reasoning
+
+Given three stateless futures F, G, H with compatibility conditions:
+- `F.S₁ = G.S₀` (call this `h₁`)
+- `G.S₁ = H.S₀` (call this `h₂`)
+
+**Left side: (F >>= G) >>= H**
 
 ```
+F >>= G
+= (S₀, τ₁, S₁, Φ₁) >>= (S₁, τ₂, S₂, Φ₂)     [by definition of F, G]
+= (S₀, τ₂ ∘ τ₁, S₂, Φ₂)                     [by seqBind definition]
+
 (F >>= G) >>= H
-= (S₀, τ₂ ∘ τ₁, S₂, Φ₂) >>= (S₂, τ₃, S₃, Φ₃)
-= (S₀, τ₃ ∘ (τ₂ ∘ τ₁), S₃, Φ₃)
-
-F >>= (G >>= H)  
-= (S₀, τ₁, S₁, Φ₁) >>= (S₁, τ₃ ∘ τ₂, S₃, Φ₃)
-= (S₀, (τ₃ ∘ τ₂) ∘ τ₁, S₃, Φ₃)
+= (S₀, τ₂ ∘ τ₁, S₂, Φ₂) >>= (S₂, τ₃, S₃, Φ₃)  [where H = (S₂, τ₃, S₃, Φ₃)]
+= (S₀, τ₃ ∘ (τ₂ ∘ τ₁), S₃, Φ₃)               [by seqBind definition]
 ```
 
-Since composition of stateless trajectories is associative (standard function
-composition), we have:
+**Right side: F >>= (G >>= H)**
 
 ```
-τ₃ ∘ (τ₂ ∘ τ₁) = (τ₃ ∘ τ₂) ∘ τ₁
+G >>= H
+= (S₁, τ₂, S₂, Φ₂) >>= (S₂, τ₃, S₃, Φ₃)     [by definition of G, H]
+= (S₁, τ₃ ∘ τ₂, S₃, Φ₃)                     [by seqBind definition]
+
+F >>= (G >>= H)
+= (S₀, τ₁, S₁, Φ₁) >>= (S₁, τ₃ ∘ τ₂, S₃, Φ₃)  [compatibility: F.S₁ = (G>>=H).S₀ = S₁]
+= (S₀, (τ₃ ∘ τ₂) ∘ τ₁, S₃, Φ₃)               [by seqBind definition]
+```
+
+**S₁ Compatibility Condition**
+
+The associativity proof requires that the intermediate states align:
+- After `(F >>= G)`, we have state `S₂`
+- For `(F >>= G) >>= H`, we need `(F >>= G).S₁ = H.S₀`
+- `(F >>= G).S₁ = G.S₁ = S₂` by `seqBind` definition
+- `H.S₀ = S₂` by definition of H
+
+This is satisfied by the compatibility hypothesis `h₂ : G.S₁ = H.S₀`.
+
+**Conclusion**
+
+Since composition of stateless trajectories is associative:
+```
+τ₃ ∘ (τ₂ ∘ τ₁) = (τ₃ ∘ τ₂) ∘ τ₁   [standard function composition]
 ```
 
 Therefore:
-
 ```
 (F >>= G) >>= H = F >>= (G >>= H)
 ```
+QED.
 
 ## Formalization Challenges
 

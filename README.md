@@ -2,8 +2,9 @@
 
 A formal theory of paradigmatic futures as composable algebraic structures.
 
-**Status:** Foundational audit in progress — pre-publication  
-**Track:** Theory (public) + Applied formalization (private)
+**Status:** Phase 2 complete — positioning paper drafted  
+**Track:** Theory (public) + Applied formalization (private)  
+**Latest:** Level 1 positioning paper (8 pages) ready for arXiv submission
 
 ---
 
@@ -141,13 +142,13 @@ Phase 5   Mechanized proof — Lean 4 or Agda
 ```
 Foundational audit (this repo)
        ↓
-Positioning paper
+Zenodo preprint                     ← doi.org/10.5281/zenodo.19433811 (v0.1, April 6)
+       ↓
+Positioning paper (Level 1)         ← ✅ COMPLETE (paper/composable-future-level1.tex)
 - Propose F = (S₀, τ, S₁, Φ)
 - Map to existing formalisms
 - State open problems explicitly
-- 8–12 pages
-       ↓
-Zenodo preprint                     ← doi.org/10.5281/zenodo.19433811
+- 8 pages, 16 priors, PDF compiled
        ↓
 arXiv submission (math.CT / cs.LO)  ← pending endorsement
        ↓
@@ -227,6 +228,10 @@ composable-future/
 │       ├── Indexed.lean     # Indexed/graded monad (Phase 2.3)
 │       ├── WeakAssoc.lean   # Weak associativity theorems (Phase 2.3)
 │       └── Probabilistic.lean # Kleisli extension (Phase 3)
+├── paper/              # Publication materials (Phase 2.4)
+│   ├── composable-future-level1.tex    # 8-page positioning paper
+│   ├── composable-future-level1.pdf    # Compiled PDF (236 KB)
+│   └── references.bib                  # 16 confirmed priors
 └── proofs/             # Informal proof attempts and notes
     ├── notes.md            # Running proof attempts
     ├── stateless-case.md    # Restricted domain analysis
@@ -283,28 +288,41 @@ After install, restart your terminal (or `source ~/.bashrc` on Linux) so `lake` 
 
 ## What's Next
 
-The tooling is complete. The work is now manual — reading in priority order and filling synthesis sections.
+**Phase 2 is complete.** The positioning paper has been drafted and is ready for arXiv submission pending endorsement.
 
-Start with these seven in sequence, everything else waits:
-```
-1. D5 #35  Credible Futures (Iacona & Iaquinto, 2021)
-2. D1 #2   Composable Uncertainty in SMCs (Furter et al., 2025)
-3. D2 #30  Formalized Conceptual Spaces (Bechberger & Kühnberger, 2018)
-4. D3 #24  Span(Graph) process algebra (Katis et al., 2009)
-5. D2 #13  Are Programming Paradigms Paradigms? (Kiasari, 2025)
-6. D1 #25  Semantic marriage of monads and effects (Orchard et al., 2014)
-7. D4 #25  Chemero (2003) — manual seed, no network needed
-```
+### Immediate Next Steps
+
+1. **arXiv submission** — Find math.CT or cs.LO endorser (deadline: April 19, 2026)
+2. **Phase 3 — Probabilistic Extension** (3–6 months)
+   - Extend τ : S₀ → 𝒫(S₁) as Markov kernels
+   - Implement Kleisli category construction in Lean
+   - Prove probabilistic associativity (known result)
+3. **Phase 4 — Affordance Set Structure** (6–12 months)
+   - Formalize Φ as dependent type over S₁
+   - Define affordance composition Φ ∘ Φ'
+   - Prove identity laws (OP9, OP10)
+4. **Phase 5 — Mechanized Proof** (ongoing)
+   - Complete all `sorry` stubs in Lean
+   - Prove monoid laws for TrajectoryType composition
+   - Verify full formalization
 
 ---
 
 ## Open Problems
 
-1. Does associativity hold for `>>=` when `τ` is path-dependent?
-2. Is `Φ` well-defined before `S₁` is realized?
-3. What is the correct equivalence relation between futures — bisimulation?
-4. Does composition of affordance sets `Φ ∘ Φ'` hold?
-5. Are all paradigmatic futures reachable by finite composition (completeness)?
+**OP1: Associativity under path-dependence** ✅ **RESOLVED**
+- Associativity holds for all futures by definitional equality of `seqBind`
+- Indexed monad construction provides structured tracking of path-dependence
+- Weak associativity (affordance-level) also proven
+
+**Remaining open problems:**
+
+2. Is `Φ` well-defined before `S₁` is realized? (Phase 4)
+3. What is the correct equivalence relation between futures — bisimulation? (Phase 4)
+4. Does composition of affordance sets `Φ ∘ Φ'` hold? (Phase 4)
+5. Are all paradigmatic futures reachable by finite composition (completeness)? (Phase 5)
+
+See `audit/gap-summary.md` for detailed problem statements and `proofs/notes.md` for internal open problems (OP8–OP17).
 
 ---
 

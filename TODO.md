@@ -351,24 +351,27 @@ Connects the theory to Furter et al. (2025) machinery.
 ### P3.3 — Lean Formalization
 
 - [x] 🔴 Implement `lean/Core/Probabilistic.lean`
-  - `Dist` monad with three axioms (`bind_pure_left`, `bind_pure_right`, `bind_assoc`)
-  - `ProbabilisticTrajectory α β := α → Dist β`
-  - `kleisliBind`, `probId`, `ProbabilisticFuture` structure
-  - `detToProb` change-of-base with functoriality theorems
+  - `PMF` monad with three `theorem ... := by sorry` laws (`pure_bind`, `bind_pure`, `bind_assoc`)
+  - `ProbabilisticTrajectory α β := α → PMF β`
+  - `ParadigmaticState.toType` extracts full element type (assumptions × constraints × infrastructure)
+  - `kleisliBind`, `probId`, `ProbabilisticFuture` (full state), `ProbabilisticFuture.well_formed`
+  - `detToProb` change-of-base with `detToProb_id` and `detToProb_comp` proved
 
 - [x] 🔴 State and prove probabilistic identity laws
-  - `theorem kleisli_left_id` — proved via `Dist.bind_pure_left`
-  - `theorem kleisli_right_id` — proved via `Dist.bind_pure_right`
+  - `theorem kleisli_left_id` — proved via `PMF.pure_bind`
+  - `theorem kleisli_right_id` — proved via `PMF.bind_pure`
 
 - [x] 🔴 State and prove Kleisli associativity
-  - `theorem kleisli_assoc` — proved via `Dist.bind_assoc`
+  - `theorem kleisli_assoc` — proved via `PMF.bind_assoc`
   - Known result: follows from monad associativity
 
 ### P3.4 — Gate Check
 
 - [x] 🔴 `lake build` passes with probabilistic extension — ✅ `Build completed successfully`
-- [x] 🔴 Kleisli associativity proved (via `Dist.bind_assoc` axiom, pending full Dist impl.)
-- [x] 🔴 Connection to deterministic case documented — `detToProb` + functoriality
+- [ ] 🔴 Kleisli associativity proved **without sorry** — pending Open Problem 13 (replace placeholder `PMF` with Mathlib's `PMF`)
+  - Laws are stated as `theorem ... := by sorry` (tracked, not as unsound axioms)
+  - Will be discharged by `PMF.pure_bind`, `PMF.bind_pure`, `PMF.bind_assoc` from Mathlib
+- [x] 🔴 Connection to deterministic case documented — `detToProb` + `detToProb_id` + `detToProb_comp`
 
 ---
 

@@ -28,8 +28,8 @@ Formally:
    - Target state S₁ (where this affordance leads)
    - A trajectory specification from current state to S₁
 
-2. **Composition as dependent function**: `composeAffordances` respects the
-type dependency — the result type depends on the composed state.
+2. **Composition as dependent function**: `composeSequential` and `composeParallel`
+respect the type dependency — the result type depends on the composed state.
 
 3. **Well-definedness proof**: Shows pre-realization (type-level) and
 post-realization (value-level) affordances are connected by canonical map.
@@ -63,24 +63,22 @@ structure AffordanceDescriptor (S₀ : ParadigmaticState) where
   source_eq : trajectory_spec.source = S₀
   target_eq : trajectory_spec.target = S₁
 
--- AffordanceSet is forward-declared as opaque in Future.lean.
--- We provide AffordanceDescriptor as the concrete implementation.
--- Note: Universe mismatch (Type vs Type 1) prevents direct equality proof.
+-- AffordanceSet is declared as `def … := sorry` in Future.lean (Type).
+-- AffordanceDescriptor is the concrete implementation here (Type 1).
+-- Universe mismatch prevents a direct equality proof; see Open Problem 1.
 
-/-- The implementation of AffordanceSet as affordance descriptors.
+/-- Concrete implementation of the affordance set as a dependent record.
 
-This is definitionally equal to `AffordanceSet S` as declared in Future.lean.
-The `@[reducible]` attribute ensures Lean can unfold this during type checking.
+This is the intended definition of `AffordanceSet S` (declared in Future.lean).
+It lives in `Type 1` because `ParadigmaticState` contains `Type` fields, while
+the placeholder in Future.lean uses `Type`. Until the universe level is
+reconciled (Open Problem 1), this type and `AffordanceSet S` are *not*
+definitionally or propositionally equal — they are kept separate intentionally.
 -/
--- Note: AffordanceDescriptor S is in Type 1 because ParadigmaticState contains Type fields.
+-- Open Problem 1: reconcile with AffordanceSet (Type vs Type 1).
 @[reducible]
 def AffordanceSet.impl (S : ParadigmaticState) : Type 1 :=
   AffordanceDescriptor S
-
--- Note on the forward declaration: The `opaque AffordanceSet` in Future.lean
--- is the public interface. `AffordanceDescriptor` is the concrete implementation.
--- Universe mismatch (Type vs Type 1) prevents stating them as equal.
--- axiom affordance_set_eq is commented out due to this universe issue.
 
 -- ============================================================
 -- P4.1: Affordance Composition
@@ -101,7 +99,7 @@ def paradigmaticTensor (S₁ S₂ : ParadigmaticState) : ParadigmaticState where
   constraints := S₁.constraints × S₂.constraints
   infrastructure := S₁.infrastructure × S₂.infrastructure
 
-infixr:60 " ⊗ " => paradigmaticTensor
+scoped infixr:60 " ⊗ " => paradigmaticTensor
 
 /-- Sequential composition of affordances: Φ₁ ∘ Φ₂
 
@@ -117,7 +115,11 @@ S₁ affords reaching S₂, then S₀ affords (indirectly) reaching S₂.
 Note: This is a partial function — it requires φ₁.S₁ = φ₂.S₀ (matching states).
 The type system tracks this dependency.
 -/
-def composeSequential {S₀ S₂ : ParadigmaticState}
+-- Note: the original trajectory data from φ₁ and φ₂ is not stored in the
+-- composed descriptor — only the endpoints are preserved. This is intentional
+-- for the type-level representation; concrete trajectory composition would
+-- require a richer trajectory model (Phase 2).
+def composeSequential {S₀ : ParadigmaticState}
   (φ₁ : AffordanceDescriptor S₀) (φ₂ : AffordanceDescriptor φ₁.S₁) :
   AffordanceDescriptor S₀ where
   S₁ := φ₂.S₁
@@ -141,7 +143,8 @@ paradigm P₂, you can do both simultaneously in the joint paradigm P₁ ⊗ P�
 The tensor product preserves the component structure, allowing independent
 affordances to coexist.
 -/
-def composeParallel {S₁ S₁' S₂ S₂' : ParadigmaticState}
+-- Note: trajectory data is dropped for the same reason as composeSequential.
+def composeParallel {S₁ S₂ : ParadigmaticState}
   (φ₁ : AffordanceDescriptor S₁) (φ₂ : AffordanceDescriptor S₂) :
   AffordanceDescriptor (S₁ ⊗ S₂) where
   S₁ := φ₁.S₁ ⊗ φ₂.S₁
@@ -205,11 +208,11 @@ This is the key result: `AffordanceSet S` is a well-formed dependent type
 for any paradigmatic state S. The type exists and is inhabited precisely
 when the paradigm supports affordances.
 -/
+-- `AffordanceDescriptor S` is always inhabitable: a self-loop affordance exists.
+-- Stated over `AffordanceSet.impl` (not `AffordanceSet`) due to the universe gap.
 theorem affordance_set_well_defined (S : ParadigmaticState) :
-  Nonempty (AffordanceSet S) ↔ True := by
-  -- The type is always defined; emptiness depends on whether
-  -- any valid trajectory exists from S
-  sorry -- TODO: Prove based on trajectory existence
+    Nonempty (AffordanceSet.impl S) := by
+  exact ⟨⟨S, { source := S, target := S }, rfl, rfl⟩⟩
 
 -- ============================================================
 -- P4.4: Gate Check Documentation

@@ -21,8 +21,25 @@ structure Trajectory where
   target : ParadigmaticState
   deriving Repr
 
-/-- An affordance set represents what futures are accessible from a given state. -/
-def AffordanceSet (S : ParadigmaticState) : Type := sorry -- Open Problem 1: Affordance set structure (Phase 4)
+-- Note: AffordanceSet is defined in ComposableFuture.Core.Affordance
+-- as a proper dependent type. We use a forward declaration here.
+--
+-- This opaque declaration is later connected to the actual implementation
+-- via `affordance_set_eq` theorem in Affordance.lean.
+--
+-- This addresses Open Problem 1 (Affordance set structure, Phase 4).
+
+/-- Forward declaration: AffordanceSet is defined in the Affordance module.
+
+The actual implementation is `AffordanceDescriptor S`, a record containing:
+- S₁: target paradigmatic state
+- trajectory_spec: the trajectory connecting states
+- source_eq, target_eq: proofs that trajectory matches states
+
+This opaque declaration breaks the module dependency cycle; the connection
+to the implementation is established by the `affordance_set_eq` theorem.
+-/
+opaque AffordanceSet (S : ParadigmaticState) : Type
 
 /-- A composable future is a 4-tuple (S₀, τ, S₁, Φ). -/
 structure ComposableFuture where

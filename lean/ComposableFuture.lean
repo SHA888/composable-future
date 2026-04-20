@@ -5,6 +5,7 @@ import ComposableFuture.Core.Stateless
 import ComposableFuture.Core.Indexed
 import ComposableFuture.Core.WeakAssoc
 import ComposableFuture.Core.Probabilistic
+import ComposableFuture.Core.Affordance
 
 /-!
 # Composable Future Theory
@@ -23,6 +24,7 @@ The main components are:
 - Core.Indexed: Indexed/graded monad construction for general case (Orchard, Petricek, Mycroft 2014; Orchard, Wadler, Eades 2020)
 - Core.WeakAssoc: Weak associativity theorems for path-dependent case
 - Core.Probabilistic: Kleisli extension for probabilistic trajectories
+- Core.Affordance: Φ as dependent type, affordance composition (Phase 4)
 
 ## Note on Open Problem Numbering
 

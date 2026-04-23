@@ -77,25 +77,21 @@ When restricted to stateless futures, Composable Future forms a category:
 straightforward once the indexed trajectory refactor is complete.
 -/
 
-/-- Main Phase 2 theorem: Associativity for stateless futures.
-    
-    The associativity proof relies on the fact that `seqBind` constructs futures
-    by directly extracting source from F and target from G. This makes the
-    composition definitionally associative in the stateless case.
-    
-    For the stateful case (Open Problem 1), this proof would fail because trajectory
-    composition would need to consider the path history.
-    
-    **Note on compatibility proofs**: 
-    - For `(F >>= G) >>= H`, we need `(F >>= G).S₁ = H.S₀`
-      This follows from `(F >>= G).S₁ = G.S₁` (by seqBind definition) and `h₂: G.S₁ = H.S₀`
-    - For `F >>= (G >>= H)`, we need `F.S₁ = (G >>= H).S₀`
-      This follows from `(G >>= H).S₀ = G.S₀` (by seqBind definition) and `h₁: F.S₁ = G.S₀`
-    
-    **Status**: Proof skeleton uses minimal hypotheses h₁ and h₂.
-    The outer compatibility proofs are derivable from these.
-    -/
-theorem assoc_stateless
+/-- Endpoint-extraction associativity for stateless futures.
+
+Inherits the same caveat as `Laws.seqBind_endpoint_assoc`: this is
+associativity of endpoint extraction, not of trajectory composition.
+Because `Trajectory.isStateless` is currently `True` for every trajectory
+(see Future.lean §"Phase 2.1: Placeholder"), this theorem is in fact
+exactly the unrestricted version restricted to a vacuous subtype.
+
+The substantive stateless theorem — "function composition of stateless
+trajectories is associative" — requires (a) giving stateless trajectories
+a function representation `S₀.toType → S₁.toType` and (b) defining
+`seqBind` via function composition. Then associativity follows from
+`Function.comp.assoc`. This is Phase 2.2 work.
+-/
+theorem assoc_stateless_endpoint
     (F G H : StatelessFuture)
     (h₁ : F.val.S₁ = G.val.S₀)
     (h₂ : G.val.S₁ = H.val.S₀)

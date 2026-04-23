@@ -77,12 +77,21 @@ Where `Id` is the null future — a transition that changes nothing.
 ```
 (A >>= B) >>= C  =  A >>= (B >>= C)
 ```
-*Status: **Resolved** (Phase 2.3).* 
-- **Stateless case**: Proven by definitional equality in `Stateless.lean`
-- **General case**: Resolved via indexed monad construction in `Indexed.lean`
-- **Weak form**: Affordance-level associativity proven in `WeakAssoc.lean`
+*Status: **Endpoint-extraction version proved; substantive version open.***
 
-Path-dependent `τ` no longer blocks associativity — the indexed/graded monad framework provides the resolution.
+- **Endpoint-extraction associativity** (`Laws.seqBind_endpoint_assoc`,
+  `Stateless.assoc_stateless_endpoint`, `IndexedFuture.endpoint_assoc`):
+  proved by `rfl`. The v0.1 `seqBind` extracts only `F.τ.source` and
+  `H.τ.target`, so associativity is the trivial fact that endpoint pairing
+  is associative — not that paradigm trajectories compose associatively.
+- **Weak form** (`WeakAssoc.weak_assoc_affordance`,
+  `WeakAssoc.weak_assoc_states`): affordance-level and state-level
+  equivalence-up-to. These are honest as stated.
+- **Substantive (path-composing) associativity**: open Phase 2 work.
+  Requires `Trajectory` to carry an internal path so `seqBind` actually
+  concatenates trajectory data. The proof would then follow from
+  `List.append_assoc`. See `proofs/notes.md` §"Open: Substantive
+  Associativity" for the sketch.
 
 **Commutativity of parallel**
 ```

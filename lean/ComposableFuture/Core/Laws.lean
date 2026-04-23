@@ -4,12 +4,29 @@ import ComposableFuture.Core.Operators
 # Composable Future Laws
 
 This module states and proves the fundamental laws of the Composable Future theory:
-- Left identity: Id >>= F = F (stated, OP9)
-- Right identity: F >>= Id = F (stated, OP10)
-- Closure: Sequential composition produces a valid future (✅ proved)
-- Associativity: (F >>= G) >>= H = F >>= (G >>= H) (✅ proved — holds for all futures)
-- Well-formedness preservation: seqBind preserves well-formed futures (stated, OP12)
-- Non-commutativity: F ⊗ G ≠ G ⊗ F (stated, OP3)
+- Left identity (under well-formedness): Id >>= F = F (proved, OP9)
+- Right identity (under well-formedness): F >>= Id = F (proved, OP10)
+- Closure: Sequential composition produces a valid future (proved)
+- Endpoint-extraction associativity: `seqBind_endpoint_assoc` (proved)
+- Well-formedness preservation: seqBind preserves well-formed futures (proved, OP12)
+- Non-commutativity (component-order witness): `parTensor_component_order`
+
+## Honest framing of the associativity result
+
+The `seqBind_endpoint_assoc` theorem below proves a **weaker** associativity
+than the one a paradigm-composition theory would ultimately want. Because
+the v0.1 `Trajectory` carries only its source and target endpoints (no
+internal path), `seqBind` does not actually compose trajectories — it
+extracts and re-pairs endpoints. Associativity therefore holds by
+*definitional equality*, but the underlying claim is "the endpoints
+associate", not "paradigm-trajectories associate".
+
+The full path-composing version of `seqBind` is the open Phase 2 work:
+giving `Trajectory` an internal path representation (e.g. a `List
+ParadigmaticState` of intermediate stages) so that `seqBind` concatenates
+paths and associativity follows from `List.append_assoc` — a non-trivial
+proof of the substantive theorem. See `proofs/attempt-associativity.md`
+for the design history.
 -/
 
 namespace ComposableFuture
@@ -52,16 +69,23 @@ theorem seqBind_well_formed (F G : ComposableFuture) (h : F.S₁ = G.S₀)
   · exact hF.1
   · exact hG.2
 
-/-- Associativity of sequential bind.
-    
-    This holds for all ComposableFutures by definitional equality of seqBind.
-    The seqBind definition directly extracts F.τ.source and G.τ.target,
-    making both sides of the equation construct identical futures:
-    {S₀ := F.S₀, τ := {source := F.τ.source, target := H.τ.target}, S₁ := H.S₁, Φ := H.Φ}
-    
-    Note: This resolves Open Problem 1 for the general case. Path-dependence
-    is addressed via the indexed monad approach (Core/Indexed.lean). -/
-theorem assoc (F G H : ComposableFuture) (hFG : F.S₁ = G.S₀) (hGH : G.S₁ = H.S₀) :
+/-- Endpoint-extraction associativity of sequential bind.
+
+This is **not** the substantive paradigm-composition associativity. The
+v0.1 `seqBind` extracts only `F.τ.source` and `H.τ.target` and discards
+all intermediate trajectory data, so both sides of the equation reduce
+to the same record `{S₀ := F.S₀, τ := {source := F.τ.source,
+target := H.τ.target}, S₁ := H.S₁, Φ := H.Φ}` by definitional equality.
+What this theorem actually says: "endpoint extraction is associative."
+What it does **not** say: "trajectory composition is associative."
+
+The substantive version requires `Trajectory` to carry an internal path
+(e.g. `List ParadigmaticState`) so that `seqBind` concatenates paths
+non-trivially. The proof would then follow from `List.append_assoc`
+rather than `rfl`. This is the open Phase 2 refactor; see
+`proofs/attempt-associativity.md`. -/
+theorem seqBind_endpoint_assoc
+    (F G H : ComposableFuture) (hFG : F.S₁ = G.S₀) (hGH : G.S₁ = H.S₀) :
     seqBind (seqBind F G hFG) H (by exact hGH) =
     seqBind F (seqBind G H hGH) (by exact hFG) := by
   simp [seqBind]

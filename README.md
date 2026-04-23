@@ -2,9 +2,9 @@
 
 A formal theory of paradigmatic futures as composable algebraic structures.
 
-**Status:** Phase 2 complete — positioning paper drafted  
+**Status:** Phase 2 partial — positioning paper drafted (v0.1, Zenodo)  
 **Track:** Theory (public) + Applied formalization (private)  
-**Latest:** Level 1 positioning paper (8 pages) ready for arXiv submission
+**Latest:** Level 1 positioning paper (8 pages) — [Zenodo preprint](https://zenodo.org/) (v0.1, 6 April 2026)
 
 ---
 
@@ -159,7 +159,7 @@ Positioning paper (Level 1)         ← ✅ COMPLETE (paper/composable-future-le
 - State open problems explicitly
 - 8 pages, 16 priors, PDF compiled
        ↓
-arXiv submission (math.CT / cs.LO)  ← pending endorsement
+Zenodo preprint (v0.1)              ← ✅ PUBLISHED (6 April 2026)
        ↓
 Peer-reviewed submission
        ↓
@@ -297,11 +297,16 @@ After install, restart your terminal (or `source ~/.bashrc` on Linux) so `lake` 
 
 ## What's Next
 
-**Phase 2 is complete.** The positioning paper has been drafted and is ready for arXiv submission pending endorsement.
+**Phase 2 is partial.** The positioning paper (v0.1) is on Zenodo. The
+endpoint-extraction associativity result is proved; the substantive
+path-composition version is the open work.
 
 ### Immediate Next Steps
 
-1. **arXiv submission** — Find math.CT or cs.LO endorser (deadline: April 19, 2026)
+1. **Substantive associativity refactor** — give `Trajectory` an internal
+   path so `seqBind` concatenates non-trivially; prove the real theorem
+   via `List.append_assoc`. See `TODO.md` §"Phase 2 — Substantive
+   Associativity Refactor" for the step-by-step plan.
 2. **Phase 3 — Probabilistic Extension** (3–6 months)
    - Extend τ : S₀ → 𝒫(S₁) as Markov kernels
    - Implement Kleisli category construction in Lean
@@ -319,10 +324,20 @@ After install, restart your terminal (or `source ~/.bashrc` on Linux) so `lake` 
 
 ## Open Problems
 
-**OP1: Associativity under path-dependence** ✅ **RESOLVED**
-- Associativity holds for all futures by definitional equality of `seqBind`
-- Indexed monad construction provides structured tracking of path-dependence
-- Weak associativity (affordance-level) also proven
+**OP1: Associativity under path-dependence** ⚠ **PARTIAL**
+- *Endpoint-extraction* associativity proved by `rfl` for all futures
+  (`Laws.seqBind_endpoint_assoc`), but this is only the trivial fact that
+  endpoint pairing is associative — not that paradigm trajectories compose
+  associatively. The v0.1 `seqBind` discards all trajectory data, so
+  `rfl` closes for reasons unrelated to the substantive theorem.
+- Indexed/graded scaffolding present (`IndexedFuture.endpoint_assoc`) but
+  trivial: `TrajectoryType := Unit` at v0.1, so there is nothing yet for
+  the index to classify.
+- Weak associativity (affordance-level, state-level) proved honestly in
+  `WeakAssoc.lean`.
+- *Substantive* path-composition associativity is open — requires giving
+  `Trajectory` an internal path so `seqBind` concatenates non-trivially.
+  See `TODO.md` §"Phase 2 — Substantive Associativity Refactor".
 
 **Remaining open problems:**
 

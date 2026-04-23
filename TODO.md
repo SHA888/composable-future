@@ -18,9 +18,8 @@
 [x]  Lean 4 scaffold — COMPLETE (lake build passes, all sorry documented)
 [x]  Lean 4 + Mathlib installation — COMPLETE
 [x]  Phase 1 gate check — COMPLETE (build passes, sorry documented, notes updated)
-[x]  Phase 2 gate check — COMPLETE (assoc proved, paper drafted)
-[x]  Level 1 positioning paper — COMPLETE (8 pages, 16 priors, PDF compiled)
-[ ]  arXiv submission — pending endorsement
+[~]  Phase 2 gate check — PARTIAL (endpoint-extraction assoc proved; substantive version open)
+[x]  Level 1 positioning paper — COMPLETE (8 pages, 16 priors, PDF compiled, v0.1 on Zenodo)
 ```
 
 ## PROGRESS TRACKING
@@ -29,13 +28,13 @@
 |------|--------------------------------|----------------|------------------------------|
 | 0    | Audit + repo foundation         | ✅ complete     | Syntheses filled              |
 | 1    | Lean 4 scaffold                 | ✅ complete     | lake build passes            |
-| 2    | Stateless associativity proof   | ✅ complete     | assoc_stateless proved + paper drafted |
+| 2    | Paradigm associativity proof    | ⚠ partial       | endpoint-extraction proved; path-composition open |
 
 ## IMMEDIATE NEXT ACTIONS
 
-1.  Complete Phase 2: Write `proofs/stateless-case.md` informal proof sketch (P2.2)
-2.  Attempt Lean proof of `assoc_stateless` theorem
-3.  Find math.CT arXiv endorser before 2026-04-19
+1.  Phase 2 — Substantive Associativity Refactor (see dedicated section below)
+2.  Phase 2 — Gate check: does `seqBind_assoc` close non-trivially under the new `Trajectory` structure?
+3.  If gate check passes: revise paper 1 around the real theorem.
 
 ---
 
@@ -126,12 +125,7 @@ Read in this order. Everything else waits until all 7 are done.
   - DOI: 10.5281/zenodo.19433811
   - Version 0.1 — April 6, 2026
 
-- [ ] 🟡 arXiv submission — complete if endorser found before 2026-04-19
-  - Submission ID: 7444737 (saved, expires 2026-04-19)
-  - Endorsement code: NBFD6A
-  - Primary: math.CT · Cross-list: cs.LO
-  - [ ] Find math.CT endorser via cited paper abstract pages
-        (check "Which authors are endorsers?" on Katis et al., Orchard et al.)
+- [-] 🟡 arXiv submission — deferred (no endorser; Zenodo preprint stands as v0.1 of record)
 
 - [ ] 🟢 Cross-post to PhilArchive
   - Futures + logic community overlap
@@ -241,14 +235,175 @@ Every `sorry` is an explicit open problem. No vague mathematics allowed.
 
 ---
 
-## PHASE 2 — Stateless Associativity Proof ✅ COMPLETE
+## PHASE 2 — Substantive Associativity Refactor ⚠ OPEN
+> Gate: `seqBind_assoc` closes non-trivially (by `List.append_assoc`, not by `rfl`).
+> Status: ⚠ OPEN — endpoint-extraction version proved; path-composition version is the real work.
+> Estimated effort: 1–3 weeks (depends on how many downstream proofs shift)
+
+**Why this refactor:** the v0.1 `seqBind` discards all trajectory data
+and keeps only endpoints, so every "associativity" theorem in the
+codebase closes by `rfl` or `simp [seqBind]`. That is not
+paradigm-composition associativity — it is endpoint pairing
+associativity. The substantive theorem the paper's narrative invokes
+requires `Trajectory` to carry an internal path that `seqBind`
+concatenates non-trivially.
+
+**Run each step locally and `lake build` between them** — the build is
+the gate. I (Claude) can't run `lake` in the sandbox, so each step below
+needs your local verification before advancing.
+
+### Step 2.1 — Extend `Trajectory` with an internal path
+
+**File:** `lean/ComposableFuture/Core/Future.lean`
+
+```lean
+structure Trajectory where
+  source       : ParadigmaticState
+  target       : ParadigmaticState
+  intermediate : List ParadigmaticState
+  deriving Repr
+```
+
+Run: `lake build ComposableFuture.Core.Future`
+
+Expected failures: all existing `{ source := _, target := _ }`
+literals elsewhere in the tree will stop compiling because the field
+`intermediate` is now required. This is the work of steps 2.2–2.5.
+
+### Step 2.2 — Update `seqBind` to concatenate paths
+
+**File:** `lean/ComposableFuture/Core/Operators.lean`
+
+```lean
+def seqBind (F G : ComposableFuture) (h : F.S₁ = G.S₀) : ComposableFuture :=
+  { S₀ := F.S₀
+    τ  := { source       := F.τ.source
+          , target       := G.τ.target
+          , intermediate := F.τ.intermediate ++ [F.S₁] ++ G.τ.intermediate }
+    S₁ := G.S₁
+    Φ  := G.Φ }
+```
+
+Update `parTensor`, `fork`, `merge`, `idFuture` likewise:
+
+- `idFuture S`: `intermediate := []`
+- `parTensor F G`: `intermediate := []` at v0.1 (parallel composition
+  does not linearize into a path; Phase 2 follow-up can reconsider)
+- `fork F _G`: inherit `F.τ.intermediate`
+- `merge F G`: `intermediate := F.τ.intermediate` at v0.1
+
+Run: `lake build ComposableFuture.Core.Operators`
+
+### Step 2.3 — Update call sites in other modules
+
+**Files that construct Trajectory literals (search for `{ source :=`):**
+
+- `lean/ComposableFuture/Core/Indexed.lean` (inside `IndexedFuture.seqBind`,
+  `IndexedFuture.idFuture`)
+- `lean/ComposableFuture/Core/Affordance.lean` (inside
+  `composeSequential`, `composeParallel`, `affordance_set_well_defined`)
+
+Add `intermediate := []` (or the analogous concatenation for `seqBind`-like
+operations) at each site.
+
+Run: `lake build`
+
+### Step 2.4 — Prove substantive `seqBind_assoc`
+
+**File:** `lean/ComposableFuture/Core/Laws.lean`
+
+Replace `seqBind_endpoint_assoc` (or add alongside, then remove the old
+one in a follow-up commit):
+
+```lean
+theorem seqBind_assoc (F G H : ComposableFuture)
+    (hFG : F.S₁ = G.S₀) (hGH : G.S₁ = H.S₀) :
+    seqBind (seqBind F G hFG) H (by exact hGH) =
+    seqBind F (seqBind G H hGH) (by exact hFG) := by
+  simp [seqBind, List.append_assoc]
+```
+
+If `simp` doesn't close it, the obstruction is diagnostic — investigate
+before forcing a proof. Likely next tactic: `ext` + field-by-field
+destruction, with `List.append_assoc` on the `intermediate` field and
+`rfl` elsewhere.
+
+Run: `lake build ComposableFuture.Core.Laws`
+
+### Step 2.5 — Give `Trajectory.isStateless` real meaning
+
+**File:** `lean/ComposableFuture/Core/Future.lean`
+
+Replace the `True` placeholder:
+
+```lean
+/-- A trajectory is stateless if it has no intermediate stages —
+    equivalently, it is fully determined by its source and target. -/
+def Trajectory.isStateless (τ : Trajectory) : Prop := τ.intermediate = []
+```
+
+Update `Stateless.lean` — `seqBind_preserves_stateless` will now
+require `hF.intermediate = []` and `hG.intermediate = []` to conclude
+`(F >>= G).τ.intermediate = []`. That conclusion is **false** in
+general (concatenation of empty lists with `[F.S₁]` inserted gives
+`[F.S₁]`, not `[]`). So `seqBind_preserves_stateless` is actually false
+under the substantive definition, and the right theorem is a
+*weakening*: stateless composition yields a *one-stage* trajectory,
+not a stateless one. Rename to `seqBind_stateless_has_unit_path` and
+prove the weaker statement.
+
+This is an example of where step 2.5 surfaces something the endpoint
+version hid.
+
+Run: `lake build ComposableFuture.Core.Stateless`
+
+### Step 2.6 — Rebuild everything, fix any remaining fallout
+
+Run: `lake build`
+
+If `WeakAssoc.lean`, `Probabilistic.lean`, or `Affordance.lean` break,
+they likely need `intermediate := []` inserts or analogous path-aware
+updates.
+
+---
+
+## Phase 2 Gate Check
+
+After step 2.6 passes, verify the substantive theorems:
+
+- [ ] `lake build` passes with zero errors
+- [ ] `Laws.seqBind_assoc` closes **without** `rfl` alone (the proof
+      actually uses `List.append_assoc`)
+- [ ] `Stateless.seqBind_stateless_has_unit_path` (or whatever the
+      renamed theorem ends up being) proves the correct weakening
+- [ ] `Indexed.lean` is either (a) updated to the new `Trajectory` shape
+      or (b) explicitly marked as "indexed machinery requires Phase 2
+      follow-up" if updating it is out of scope for this sprint
+- [ ] `#print axioms` on `Laws.seqBind_assoc` shows no unexpected axioms
+      (only `propext`, `Quot.sound`, `Classical.choice` are routine)
+
+**If the gate passes:** you have the real theorem. Paper 1 v1.0
+revision can cite `Laws.seqBind_assoc` with proof-by-`List.append_assoc`
+rather than `rfl`.
+
+**If the gate fails:** investigate the specific obstruction. A genuine
+counterexample or a principled restriction (e.g. "associativity holds
+only when intermediate states are paradigm-coherent in some sense") is
+itself paper-worthy — possibly more interesting than the positive
+result.
+
+---
+
+## PHASE 2 Historical — Stateless Associativity Proof (superseded)
 > Gate: associativity proved or disproved for stateless case (τ path-independent)
-> Status: ✅ COMPLETE
+> Status: ⚠ PARTIAL — endpoint-extraction version only
 > Actual effort: 2 weeks (completed April 2026)
 
-**What this phase produces:**
-Either a Lean proof of `assoc_stateless`, or a formal counterexample
-showing associativity breaks. Both outcomes resolve Open Problem 1.
+**What this phase produced:**
+Endpoint-extraction associativity (`Laws.seqBind_endpoint_assoc`,
+`Stateless.assoc_stateless_endpoint`) — proved by `rfl` because v0.1
+`seqBind` discards trajectory data. Superseded by the substantive
+refactor above.
 
 ### P2.1 — Formal Setup
 

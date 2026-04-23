@@ -21,20 +21,28 @@ structure Trajectory where
   target : ParadigmaticState
   deriving Repr
 
--- Note: The concrete implementation is `AffordanceDescriptor S` in
--- ComposableFuture.Core.Affordance. A direct definitional connection is blocked
--- by a universe mismatch: AffordanceDescriptor S lives in Type 1 (because
--- ParadigmaticState contains Type fields), while uses here require Type.
--- Until that is resolved, this placeholder keeps downstream modules compiling.
--- This addresses Open Problem 1 (Affordance set structure, Phase 4).
+-- Note: The richer concrete representation is `AffordanceDescriptor S` in
+-- ComposableFuture.Core.Affordance. A direct definitional connection to that
+-- type is blocked by a universe mismatch: AffordanceDescriptor S lives in
+-- Type 1 (because ParadigmaticState contains Type fields), while uses here
+-- require Type.
+--
+-- Open Problem 1 (Phase 4): replace this Unit-valued placeholder with a
+-- richer Type-level structure, either by restricting ParadigmaticState's
+-- component types to a small universe or by lifting the whole ComposableFuture
+-- structure to Type 1.
 
-/-- Placeholder: affordance set over a paradigmatic state.
+/-- Placeholder affordance set over a paradigmatic state.
 
-Full implementation is in `AffordanceDescriptor S` (Core.Affordance).
-Open Problem 1: connect this placeholder to that type once the universe
-level is reconciled.
+At v0.1 this is the unit type — every state trivially has one "affordance"
+slot, which is enough for the compositional laws below (associativity,
+closure, well-formedness) to be stated and proved without appeal to
+Φ's internal structure.
+
+The richer representation `AffordanceDescriptor S` (Core.Affordance) is
+carried alongside as `AffordanceSet.impl` in Type 1, for Phase 4 work.
 -/
-def AffordanceSet (S : ParadigmaticState) : Type := sorry
+def AffordanceSet (_S : ParadigmaticState) : Type := Unit
 
 /-- A composable future is a 4-tuple (S₀, τ, S₁, Φ). -/
 structure ComposableFuture where

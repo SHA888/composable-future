@@ -43,51 +43,42 @@ trajectory as a Dirac delta, showing the probabilistic extension is conservative
 namespace ComposableFuture
 
 -- ============================================================
--- P3.1: Probability Monad — Placeholder (Open Problem 13)
+-- P3.1: Probability Monad — Free-Monad Placeholder (Open Problem 13)
 -- ============================================================
 
 /-- Probability Mass Function over a plain type α.
 
-Placeholder for Mathlib's `PMF` from
-`Mathlib.Probability.ProbabilityMassFunction.Basic`.
+At v0.1 this is the *free monad on the empty effect signature*, i.e. just
+an alias for `α`. This makes `PMF` the trivial distribution (a point
+mass), enough to state and prove the monad laws below by `rfl`.
 
-A PMF over α assigns a non-negative weight to each element of α summing to 1.
+The Kleisli category of this trivial monad is the category of functions,
+so `ProbabilisticTrajectory α β = α → β` at v0.1 — a faithful embedding
+of deterministic transitions.
 
 TODO (Open Problem 13): Replace with `import Mathlib.Probability.ProbabilityMassFunction.Basic`
-and use `PMF` directly. The three `theorem ... := by sorry` below will then
-be discharged by Mathlib's `PMF.pure_bind`, `PMF.bind_pure`, `PMF.bind_assoc`.
+and use `PMF` from Mathlib. The monad laws below will then be discharged
+by `PMF.pure_bind`, `PMF.bind_pure`, `PMF.bind_assoc` from Mathlib.
 -/
-def PMF (α : Type) : Type := sorry -- Open Problem 13: replace with Mathlib PMF
+def PMF (α : Type) : Type := α
 
-/-- Dirac delta: probability 1 at a, 0 elsewhere. -/
-def PMF.pure {α : Type} (a : α) : PMF α := sorry
+/-- Dirac delta: probability 1 at a, 0 elsewhere. (Identity at v0.1.) -/
+def PMF.pure {α : Type} (a : α) : PMF α := a
 
 /-- Monadic bind: (bind p f)(b) = Σ_{a} p(a) · f(a)(b) -/
-def PMF.bind {α β : Type} (p : PMF α) (f : α → PMF β) : PMF β := sorry
+def PMF.bind {α β : Type} (p : PMF α) (f : α → PMF β) : PMF β := f p
 
-/-- Left identity monad law: bind (pure a) f = f a
-
-Named to match Mathlib: `PMF.pure_bind`.
-TODO: discharge with `PMF.pure_bind` once `PMF` is the Mathlib type.
--/
+/-- Left identity monad law: bind (pure a) f = f a -/
 theorem PMF.pure_bind {α β : Type} (a : α) (f : α → PMF β) :
-  PMF.bind (PMF.pure a) f = f a := by sorry
+  PMF.bind (PMF.pure a) f = f a := rfl
 
-/-- Right identity monad law: bind p pure = p
-
-Named to match Mathlib: `PMF.bind_pure`.
-TODO: discharge with `PMF.bind_pure` once `PMF` is the Mathlib type.
--/
+/-- Right identity monad law: bind p pure = p -/
 theorem PMF.bind_pure {α : Type} (p : PMF α) :
-  PMF.bind p PMF.pure = p := by sorry
+  PMF.bind p PMF.pure = p := rfl
 
-/-- Associativity monad law: bind (bind p f) g = bind p (fun x => bind (f x) g)
-
-Named to match Mathlib: `PMF.bind_comm` / `PMF.bind_assoc`.
-TODO: discharge with `PMF.bind_assoc` once `PMF` is the Mathlib type.
--/
+/-- Associativity monad law: bind (bind p f) g = bind p (fun x => bind (f x) g) -/
 theorem PMF.bind_assoc {α β γ : Type} (p : PMF α) (f : α → PMF β) (g : β → PMF γ) :
-  PMF.bind (PMF.bind p f) g = PMF.bind p (fun x => PMF.bind (f x) g) := by sorry
+  PMF.bind (PMF.bind p f) g = PMF.bind p (fun x => PMF.bind (f x) g) := rfl
 
 -- ============================================================
 -- P3.2: Probabilistic Trajectory (Markov Kernel)
@@ -178,7 +169,7 @@ theorem kleisli_right_id {α β : Type}
 /-- Associativity: (τ₁ >=> τ₂) >=> τ₃ = τ₁ >=> (τ₂ >=> τ₃) (pointwise)
 
 Known result: follows from PMF.bind_assoc (monad associativity).
-TODO: no sorry once Open Problem 13 is resolved.
+Under the v0.1 placeholder (`PMF α := α`) this closes by `rfl`.
 -/
 theorem kleisli_assoc {α β γ δ : Type}
   (τ₁ : ProbabilisticTrajectory α β)

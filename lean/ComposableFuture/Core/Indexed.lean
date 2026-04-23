@@ -125,28 +125,26 @@ def IndexedFuture.idFuture
     Φ := ()
     well_formed := by exact ⟨rfl, rfl⟩ }
 
-/-! ## Indexed Associativity Theorem
+/-! ## Indexed Endpoint-Extraction Associativity
 
-The key result: associativity holds in the indexed setting because
-TrajectoryType.compose is associative by definition (from the Monoid instance).
+The theorem below inherits the same caveat as `Laws.seqBind_endpoint_assoc`
+and `Stateless.assoc_stateless_endpoint`: it is endpoint-extraction
+associativity, not paradigm-trajectory composition associativity. With
+`TrajectoryType := Unit`, the graded structure is also currently trivial,
+so the indexed framing does not yet *add* anything beyond the unindexed
+result.
 
-This resolves the general (path-dependent) case by encoding path-dependence
-into the trajectory type index, making associativity hold at the level of
-the graded monad structure.
--/
+The substantive indexed associativity — the result that Orchard,
+Petricek & Mycroft (2014) actually proves — requires (a) `TrajectoryType`
+to be a non-trivial free monoid over trajectory stages, and (b) the
+underlying `Trajectory` to carry a path that `seqBind` actually
+concatenates. Both are open Phase 2 refactors. -/
 
-/-- **Theorem: Indexed Associativity**
+/-- Endpoint-extraction associativity for indexed futures.
 
-    For indexed futures F, G, H with compatible states:
-    
-    (F >>= G) >>= H  =  F >>= (G >>= H)
-    
-    Both sides have type: IndexedFuture (t₁ ⊗ t₂ ⊗ t₃)
-    
-    **Proof**: By definitional equality of IndexedFuture.seqBind and
-    associativity of TrajectoryType.compose (from Monoid instance).
-    -/
-theorem IndexedFuture.assoc
+See the section header above for the honest framing of what this proves
+versus what a substantive indexed-monad associativity would require. -/
+theorem IndexedFuture.endpoint_assoc
     {t₁ t₂ t₃ : TrajectoryType}
     [tc : TrajectoryTypeCompose TrajectoryType]
     (F : IndexedFuture t₁)

@@ -110,17 +110,48 @@ as we work through the formalization in Lean 4.
 - **Dependencies**: OP1
 
 ## Phase 2 Status Summary
-- ✅ General associativity proved (`Laws.lean` — holds for all futures by definitional equality)
-- ✅ Stateless case associativity proved (`Stateless.lean` — definitional equality)
-- ✅ Indexed monad construction implemented (`Indexed.lean`):
-  - `TrajectoryType` as grading monoid
-  - `TrajectoryTypeCompose` typeclass with associativity/identity laws
-  - `IndexedFuture t` graded by trajectory type
-  - `IndexedFuture.assoc` theorem using cast with monoid law
-- ✅ Weak associativity theorems proved (`WeakAssoc.lean`):
+- ⚠ **Endpoint-extraction associativity proved** (`Laws.seqBind_endpoint_assoc`):
+  holds for all futures by definitional equality of `seqBind`. This is **not**
+  paradigm-trajectory composition associativity — it is the weaker statement
+  that endpoint pairing is associative. The v0.1 `seqBind` extracts only
+  endpoints and discards trajectory data, so `rfl` closes the proof for
+  reasons unrelated to the substantive theorem. The substantive version is
+  the open Phase 2 refactor (see "Open: Substantive Associativity" below).
+- ⚠ **Stateless restriction proved** (`Stateless.assoc_stateless_endpoint`):
+  same caveat; restricted to the (currently vacuous) stateless subtype.
+- ⚠ **Indexed/graded scaffolding** (`Indexed.lean`):
+  - `TrajectoryType := Unit` (subsingleton — Phase 2 will promote to free monoid)
+  - `TrajectoryTypeCompose` instance laws hold trivially by `rfl`
+  - `IndexedFuture.endpoint_assoc` proved, with the same endpoint caveat
+- ✅ **Weak associativity theorems proved** (`WeakAssoc.lean`) — these are
+  honest as stated:
   - `weak_assoc_affordance`: associativity at affordance level
   - `weak_assoc_states`: associativity at state level
-- ⏳ Monoid law proofs have `sorry` placeholders (pending trajectory refactor)
+
+## Open: Substantive Associativity (Phase 2 refactor)
+
+The path-composition version of `seqBind` requires `Trajectory` to carry an
+internal path. Sketch:
+
+```lean
+structure Trajectory where
+  source : ParadigmaticState
+  target : ParadigmaticState
+  path   : List ParadigmaticState   -- intermediate stages
+
+def seqBind F G h : ComposableFuture :=
+  { S₀ := F.S₀
+    τ  := { source := F.τ.source
+          , target := G.τ.target
+          , path   := F.τ.path ++ [F.S₁] ++ G.τ.path }
+    S₁ := G.S₁
+    Φ  := G.Φ }
+```
+
+Then `(F >>= G) >>= H` and `F >>= (G >>= H)` produce the same `path`
+*non-trivially* (both equal `F.τ.path ++ [F.S₁] ++ G.τ.path ++ [G.S₁] ++
+H.τ.path` by `List.append_assoc`). This proves the substantive theorem
+that the paper's narrative claims.
 
 ## Phase 1 Status Summary
 - ✅ Types defined: ParadigmaticState, Trajectory, ComposableFuture

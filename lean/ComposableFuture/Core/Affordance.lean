@@ -1,4 +1,5 @@
 import ComposableFuture.Core.Future
+import ComposableFuture.Core.Operators
 
 /-!
 # Affordance Set as Dependent Type (Phase 4)
@@ -46,7 +47,9 @@ namespace ComposableFuture
 An affordance at state S₀ describes a potential trajectory to some target state S₁,
 along with evidence that this transition is valid within the current paradigm.
 
-This replaces the earlier `sorry` placeholder in `Future.lean`.
+This is the richer (Type 1) representation that `AffordanceSet` in
+`Future.lean` will eventually point to once the universe level is
+reconciled (Phase 4).
 -/
 structure AffordanceDescriptor (S₀ : ParadigmaticState) where
   /-- The target state this affordance leads to -/
@@ -63,9 +66,10 @@ structure AffordanceDescriptor (S₀ : ParadigmaticState) where
   source_eq : trajectory_spec.source = S₀
   target_eq : trajectory_spec.target = S₁
 
--- AffordanceSet is declared as `def … := sorry` in Future.lean (Type).
--- AffordanceDescriptor is the concrete implementation here (Type 1).
--- Universe mismatch prevents a direct equality proof; see Open Problem 1.
+-- `AffordanceSet` is declared in Future.lean as `Unit` (Type 0) to keep
+-- downstream code in `Type`. `AffordanceDescriptor` is the richer (Type 1)
+-- representation carried here. A universe mismatch prevents a direct
+-- definitional equality; see Open Problem 1 (Phase 4).
 
 /-- Concrete implementation of the affordance set as a dependent record.
 
@@ -84,20 +88,8 @@ def AffordanceSet.impl (S : ParadigmaticState) : Type 1 :=
 -- P4.1: Affordance Composition
 -- ============================================================
 
-/-- Tensor product of paradigmatic states: S₁ ⊗ S₂
-
-The tensor product combines two paradigmatic states component-wise.
-This is needed for affordance composition in parallel contexts.
-
-Mathematically:
-  (A₁, C₁, I₁) ⊗ (A₂, C₂, I₂) = (A₁ × A₂, C₁ × C₂, I₁ × I₂)
-
-This is a cartesian product at the type level, forming a "joint paradigm".
--/
-def paradigmaticTensor (S₁ S₂ : ParadigmaticState) : ParadigmaticState where
-  assumptions := S₁.assumptions × S₂.assumptions
-  constraints := S₁.constraints × S₂.constraints
-  infrastructure := S₁.infrastructure × S₂.infrastructure
+-- `paradigmaticTensor` is defined in Core.Operators so both modules can
+-- share the component-wise cartesian state product.
 
 scoped infixr:60 " ⊗ " => paradigmaticTensor
 
@@ -170,17 +162,16 @@ relations between organism and environment, prior to actualization.
 def PreRealizedAffordance (S₀ : ParadigmaticState) : Type :=
   AffordanceSet S₀
 
-/-- Post-realization affordance: a value-level set of actual affordances.
+/-- Post-realization affordance: a value-level list of actual affordances.
 
-After S₁ is realized, Φ becomes a concrete set of trajectories that
+After S₁ is realized, Φ becomes a concrete list of trajectories that
 were actually available. This is the "actual" view — what was
 truly possible in hindsight.
 
-Note: Universe level issue - AffordanceDescriptor S₀ is in Type 1 due to
-ParadigmaticState containing Type fields. This requires universe polymorphism.
--/
+Note: lives in `Type 1` because `AffordanceDescriptor S₀` does, since
+`ParadigmaticState` has `Type`-valued fields. -/
 def PostRealizedAffordance (S₀ : ParadigmaticState) : Type 1 :=
-  sorry -- Open Problem: Concrete representation of affordance sets
+  List (AffordanceDescriptor S₀)
 
 /-- The canonical map from post-realization to pre-realization.
 
@@ -197,10 +188,12 @@ before realization. Post-realization concrete sets are refinements
 (projections) of this type.
 -/
 def pre_post_correspondence {S₀ : ParadigmaticState}
-  (post : PostRealizedAffordance S₀) :
+  (_post : PostRealizedAffordance S₀) :
   PreRealizedAffordance S₀ :=
-  -- Any element of the post-realized list is a valid pre-realized affordance
-  sorry -- TODO: Choose first element or construct representative
+  -- `PreRealizedAffordance S₀` unfolds to `AffordanceSet S₀`, which is
+  -- `Unit` at v0.1. Every post-realized list maps to the unique pre-realized
+  -- affordance witness — the map is many-to-one, as the comment records.
+  ()
 
 /-- Φ is well-defined at the type level.
 

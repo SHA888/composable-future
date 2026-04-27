@@ -21,6 +21,20 @@ structure Trajectory where
   target : ParadigmaticState
   deriving Repr
 
+/-- Extensionality for `Trajectory`: equality of `source` and `target` implies
+    equality of trajectories. This holds because `Trajectory` currently has no
+    fields beyond its endpoints (Phase 2 may add intermediate data, at which
+    point this lemma will need to be revisited). -/
+theorem Trajectory.ext_eq {τ₁ τ₂ : Trajectory}
+    (h₁ : τ₁.source = τ₂.source)
+    (h₂ : τ₁.target = τ₂.target) :
+    τ₁ = τ₂ := by
+  cases τ₁
+  cases τ₂
+  subst h₁
+  subst h₂
+  rfl
+
 -- Note: The richer concrete representation is `AffordanceDescriptor S` in
 -- ComposableFuture.Core.Affordance. A direct definitional connection to that
 -- type is blocked by a universe mismatch: AffordanceDescriptor S lives in
@@ -42,7 +56,7 @@ closure, well-formedness) to be stated and proved without appeal to
 The richer representation `AffordanceDescriptor S` (Core.Affordance) is
 carried alongside as `AffordanceSet.impl` in Type 1, for Phase 4 work.
 -/
-def AffordanceSet (_S : ParadigmaticState) : Type := Unit
+@[reducible] def AffordanceSet (_S : ParadigmaticState) : Type := Unit
 
 /-- A composable future is a 4-tuple (S₀, τ, S₁, Φ). -/
 structure ComposableFuture where

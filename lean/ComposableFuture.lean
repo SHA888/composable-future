@@ -6,6 +6,7 @@ import ComposableFuture.Core.Indexed
 import ComposableFuture.Core.WeakAssoc
 import ComposableFuture.Core.Probabilistic
 import ComposableFuture.Core.Affordance
+import ComposableFuture.Core.Effect
 
 /-!
 # Composable Future Theory

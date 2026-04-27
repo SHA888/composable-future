@@ -110,8 +110,8 @@ Open Problem 3 (Phase 4): lift this to a quotient under symmetric-monoidal
 equivalence, where the full `parTensor F G = parTensor G F` is replaced by
 an isomorphism of futures rather than strict equality. -/
 theorem parTensor_component_order (F G : ComposableFuture) :
-    (parTensor F G).S₀.assumptions = F.S₀.assumptions × G.S₀.assumptions ∧
-    (parTensor G F).S₀.assumptions = G.S₀.assumptions × F.S₀.assumptions :=
+    ((parTensor F G).S₀.assumptions = (F.S₀.assumptions × G.S₀.assumptions)) ∧
+    ((parTensor G F).S₀.assumptions = (G.S₀.assumptions × F.S₀.assumptions)) :=
   ⟨rfl, rfl⟩
 
 end ComposableFuture

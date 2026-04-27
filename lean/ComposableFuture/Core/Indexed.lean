@@ -185,6 +185,10 @@ theorem IndexedFuture.left_id
   -- under the substitution `h`), and the same Φ.
   subst h
   rcases F with ⟨F_S₀, F_S₁, ⟨τ_src, τ_tgt⟩, _Φ, ⟨hsrc, _htgt⟩⟩
+  -- Reduce structure projections in hypotheses so `simp_all` can close.
+  dsimp only at hsrc _htgt
+  -- `hsrc : τ_src = F_S₀` — substitute to align trajectory endpoints.
+  subst hsrc
   simp_all [IndexedFuture.seqBind, IndexedFuture.idFuture]
 
 /-- Right identity for indexed futures.
@@ -206,6 +210,10 @@ theorem IndexedFuture.right_id
   -- the trajectory endpoints match F's via `F.well_formed.2`.
   subst h
   rcases F with ⟨F_S₀, F_S₁, ⟨τ_src, τ_tgt⟩, _Φ, ⟨_hsrc, htgt⟩⟩
+  -- Reduce structure projections in hypotheses so `simp_all` can close.
+  dsimp only at _hsrc htgt
+  -- `htgt : τ_tgt = F_S₁` — substitute to align trajectory endpoints.
+  subst htgt
   simp_all [IndexedFuture.seqBind, IndexedFuture.idFuture]
 
 /-! ## Concrete Trajectory Types

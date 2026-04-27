@@ -406,14 +406,38 @@ before S₁ is realized?) and Open Problem 4 (does Φ ∘ Φ' hold?).
 
 ### P4.2 — Effect System Connection
 
-- [ ] 🟡 Map Φ to an effect type system
+- [x] 🟡 Map Φ to an effect type system
   - Affordances as computational effects
   - `S₁` as the effect index
-  - Allows reuse of Lean 4's effect type machinery
+  - Models the effect-system pattern internally (parallel formalization;
+    integration with Mathlib's `CategoryTheory.Monad` / indexed-monad
+    scaffolding deferred to a Phase 4 follow-up)
+  - Implemented in: `lean/Core/Effect.lean` — `Effect` alias, `EffectfulFuture`
 
-- [ ] 🟡 Study Orchard et al. indexed monad + effect system
+- [x] 🟡 Study Orchard et al. indexed monad + effect system
   - Their indexed monad tracks effects via type index
   - Φ may be the affordance index playing the same role as effect index
+  - Implemented in: `lean/Core/Effect.lean` — `EffectfulComputation` with `pure`/`bind`
+  - Formalized indexed monad laws: left identity, right identity,
+    endpoint-extraction associativity (`bind_endpoint_assoc`), plus
+    the definitional sanity check `bind_effect_right`. The three
+    Orchard & Petricek (2014) laws hold at the endpoint level; the
+    substantive (path-carrying) versions are blocked on the Phase 2
+    trajectory refactor.
+
+- **Phase-4 brittleness note (v0.1).** The current `Core/Effect.lean` proofs
+  rely on three placeholder facts:
+  1. `Effect S = Unit` (since `AffordanceSet := Unit`) — the four identity-law
+     proofs close `() = ?` by `rfl` / `subst`. They will break when `AffordanceSet`
+     is upgraded under Open Problem 1.
+  2. `Trajectory ≅ ParadigmaticState × ParadigmaticState` — `Trajectory.ext_eq`
+     in `Core/Future.lean` assumes endpoints determine the trajectory. Phase 2
+     trajectory enrichment will require revisiting this lemma.
+  3. `EffectfulFuture.seq` and `EffectfulComputation.bind` discard input
+     trajectory data, mirroring `composeSequential` in `Core/Affordance.lean`
+     (see `Affordance.lean:111–114`). Phase 2 trajectory composition would
+     change this body.
+  These dependencies are flagged in source comments next to each affected proof.
 
 ### P4.3 — Open Problem 2 Resolution
 

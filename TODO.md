@@ -425,19 +425,38 @@ before S₁ is realized?) and Open Problem 4 (does Φ ∘ Φ' hold?).
     substantive (path-carrying) versions are blocked on the Phase 2
     trajectory refactor.
 
-- **Phase-4 brittleness note (v0.1).** The current `Core/Effect.lean` proofs
-  rely on three placeholder facts:
-  1. `Effect S = Unit` (since `AffordanceSet := Unit`) — the four identity-law
-     proofs close `() = ?` by `rfl` / `subst`. They will break when `AffordanceSet`
-     is upgraded under Open Problem 1.
-  2. `Trajectory ≅ ParadigmaticState × ParadigmaticState` — `Trajectory.ext_eq`
-     in `Core/Future.lean` assumes endpoints determine the trajectory. Phase 2
-     trajectory enrichment will require revisiting this lemma.
+- **Phase-4 brittleness note (v0.1).** The earlier draft of this note listed
+  three placeholder dependencies in `Core/Effect.lean`. After the
+  2026-04-28 refactor, the picture is sharper:
+  1. ~~`Effect S = Unit` everywhere~~ — re-audited. Only the **right**-identity
+     laws (`seq_right_id`, `bind_right_id`) actually depend on `Effect`
+     being a singleton. That dependency is now surfaced as an explicit
+     `[Subsingleton (Effect S₁)]` instance argument; v0.1's `Effect = Unit`
+     discharges it automatically and the upgrade under Open Problem 1 will
+     surface the obligation at every call site rather than break silently.
+     The two extensionality lemmas and the two **left**-identity laws were
+     misdiagnosed: their proofs go through for any `Effect` via proof
+     irrelevance plus `subst`, with no Subsingleton needed. Misleading
+     comments to the contrary have been removed.
+  2. `Trajectory ≅ ParadigmaticState × ParadigmaticState` — the old
+     `Trajectory.ext_eq` is renamed to `Trajectory.endpoint_ext` (in
+     `Core/Future.lean`) so every caller's reliance on
+     endpoint-determination is named explicitly. Phase 2 trajectory
+     enrichment will invalidate this lemma, but the rename pre-flags every
+     affected proof.
   3. `EffectfulFuture.seq` and `EffectfulComputation.bind` discard input
      trajectory data, mirroring `composeSequential` in `Core/Affordance.lean`
-     (see `Affordance.lean:111–114`). Phase 2 trajectory composition would
-     change this body.
-  These dependencies are flagged in source comments next to each affected proof.
+     (see `Affordance.lean:111–114`). This remains a substantive Phase 2
+     item: it requires giving `Trajectory` an internal path representation
+     so that `seq` / `bind` concatenate paths rather than rebuild endpoints
+     from type indices. Until then, `seq_endpoint_assoc` and
+     `bind_endpoint_assoc` (already labelled "endpoint-extraction" in their
+     docstrings) are the strongest available statements.
+
+  Net effect: items (1) and (2) are now resolved at the type-system level —
+  the silent `Effect = Unit` and `Trajectory = endpoints` assumptions are
+  gone, replaced by visible names and instance arguments. Item (3) remains
+  open and is part of the Phase 2 trajectory refactor.
 
 ### P4.3 — Open Problem 2 Resolution
 

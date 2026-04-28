@@ -49,6 +49,26 @@ alternative effect index, with Φ playing the role of the effect annotation.
 v0.1 formalization — all effects collapse to `Unit` because `AffordanceSet` is
 a placeholder. Phase 4 will replace `AffordanceSet` with `AffordanceSet.impl`
 once the universe level mismatch (Open Problem 1) is resolved.
+
+## Brittleness handling (v0.1 → Phase 4)
+
+The earlier draft of this file silently relied on `Effect S = Unit` in several
+places. That dependency is now surfaced explicitly:
+
+- The right-identity laws (`seq_right_id`, `bind_right_id`) require
+  `[Subsingleton (Effect S₁)]`. In v0.1, `Subsingleton Unit` discharges this
+  automatically; once `Effect` becomes nontrivial under Open Problem 1, the
+  instance must either be supplied or the laws weakened — a visible
+  obligation rather than a silent breakage.
+- The extensionality lemmas and left-identity laws (`ext_eq`, `seq_left_id`,
+  `bind_left_id`) do **not** depend on `Effect = Unit`. Their proofs go
+  through for any `Effect` via Lean's proof irrelevance for the
+  `well_formed` field plus `subst` on the effect equation. Misleading
+  comments to the contrary have been removed.
+- All four identity proofs still use `Trajectory.endpoint_ext`, which is the
+  v0.1 endpoint-determination fact. Phase 2's trajectory enrichment will
+  invalidate that lemma, so each call site is pre-flagged by the deliberate
+  name.
 -/
 
 namespace ComposableFuture
@@ -98,7 +118,14 @@ def EffectfulFuture.id (S : ParadigmaticState) : EffectfulFuture S S where
   well_formed := ⟨rfl, rfl⟩
   effect := Effect.at S
 
-/-- Extensionality for EffectfulFuture: equality of trajectory and effect implies equality. -/
+/-- Extensionality for EffectfulFuture: equal trajectory and equal effect imply
+    equal records.
+
+    This proof is **independent** of the v0.1 `Effect = Unit` placeholder:
+    `subst heff` substitutes one effect variable for the other regardless of
+    the type, and the residual `well_formed` field equality discharges by
+    proof irrelevance (the field is a `Prop`). The lemma will continue to
+    hold under Open Problem 1's upgrade of `AffordanceSet`. -/
 theorem EffectfulFuture.ext_eq {F₁ F₂ : EffectfulFuture S₀ S₁}
     (hτ : F₁.τ = F₂.τ)
     (heff : F₁.effect = F₂.effect) :
@@ -106,8 +133,6 @@ theorem EffectfulFuture.ext_eq {F₁ F₂ : EffectfulFuture S₀ S₁}
   cases F₁
   cases F₂
   subst hτ
-  -- `subst heff` works because `Effect = Unit`; Phase 4 (Open Problem 1)
-  -- will require revisiting this proof when `Effect` becomes nontrivial.
   subst heff
   rfl
 
@@ -183,44 +208,57 @@ theorem EffectfulFuture.seq_endpoint_assoc
     id(S₀) ; F = F
 
     The identity future at S₀ has trivial effect; sequencing it before F
-    leaves F's effect unchanged. -/
+    leaves F's effect unchanged.
+
+    Effect-side robustness: by the definition of `seq`, the composite's
+    effect is `F.effect`, so the effect equation reduces to `F.effect =
+    F.effect` — closing by `rfl` regardless of the structure of `Effect`.
+    Trajectory side still depends on v0.1 `Trajectory.endpoint_ext`. -/
 theorem EffectfulFuture.seq_left_id
     {S₀ S₁ : ParadigmaticState}
     (F : EffectfulFuture S₀ S₁) :
     EffectfulFuture.seq (EffectfulFuture.id S₀) F = F := by
   apply EffectfulFuture.ext_eq
-  · -- trajectory equality
+  · -- trajectory equality (v0.1 endpoint-determination)
     simp [EffectfulFuture.seq]
     have h1 := F.well_formed.1
     have h2 := F.well_formed.2
-    apply Trajectory.ext_eq
+    apply Trajectory.endpoint_ext
     · exact h1.symm
     · exact h2.symm
-  · -- effect equality: relies on `Effect = Unit` (Phase 4 will revisit).
+  · -- effect equality holds for any `Effect` (composite preserves F.effect)
     exact rfl
 
 /-- Right identity law for effectful futures.
 
     F ; id(S₁) = F
 
-    Sequencing F with the identity at S₁ leaves F unchanged. The effect
-    of the composite is `id(S₁).effect = ()`, but since the final state is
-    still S₁, the *intended* effect is the affordance at S₁ — which is what
-    F already provides. -/
+    Sequencing F with the identity at S₁ leaves F unchanged. The composite's
+    effect is `id(S₁).effect = Effect.at S₁`, which equals `F.effect` only
+    when `Effect S₁` has at most one inhabitant — captured by the explicit
+    `Subsingleton (Effect S₁)` instance argument.
+
+    In v0.1 the instance is automatic since `Effect S = Unit`. Once Open
+    Problem 1 upgrades `AffordanceSet` to a non-singleton type, callers
+    will have to either provide a `Subsingleton` witness or weaken the
+    statement (e.g. relate the composite's effect to `F.effect` only up
+    to a chosen coherence). The bracketed `[Subsingleton (Effect S₁)]`
+    makes that future obligation visible at the type level. -/
 theorem EffectfulFuture.seq_right_id
     {S₀ S₁ : ParadigmaticState}
+    [Subsingleton (Effect S₁)]
     (F : EffectfulFuture S₀ S₁) :
     EffectfulFuture.seq F (EffectfulFuture.id S₁) = F := by
   apply EffectfulFuture.ext_eq
-  · -- trajectory equality
+  · -- trajectory equality (v0.1 endpoint-determination)
     simp [EffectfulFuture.seq]
     have h1 := F.well_formed.1
     have h2 := F.well_formed.2
-    apply Trajectory.ext_eq
+    apply Trajectory.endpoint_ext
     · exact h1.symm
     · exact h2.symm
-  · -- effect equality: relies on `Effect = Unit` (Phase 4 will revisit).
-    exact rfl
+  · -- effect equality from the explicit `Subsingleton` instance
+    exact Subsingleton.elim _ _
 
 /-! ## Effectful Computation with Value (Full Indexed Monad)
 
@@ -249,8 +287,13 @@ structure EffectfulComputation (S₀ S₁ : ParadigmaticState) (A : Type) where
   /-- The effect annotation at the target state -/
   effect : Effect S₁
 
-/-- Extensionality for EffectfulComputation: equality of value, trajectory, and effect
-    implies equality. -/
+/-- Extensionality for `EffectfulComputation`: equal value, trajectory, and effect
+    imply equal records.
+
+    Like `EffectfulFuture.ext_eq`, this proof is **independent** of the v0.1
+    `Effect = Unit` placeholder — `subst heff` substitutes one effect
+    variable for the other regardless of the type, with the residual
+    `well_formed` field equality discharged by proof irrelevance. -/
 theorem EffectfulComputation.ext_eq {C₁ C₂ : EffectfulComputation S₀ S₁ A}
     (hval : C₁.value = C₂.value)
     (hτ : C₁.τ = C₂.τ)
@@ -260,8 +303,6 @@ theorem EffectfulComputation.ext_eq {C₁ C₂ : EffectfulComputation S₀ S₁ 
   cases C₂
   subst hval
   subst hτ
-  -- `subst heff` works because `Effect = Unit`; Phase 4 (Open Problem 1)
-  -- will require revisiting this proof when `Effect` becomes nontrivial.
   subst heff
   rfl
 
@@ -329,7 +370,12 @@ theorem EffectfulComputation.bind_endpoint_assoc
     EffectfulComputation.bind (EffectfulComputation.bind F f) g =
     EffectfulComputation.bind F (fun a => EffectfulComputation.bind (f a) g) := rfl
 
-/-- Left identity law for the indexed monad: `return a >>= f = f a`. -/
+/-- Left identity law for the indexed monad: `return a >>= f = f a`.
+
+    Effect-side robustness: as in `seq_left_id`, the bind's definition makes
+    the composite's effect equal to `(f a).effect`, so the effect equation
+    reduces to `(f a).effect = (f a).effect` and closes by `rfl` for any
+    `Effect`. Trajectory side still depends on v0.1 `Trajectory.endpoint_ext`. -/
 theorem EffectfulComputation.bind_left_id
     {S₀ S₁ : ParadigmaticState} {A B : Type}
     (a : A)
@@ -338,33 +384,40 @@ theorem EffectfulComputation.bind_left_id
   apply EffectfulComputation.ext_eq
   · -- value equality
     simp [EffectfulComputation.bind, EffectfulComputation.pure]
-  · -- trajectory equality
+  · -- trajectory equality (v0.1 endpoint-determination)
     simp [EffectfulComputation.bind, EffectfulComputation.pure]
     have h1 := (f a).well_formed.1
     have h2 := (f a).well_formed.2
-    apply Trajectory.ext_eq
+    apply Trajectory.endpoint_ext
     · exact h1.symm
     · exact h2.symm
-  · -- effect equality: relies on `Effect = Unit` (Phase 4 will revisit).
+  · -- effect equality holds for any `Effect` (composite preserves `(f a).effect`)
     exact rfl
 
-/-- Right identity law for the indexed monad: `F >>= return = F`. -/
+/-- Right identity law for the indexed monad: `F >>= return = F`.
+
+    As with `EffectfulFuture.seq_right_id`, the composite's effect is
+    `(pure S₁ F.value).effect = Effect.at S₁`, which equals `F.effect`
+    only when `Effect S₁` is a subsingleton. The explicit
+    `[Subsingleton (Effect S₁)]` instance argument surfaces that
+    obligation; v0.1's `Effect = Unit` discharges it automatically. -/
 theorem EffectfulComputation.bind_right_id
     {S₀ S₁ : ParadigmaticState} {A : Type}
+    [Subsingleton (Effect S₁)]
     (F : EffectfulComputation S₀ S₁ A) :
     EffectfulComputation.bind F (EffectfulComputation.pure S₁) = F := by
   apply EffectfulComputation.ext_eq
   · -- value equality
     simp [EffectfulComputation.bind, EffectfulComputation.pure]
-  · -- trajectory equality
+  · -- trajectory equality (v0.1 endpoint-determination)
     simp [EffectfulComputation.bind, EffectfulComputation.pure]
     have h1 := F.well_formed.1
     have h2 := F.well_formed.2
-    apply Trajectory.ext_eq
+    apply Trajectory.endpoint_ext
     · exact h1.symm
     · exact h2.symm
-  · -- effect equality: relies on `Effect = Unit` (Phase 4 will revisit).
-    exact rfl
+  · -- effect equality from the explicit `Subsingleton` instance
+    exact Subsingleton.elim _ _
 
 /-! ## Connection to Affordance Composition
 

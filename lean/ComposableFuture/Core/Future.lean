@@ -21,11 +21,25 @@ structure Trajectory where
   target : ParadigmaticState
   deriving Repr
 
-/-- Extensionality for `Trajectory`: equality of `source` and `target` implies
-    equality of trajectories. This holds because `Trajectory` currently has no
-    fields beyond its endpoints (Phase 2 may add intermediate data, at which
-    point this lemma will need to be revisited). -/
-theorem Trajectory.ext_eq {τ₁ τ₂ : Trajectory}
+/-- Endpoint-determination of `Trajectory`: equal `source` and `target` imply
+    equal trajectories.
+
+    **This is a v0.1 fact, not a theorem about trajectories in general.** It
+    holds only because `Trajectory` currently has no fields beyond its two
+    endpoints. Phase 2's trajectory enrichment (adding an internal path,
+    e.g. `List ParadigmaticState` of intermediate stages) will make this
+    statement false: two distinct paths between the same endpoints exist.
+
+    The deliberately specific name `endpoint_ext` (rather than `ext_eq`) is
+    intended to surface this dependency at every call site. Any caller that
+    invokes this lemma is implicitly asserting that the two trajectories'
+    *endpoints alone* should determine equality — which is precisely what
+    the Phase 2 refactor is meant to undo. Such call sites are therefore
+    pre-flagged as needing to be revisited.
+
+    See also: `Core/Effect.lean` (4 callers in identity-law proofs) and
+    `proofs/attempt-associativity.md` for the design history. -/
+theorem Trajectory.endpoint_ext {τ₁ τ₂ : Trajectory}
     (h₁ : τ₁.source = τ₂.source)
     (h₂ : τ₁.target = τ₂.target) :
     τ₁ = τ₂ := by

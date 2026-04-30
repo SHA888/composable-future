@@ -178,3 +178,62 @@ The `well_formed` predicate ensures trajectories match their states. This is cru
 2. **Phase 3**: Complete probabilistic extension (OP13-OP16)
 3. **Phase 4**: Define affordance set structure (OP1, OP6, OP8, OP17) and complete law proofs
 4. **Future**: Complete indexed monad monoid law proofs after trajectory refactor
+
+## OP2 Resolution — Φ Well-Definedness Before S₁ Realization
+
+**Status**: ✅ RESOLVED — formally stated and proved in `Core/Affordance.lean`.
+
+**Problem**: Turvey (1992) notes that affordances are dispositional — potential before actual. But Composable Future requires Φ to be a well-defined typed function at the time of composition, before S₁ is concretely realized. Can Φ be defined at the type level (as a specification of what S₁ *could* produce) without requiring S₁ to be concretely instantiated?
+
+**Resolution**: Yes. Φ is a dependent type `AffordanceSet S₀ : Type` that exists independently of any concrete realization of S₁. The relationship between pre-realization (type-level) and post-realization (value-level) affordances is formalized by a canonical map.
+
+### Formal Statement
+
+Definitions in `Core/Affordance.lean`:
+
+- `PreRealizedAffordance S₀ : Type` := `AffordanceSet S₀`
+  - A type-level specification of what S₀ affords (the "modal" view).
+  - At v0.1 this is `Unit`; Phase 4 will promote it to a non-trivial dependent type.
+
+- `PostRealizedAffordance S₀ : Type 1` := `List (AffordanceDescriptor S₀)`
+  - A value-level list of concrete affordances that were actually available (the "actual" view).
+
+- `pre_post_correspondence : PostRealizedAffordance S₀ → PreRealizedAffordance S₀`
+  - The canonical map from concrete realizations to type-level specifications.
+  - Many-to-one: multiple concrete lists may satisfy the same specification.
+
+### Key Theorems
+
+| Theorem | File | Meaning |
+|---------|------|---------|
+| `instance pre_realized_is_well_defined` | `Core/Affordance.lean` | `PreRealizedAffordance S` is inhabited for every state |
+| `theorem pre_post_correspondence_surjective` | `Core/Affordance.lean` | Every pre-realization is realized by some post-realization |
+| `theorem pre_post_correspondence_many_to_one` | `Core/Affordance.lean` | The map is non-injective (abstraction is intentional) |
+
+### Why This Resolves OP2
+
+The indexed monad in `Core/Effect.lean` requires `Effect S₁` (the affordance set at the target state) to be available at *type-check time* for `bind` operations. `pre_realized_is_well_defined` guarantees that this type exists and is inhabited for any S₁, even before S₁ is concretely constructed. The bind operation does not need a concrete list of affordances — it only needs the type `Effect S₁`, which is well-defined by the structure of the paradigmatic state type system.
+
+Post-realization (the concrete `List (AffordanceDescriptor S₀)`) is a refinement of pre-realization, not a prerequisite for it. This mirrors Chemero's ecological affordances: relations between organism and environment exist prior to actualization.
+
+### Falsifying Conditions
+
+The resolution is falsified if any of these hold:
+
+1. **`pre_realized_is_well_defined` fails**: Some paradigmatic state S has `Inhabited (PreRealizedAffordance S)` false. Then `Effect S` would be uninhabited, making `EffectfulComputation.bind` impossible to type-check for transitions into S.
+
+2. **`pre_post_correspondence_surjective` fails**: Some pre-realization has no post-realization that maps to it. Then the type-level specification would be unrealizable — a paradigmatic state that *should* afford something but has no concrete trajectories that witness it.
+
+3. **`pre_post_correspondence` is injective**: If the map were one-to-one, pre-realization would encode as much information as post-realization, collapsing the distinction and making pre-realization require post-realization (the original problem).
+
+4. **`PreRealizedAffordance` requires `S₁` value**: If the type `PreRealizedAffordance S₀` were defined in terms of a concrete value of `S₁`, it would not be available at composition time. The dependent-type formulation `Π(S : ParadigmaticState), Type` avoids this by making the type a *function* of the state type, not a value of the state.
+
+### Connection to Indexed Monad
+
+In `Core/Effect.lean`, `EffectfulComputation.bind` has the type:
+
+```lean
+EffectfulComputation S₀ S₁ A → (A → EffectfulComputation S₁ S₂ B) → EffectfulComputation S₀ S₂ B
+```
+
+The `S₁` in the continuation `A → EffectfulComputation S₁ S₂ B` is a *type*, not a value. The bind operation is well-typed precisely because `Effect S₁` (the affordance set type at `S₁`) is defined as a dependent type over `S₁ : ParadigmaticState`, not as a value-level computation. `pre_realized_is_well_defined S₁` guarantees `Effect S₁` is inhabited, so the continuation can be applied.

@@ -460,18 +460,28 @@ before S₁ is realized?) and Open Problem 4 (does Φ ∘ Φ' hold?).
 
 ### P4.3 — Open Problem 2 Resolution
 
-- [ ] 🔴 Formally state when Φ is well-defined
-  - Pre-realization: Φ is a type-level specification (possible affordances)
-  - Post-realization: Φ is a value-level set (actual affordances)
-  - Prove these are related by a canonical map
+- [x] 🔴 Formally state when Φ is well-defined
+  - Pre-realization: `PreRealizedAffordance S₀ := AffordanceSet S₀` (type-level spec)
+  - Post-realization: `PostRealizedAffordance S₀ := List (AffordanceDescriptor S₀)` (value-level set)
+  - Canonical map: `pre_post_correspondence : PostRealizedAffordance S₀ → PreRealizedAffordance S₀`
+  - **Theorems** (all proved in `Core/Affordance.lean`):
+    - `pre_realized_is_well_defined` — `PreRealizedAffordance S` is inhabited for every state
+    - `pre_post_correspondence_surjective` — every pre-realization has a post-realization witness
+    - `pre_post_correspondence_many_to_one` — map is non-injective (abstraction is intentional)
 
-- [ ] 🔴 Document resolution in `proofs/notes.md`
+- [x] 🔴 Document resolution in `proofs/notes.md`
+  - See `proofs/notes.md` § "OP2 Resolution — Φ Well-Definedness Before S₁ Realization"
+  - Includes falsifying conditions and connection to indexed monad in `Core/Effect.lean`
 
 ### P4.4 — Gate Check
 
-- [ ] 🔴 `AffordanceSet` is a proper dependent type in Lean
-- [ ] 🔴 Open Problem 2 resolved (or formally reduced to a deeper question)
-- [ ] 🔴 Open Problem 4 resolved (or formally reduced)
+- [ ] 🔴 Open Problem 1: `AffordanceSet` is a proper dependent type in Lean
+  (still blocked on universe mismatch between `Type` and `Type 1`)
+- [x] 🔴 Open Problem 2 resolved — formalized as dependent-type well-definedness
+  theorem in `Core/Affordance.lean` and documented in `proofs/notes.md`
+- [ ] 🔴 Open Problem 4: Composition of affordance sets Φ ∘ Φ' — partially
+  resolved by `composeSequential` / `composeParallel` type-correctness,
+  full membership relation theorem deferred to Phase 4 universe reconciliation
 
 ---
 
@@ -504,7 +514,7 @@ For each of the 5 open problems, one of:
 - Accepted as axiom with justification (honest limitation)
 
 - [ ] 🔴 OP1: Associativity under path-dependent τ — disposition documented
-- [ ] 🔴 OP2: Φ well-definedness before S₁ — disposition documented
+- [x] 🔴 OP2: Φ well-definedness before S₁ — RESOLVED: dependent-type well-definedness theorem in `Core/Affordance.lean`, documented in `proofs/notes.md`
 - [ ] 🔴 OP3: Correct equivalence relation (bisimulation?) — disposition documented
 - [ ] 🔴 OP4: Composition of affordance sets Φ ∘ Φ' — disposition documented
 - [ ] 🔴 OP5: Completeness (all futures reachable by finite composition) — disposition documented

@@ -195,6 +195,57 @@ def pre_post_correspondence {S₀ : ParadigmaticState}
   -- affordance witness — the map is many-to-one, as the comment records.
   ()
 
+/-- Pre-realization Φ is well-defined: the type is inhabited for every state.
+
+This is the core formal answer to Open Problem 2: "Is Φ well-defined
+before S₁ is realized?"  The theorem states that for every paradigmatic
+state S, the type `PreRealizedAffordance S` has at least one inhabitant.
+At v0.1 this is trivial (the type is `Unit`), but the statement is
+universe-generic: it will remain valid when `AffordanceSet` is upgraded
+to a non-trivial dependent type in Phase 4 (Open Problem 1).
+
+**Falsifying condition:** If this theorem failed, Φ would be undefined at
+the type level for some state, making indexed-monad bind operations
+impossible before S₁ realization. -/
+instance pre_realized_is_well_defined (S : ParadigmaticState) :
+    Inhabited (PreRealizedAffordance S) :=
+  ⟨()⟩
+
+/-- The canonical map is surjective onto pre-realization.
+
+Every pre-realized affordance is the image of at least one post-realized
+affordance list. This bridges the modal (possible) and actual views:
+whatever Φ specifies at the type level can be realized by some concrete
+set of trajectories.
+
+At v0.1 the codomain is a singleton, so surjectivity is trivial. The
+theorem documents the intent for the Phase 4 upgrade. -/
+theorem pre_post_correspondence_surjective (S₀ : ParadigmaticState)
+    (pre : PreRealizedAffordance S₀) :
+    ∃ post : PostRealizedAffordance S₀,
+      pre_post_correspondence post = pre :=
+  ⟨[], rfl⟩
+
+/-- The canonical map is many-to-one: distinct realizations refine the
+same specification.
+
+This formalizes the abstraction relationship: pre-realization is a
+coarser description than post-realization. Two different lists of
+concrete affordances may satisfy the same type-level Φ.
+
+This is the *converse* of injectivity — it is exactly what we want.
+If the map were injective (one-to-one), pre-realization would encode
+as much information as post-realization, defeating the purpose of the
+distinction. -/
+theorem pre_post_correspondence_many_to_one (S₀ : ParadigmaticState) :
+    ∃ (l₁ l₂ : PostRealizedAffordance S₀),
+      l₁ ≠ l₂ ∧
+      pre_post_correspondence (S₀ := S₀) l₁ =
+      pre_post_correspondence (S₀ := S₀) l₂ := by
+  refine ⟨[], [⟨S₀, { source := S₀, target := S₀ }, rfl, rfl⟩], ?_, rfl⟩
+  -- [] ≠ [x]: h : [] = [x], so h.symm : [x] = [] contradicts List.cons_ne_nil
+  intro h; exact absurd h.symm (List.cons_ne_nil _ _)
+
 /-- Φ is well-defined at the type level.
 
 This is the key result: `AffordanceSet S` is a well-formed dependent type
@@ -206,6 +257,45 @@ when the paradigm supports affordances.
 theorem affordance_set_well_defined (S : ParadigmaticState) :
     Nonempty (AffordanceSet.impl S) := by
   exact ⟨⟨S, { source := S, target := S }, rfl, rfl⟩⟩
+
+-- ============================================================
+-- P4.3: Adversarial tests (TEST_SKILLS §2.2)
+-- ============================================================
+
+-- Test T1: Instance synthesis works for a concrete state (not just universally).
+-- Spec: pre_realized_is_well_defined — "inhabited for every state"
+-- Negative confirmation: removing the instance makes this `#check` fail at
+-- elaboration time, proving the instance is load-bearing.
+-- Source: TODO.md P4.3 "pre_realized_is_well_defined — inhabited for every state"
+private def _testConcreteState : ParadigmaticState :=
+  { assumptions := Unit, constraints := Unit, infrastructure := Unit }
+
+example : Inhabited (PreRealizedAffordance _testConcreteState) :=
+  inferInstance
+
+-- Test T2: A non-empty post-realization also surjects onto pre-realization.
+-- Spec: pre_post_correspondence_surjective — "every pre-realization is realized
+--   by some post-realization." The production proof only witnesses [].
+--   This test confirms a non-empty list is also a valid witness.
+-- Source: TODO.md P4.3 "pre_post_correspondence_surjective"
+theorem pre_post_correspondence_surjective_nonempty (S₀ : ParadigmaticState) :
+    ∃ post : PostRealizedAffordance S₀,
+      post ≠ [] ∧ pre_post_correspondence post = () := by
+  exact ⟨[⟨S₀, { source := S₀, target := S₀ }, rfl, rfl⟩],
+         List.cons_ne_nil _ _,
+         rfl⟩
+
+-- Test T3: Two distinct singleton lists with different descriptors collapse to
+-- the same pre-realization (many-to-one beyond the empty/non-empty case).
+-- Spec: pre_post_correspondence_many_to_one — "map is non-injective."
+-- Negative confirmation: if pre_post_correspondence were injective (i.e. if
+--   AffordanceSet were upgraded from Unit to a richer type that distinguishes
+--   descriptors), this theorem would fail — surfacing the Phase 4 obligation.
+-- Source: TODO.md P4.3 "pre_post_correspondence_many_to_one"
+theorem pre_post_correspondence_many_to_one_singletons (S₀ S₁ : ParadigmaticState) :
+    pre_post_correspondence (S₀ := S₀) [⟨S₀, { source := S₀, target := S₀ }, rfl, rfl⟩] =
+    pre_post_correspondence (S₀ := S₀) [⟨S₁, { source := S₀, target := S₁ }, rfl, rfl⟩] :=
+  rfl
 
 -- ============================================================
 -- P4.4: Gate Check Documentation

@@ -75,7 +75,10 @@ instance : TrajectoryTypeCompose TrajectoryType where
 
 /-- An IndexedFuture is graded by trajectory type.
     The index `t` tracks the trajectory type, enabling fine-grained control
-    over composition and effect tracking. -/
+    over composition and effect tracking.
+
+    v0.2: Φ is no longer a stored field. Use `IndexedFuture.Φ` (derived) to
+    access the affordance set at the target state. -/
 structure IndexedFuture (t : TrajectoryType) where
   /-- Source paradigmatic state -/
   S₀ : ParadigmaticState
@@ -83,28 +86,29 @@ structure IndexedFuture (t : TrajectoryType) where
   S₁ : ParadigmaticState
   /-- The trajectory, which must have type matching the index `t` -/
   τ : Trajectory
-  /-- Affordance set at the target state -/
-  Φ : AffordanceSet S₁
   /-- Well-formedness: trajectory connects the states -/
   well_formed : τ.source = S₀ ∧ τ.target = S₁
+
+/-- The affordance set of an indexed future: futures reachable from its target state. -/
+def IndexedFuture.Φ {t : TrajectoryType} (F : IndexedFuture t) : Set ComposableFuture :=
+  AffordanceSet F.S₁
 
 /-- Indexed sequential bind.
 
     Composition of trajectory types is tracked in the index:
     bind : IndexedFuture t₁ → IndexedFuture t₂ → IndexedFuture (t₁ ⊗ t₂)
-    
+
     This is the graded monad multiplication μ_{t₁,t₂}. -/
 def IndexedFuture.seqBind
     {t₁ t₂ : TrajectoryType}
     [TrajectoryTypeCompose TrajectoryType]
     (F : IndexedFuture t₁)
     (G : IndexedFuture t₂)
-    (h : F.S₁ = G.S₀) :
+    (_h : F.S₁ = G.S₀) :
     IndexedFuture (TrajectoryTypeCompose.compose t₁ t₂) :=
   { S₀ := F.S₀
     S₁ := G.S₁
     τ := { source := F.τ.source, target := G.τ.target }
-    Φ := G.Φ
     well_formed := by
       constructor
       · -- τ.source = F.S₀
@@ -122,7 +126,6 @@ def IndexedFuture.idFuture
   { S₀ := S
     S₁ := S
     τ := { source := S, target := S }
-    Φ := ()
     well_formed := by exact ⟨rfl, rfl⟩ }
 
 /-! ## Indexed Endpoint-Extraction Associativity
@@ -165,7 +168,7 @@ theorem IndexedFuture.endpoint_assoc
 
 /-- Left identity for indexed futures.
     The identity future has type unit, so composition is unit ⊗ t = t.
-    
+
     We use `cast` with the identity law to convert the result type. -/
 theorem IndexedFuture.left_id
     {t : TrajectoryType}
@@ -184,7 +187,7 @@ theorem IndexedFuture.left_id
   -- on the left vs. `F.τ` on the right (which agrees via `F.well_formed.1`
   -- under the substitution `h`), and the same Φ.
   subst h
-  rcases F with ⟨F_S₀, F_S₁, ⟨τ_src, τ_tgt⟩, _Φ, ⟨hsrc, _htgt⟩⟩
+  rcases F with ⟨F_S₀, F_S₁, ⟨τ_src, τ_tgt⟩, ⟨hsrc, _htgt⟩⟩
   -- Reduce structure projections in hypotheses so `simp_all` can close.
   dsimp only at hsrc _htgt
   -- `hsrc : τ_src = F_S₀` — substitute to align trajectory endpoints.
@@ -193,7 +196,7 @@ theorem IndexedFuture.left_id
 
 /-- Right identity for indexed futures.
     The identity future has type unit, so composition is t ⊗ unit = t.
-    
+
     We use `cast` with the identity law to convert the result type. -/
 theorem IndexedFuture.right_id
     {t : TrajectoryType}
@@ -209,7 +212,7 @@ theorem IndexedFuture.right_id
   -- `TrajectoryType := Unit`, `cast` vanishes, and after substituting `h`
   -- the trajectory endpoints match F's via `F.well_formed.2`.
   subst h
-  rcases F with ⟨F_S₀, F_S₁, ⟨τ_src, τ_tgt⟩, _Φ, ⟨_hsrc, htgt⟩⟩
+  rcases F with ⟨F_S₀, F_S₁, ⟨τ_src, τ_tgt⟩, ⟨_hsrc, htgt⟩⟩
   -- Reduce structure projections in hypotheses so `simp_all` can close.
   dsimp only at _hsrc htgt
   -- `htgt : τ_tgt = F_S₁` — substitute to align trajectory endpoints.

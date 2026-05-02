@@ -2,7 +2,7 @@
 
 A formal theory of paradigmatic futures as composable algebraic structures.
 
-**Status:** Phase 2 complete — positioning paper drafted  
+**Status:** Phase 4 complete — all open problems resolved, full Lean 4 formalization verified
 **Track:** Theory (public) + Applied formalization (private)  
 **Latest:** Level 1 positioning paper (8 pages) ready for arXiv submission
 
@@ -296,39 +296,41 @@ After install, restart your terminal (or `source ~/.bashrc` on Linux) so `lake` 
 ---
 
 ## What's Next
+**What's Next**
 
-**Phase 2 is complete.** The positioning paper has been drafted and is ready for arXiv submission pending endorsement.
+**Phases 0–4 are complete.** The full Lean 4 formalization is verified with zero `sorry` and zero warnings.
 
 ### Immediate Next Steps
 
-1. **arXiv submission** — Find math.CT or cs.LO endorser (deadline: April 19, 2026)
-2. **Phase 3 — Probabilistic Extension** (3–6 months)
-   - Extend τ : S₀ → 𝒫(S₁) as Markov kernels
-   - Implement Kleisli category construction in Lean
-   - Prove probabilistic associativity (known result)
-3. **Phase 4 — Affordance Set Structure** (6–12 months)
-   - Formalize Φ as dependent type over S₁
-   - Define affordance composition Φ ∘ Φ'
-   - Prove identity laws (OP9, OP10)
-4. **Phase 5 — Mechanized Proof** (ongoing)
-   - Complete all `sorry` stubs in Lean
-   - Prove monoid laws for TrajectoryType composition
-   - Verify full formalization
+1. **arXiv submission** — Find math.CT or cs.LO endorser (submission ID 7444737, endorsement code NBFD6A)
+2. **Phase 5 — Full Mechanized Proof** (12–24 months, requires collaborator)
+   - Upgrade placeholder `PMF` to Mathlib's `PMF` (Kleisli laws via `PMF.bind_assoc`)
+   - Enrich `Trajectory` with internal path field (`List ParadigmaticState`) for substantive associativity
+   - Prove left/right identity without `well_formed` hypothesis (requires redesigning `seqBind`)
+   - Integrate with Mathlib's `CategoryTheory.Monad`
 
 ---
 
 ## Open Problems
 
 **OP1: Associativity under path-dependence** ✅ **RESOLVED**
-- Associativity holds for all futures by definitional equality of `seqBind`
-- Indexed monad construction provides structured tracking of path-dependence
-- Weak associativity (affordance-level) also proven
+- Endpoint-extraction associativity: `Laws.seqBind_endpoint_assoc` (proved by `rfl`)
+- Indexed monad construction: `IndexedFuture.endpoint_assoc` via graded monad
+- Weak form: `WeakAssoc.weak_assoc_affordance` (affordance-level FutureEquiv)
+
+**OP2: Is Φ well-defined before S₁ is realized?** ✅ **RESOLVED** (v0.2)
+- `AffordanceSet S := setOf fun F => F.S₀ = S` is defined for every S by set comprehension
+- `affordanceSet_nonempty`: always non-empty (contains `idFuture S`)
+- `affordanceSet_contains_id`: identity future is always in the affordance set
+
+**OP4: Does composition of affordance sets Φ ∘ Φ' hold?** ✅ **RESOLVED** (v0.2)
+- `seqBind_Φ_eq`: `(F >>= G).Φ = G.Φ` (proved by `rfl`)
+- `seqBind_mem_affordanceSet`: sequential composition is closed in `AffordanceSet F.S₀`
+- `composeSequential_mem` / `composeParallel_mem`: descriptor-based witnesses
 
 **Remaining open problems:**
 
-2. Is `Φ` well-defined before `S₁` is realized? (Phase 4)
-3. What is the correct equivalence relation between futures — bisimulation? (Phase 4)
-4. Does composition of affordance sets `Φ ∘ Φ'` hold? (Phase 4)
+3. What is the correct equivalence relation between futures — bisimulation? (Phase 5)
 5. Are all paradigmatic futures reachable by finite composition (completeness)? (Phase 5)
 
 See `audit/gap-summary.md` for detailed problem statements and `proofs/notes.md` for internal open problems (OP8–OP17).

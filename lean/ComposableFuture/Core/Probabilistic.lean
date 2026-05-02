@@ -138,7 +138,11 @@ structure ProbabilisticFuture where
   S₀ : ParadigmaticState
   S₁ : ParadigmaticState
   τ  : ProbabilisticTrajectory S₀.toType S₁.toType
-  Φ  : AffordanceSet S₁
+
+/-- The affordance set of a probabilistic future: futures reachable from its target state.
+    v0.2: derived, not stored. -/
+def ProbabilisticFuture.Φ (F : ProbabilisticFuture) : Set ComposableFuture :=
+  AffordanceSet F.S₁
 
 /-- Well-formedness for probabilistic futures.
 
@@ -147,6 +151,8 @@ satisfied since well-formedness is encoded in the Markov kernel type.
 Phase 4 will strengthen this to require Φ to be well-typed over S₁.
 -/
 def ProbabilisticFuture.well_formed (_F : ProbabilisticFuture) : Prop := True
+-- v0.2: well_formed is trivially true since the Markov kernel type already
+-- encodes S₀/S₁ in its type, and Φ is derived from S₁.
 
 -- ============================================================
 -- P3.5: Category Laws (Kleisli Category)

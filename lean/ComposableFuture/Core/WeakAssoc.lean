@@ -23,37 +23,38 @@ namespace ComposableFuture
 
     Two futures are equivalent if they have:
     - Same source state S₀
-    - Same target state S₁  
-    - Same affordance set Φ
-    
+    - Same target state S₁
+
     The trajectories may differ (capturing path-dependence).
-    -/
+
+    v0.2: `Φ_type_eq` is removed as a stored field. Since `F.Φ = AffordanceSet F.S₁`,
+    equality of Φ follows automatically from `S₁_eq` via `FutureEquiv.Φ_eq`. -/
 structure FutureEquiv (F G : ComposableFuture) : Prop where
   /-- Source states match -/
   S₀_eq : F.S₀ = G.S₀
   /-- Target states match -/
   S₁_eq : F.S₁ = G.S₁
-  /-- Affordance sets match (at the type level) -/
-  Φ_type_eq : F.Φ = G.Φ
+
+/-- Φ equality is derived from S₁ equality (since Φ is derived from S₁). -/
+theorem FutureEquiv.Φ_eq {F G : ComposableFuture} (h : FutureEquiv F G) :
+    F.Φ = G.Φ :=
+  congr_arg AffordanceSet h.S₁_eq
 
 /-- Future equivalence is reflexive. -/
 theorem FutureEquiv.refl (F : ComposableFuture) : FutureEquiv F F where
   S₀_eq := rfl
   S₁_eq := rfl
-  Φ_type_eq := rfl
 
 /-- Future equivalence is symmetric. -/
 theorem FutureEquiv.symm {F G : ComposableFuture} (h : FutureEquiv F G) : FutureEquiv G F where
   S₀_eq := h.S₀_eq.symm
   S₁_eq := h.S₁_eq.symm
-  Φ_type_eq := h.Φ_type_eq.symm
 
 /-- Future equivalence is transitive. -/
 theorem FutureEquiv.trans {F G H : ComposableFuture}
     (h₁ : FutureEquiv F G) (h₂ : FutureEquiv G H) : FutureEquiv F H where
   S₀_eq := h₁.S₀_eq.trans h₂.S₀_eq
   S₁_eq := h₁.S₁_eq.trans h₂.S₁_eq
-  Φ_type_eq := h₁.Φ_type_eq.trans h₂.Φ_type_eq
 
 /-- Future equivalence is an equivalence relation. -/
 instance : Setoid ComposableFuture where
@@ -69,16 +70,16 @@ futures, weaker forms of associativity hold.
 /-- **Theorem: Weak Associativity (Affordance Level)**
 
     For any compatible futures F, G, H:
-    
+
     (F >>= G) >>= H ≡ F >>= (G >>= H)
-    
+
     where ≡ is FutureEquiv (same S₀, S₁, Φ).
-    
+
     **Proof**: By definition of seqBind, both sides have:
     - S₀ = F.S₀
-    - S₁ = H.S₁  
+    - S₁ = H.S₁
     - Φ = H.Φ
-    
+
     The trajectories differ (path-dependence), but the affordance structure
     is identical.
     -/
@@ -90,10 +91,10 @@ theorem weak_assoc_affordance
     (h₄ : F.S₁ = (ComposableFuture.seqBind G H h₂).S₀) :
     FutureEquiv
       (ComposableFuture.seqBind (ComposableFuture.seqBind F G h₁) H h₃)
-      (ComposableFuture.seqBind F (ComposableFuture.seqBind G H h₂) h₄) := by
-  simp [ComposableFuture.seqBind] at h₃ h₄
-  simp [ComposableFuture.seqBind, FutureEquiv]
-  <;> constructor <;> rfl
+      (ComposableFuture.seqBind F (ComposableFuture.seqBind G H h₂) h₄) :=
+  -- Both sides have S₀ = F.S₀ and S₁ = H.S₁ by definition of seqBind.
+  -- Φ equality follows from S₁ equality via FutureEquiv.Φ_eq.
+  ⟨rfl, rfl⟩
 
 /-- **Theorem: State-Level Weak Associativity**
 
@@ -111,10 +112,8 @@ theorem weak_assoc_states
     let right_GH := ComposableFuture.seqBind G H h₂
     let left_comp := ComposableFuture.seqBind left_FG H h₃
     let right_comp := ComposableFuture.seqBind F right_GH h₄
-    left_comp.S₀ = right_comp.S₀ ∧ left_comp.S₁ = right_comp.S₁ := by
-  simp [ComposableFuture.seqBind] at h₃ h₄
-  simp [ComposableFuture.seqBind]
-  <;> constructor <;> rfl
+    left_comp.S₀ = right_comp.S₀ ∧ left_comp.S₁ = right_comp.S₁ :=
+  ⟨rfl, rfl⟩
 
 /-! ## Compatibility with Indexed Future
 
@@ -129,7 +128,7 @@ These two approaches are complementary:
 
 /-- Weak associativity follows directly from the definition of seqBind,
     for any compatible ComposableFutures (regardless of trajectory type).
-    
+
     Note: `weak_assoc_affordance` and `weak_assoc_affordance_explicit` above
     already prove the full result. This corollary names the key consequence:
     the two groupings are indistinguishable under FutureEquiv. -/

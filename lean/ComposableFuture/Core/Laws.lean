@@ -36,10 +36,12 @@ namespace ComposableFuture
 The well-formedness hypothesis is essential: `seqBind` builds the composed
 trajectory from `F.τ.source`, not `F.S₀`, so without `F.τ.source = F.S₀`
 (one half of `well_formed`) the equation does not hold. Dropping this
-hypothesis is the honest obstacle for the unrestricted statement. -/
+hypothesis is the honest obstacle for the unrestricted statement.
+
+v0.2: Φ is no longer a stored field, so no affordance equality is needed. -/
 theorem left_identity (F : ComposableFuture) (hF : F.well_formed) :
     seqBind (idFuture F.S₀) F (by rfl) = F := by
-  rcases F with ⟨F_S₀, ⟨τ_src, τ_tgt⟩, F_S₁, F_Φ⟩
+  rcases F with ⟨F_S₀, ⟨τ_src, τ_tgt⟩, F_S₁⟩
   rcases hF with ⟨hsrc, _htgt⟩
   simp_all [seqBind, idFuture]
 
@@ -47,21 +49,24 @@ theorem left_identity (F : ComposableFuture) (hF : F.well_formed) :
 
 The well-formedness hypothesis is required symmetrically: `seqBind` uses
 `G.τ.target`, which under `G = idFuture F.S₁` equals `F.S₁`, so we need
-`F.τ.target = F.S₁` (the other half of `well_formed`). -/
+`F.τ.target = F.S₁` (the other half of `well_formed`).
+
+v0.2: Φ is no longer a stored field, so no `[Subsingleton]` guard is needed.
+The law holds unconditionally for any well-formed F. -/
 theorem right_identity (F : ComposableFuture) (hF : F.well_formed) :
     seqBind F (idFuture F.S₁) (by rfl) = F := by
-  rcases F with ⟨F_S₀, ⟨τ_src, τ_tgt⟩, F_S₁, F_Φ⟩
+  rcases F with ⟨F_S₀, ⟨τ_src, τ_tgt⟩, F_S₁⟩
   rcases hF with ⟨_hsrc, htgt⟩
   simp_all [seqBind, idFuture]
 
 /-- Closure law: sequential composition produces a valid future.
     This is trivially satisfied by the existence of `seqBind` itself. -/
-theorem closure (F G : ComposableFuture) (h : F.S₁ = G.S₀) : 
+theorem closure (F G : ComposableFuture) (h : F.S₁ = G.S₀) :
   ∃ H : ComposableFuture, seqBind F G h = H := by
   exact ⟨seqBind F G h, rfl⟩
 
 /-- Well-formedness preservation: seqBind preserves well-formed futures -/
-theorem seqBind_well_formed (F G : ComposableFuture) (h : F.S₁ = G.S₀) 
+theorem seqBind_well_formed (F G : ComposableFuture) (h : F.S₁ = G.S₀)
   (hF : F.well_formed) (hG : G.well_formed) :
   (seqBind F G h).well_formed := by
   simp [seqBind, ComposableFuture.well_formed]

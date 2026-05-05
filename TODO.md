@@ -25,11 +25,11 @@
 
 ## PROGRESS TRACKING
 
-| Phase | Description                    | Status          | Gate condition               |
-|------|--------------------------------|----------------|------------------------------|
-| 0    | Audit + repo foundation         | ✅ complete     | Syntheses filled              |
-| 1    | Lean 4 scaffold                 | ✅ complete     | lake build passes            |
-| 2    | Stateless associativity proof   | ✅ complete     | assoc_stateless proved + paper drafted |
+| Phase | Description                   | Status      | Gate condition                         |
+| ----- | ----------------------------- | ----------- | -------------------------------------- |
+| 0     | Audit + repo foundation       | ✅ complete | Syntheses filled                       |
+| 1     | Lean 4 scaffold               | ✅ complete | lake build passes                      |
+| 2     | Stateless associativity proof | ✅ complete | assoc_stateless proved + paper drafted |
 
 ## IMMEDIATE NEXT ACTIONS
 
@@ -40,6 +40,7 @@
 ---
 
 ## PHASE 0 — Audit Completion + Repository Foundation
+
 > Gate: all 5 synthesis sections filled, repo structure supports live development
 > Status: ✅ COMPLETE
 
@@ -143,6 +144,7 @@ Read in this order. Everything else waits until all 7 are done.
 ---
 
 ## PHASE 1 — Lean 4 Scaffold (Precise Definitions) ✅ COMPLETE
+
 > Gate: F, operators, and laws fully typed in Lean 4 with no logical gaps
 > Status: ✅ COMPLETE
 > Actual effort: 2 weeks (completed April 2026)
@@ -242,6 +244,7 @@ Every `sorry` is an explicit open problem. No vague mathematics allowed.
 ---
 
 ## PHASE 2 — Stateless Associativity Proof ✅ COMPLETE
+
 > Gate: associativity proved or disproved for stateless case (τ path-independent)
 > Status: ✅ COMPLETE
 > Actual effort: 2 weeks (completed April 2026)
@@ -315,6 +318,7 @@ showing associativity breaks. Both outcomes resolve Open Problem 1.
 ---
 
 ## PHASE 3 — Probabilistic Extension ✅ COMPLETE
+
 > Gate: Kleisli category construction over probability monad, verified in Lean
 > Status: ✅ COMPLETE (P3.1–P3.4 done; Furter et al. mapping documented in proofs/notes.md)
 > Actual effort: completed April 2026
@@ -378,6 +382,7 @@ Connects the theory to Furter et al. (2025) machinery.
 ---
 
 ## PHASE 4 — Φ as Dependent Type ✅ COMPLETE
+
 > Gate: affordance set formalized as dependent type over S₁, composability of Φ proved
 > Status: ✅ COMPLETE (all OPs resolved; v0.2 derived-Φ refactor completed April 2026)
 > Actual effort: April 2026
@@ -484,19 +489,20 @@ before S₁ is realized?) and Open Problem 4 (does Φ ∘ Φ' hold?).
   - `[Subsingleton (Effect S₁)]` guards removed from all identity laws (unconditional now)
   - Build: `lake build` passes with zero warnings, zero errors
 - [x] 🔴 Open Problem 2 resolved — formalized as dependent-type well-definedness
-  theorem in `Core/Affordance.lean` and documented in `proofs/notes.md`
+      theorem in `Core/Affordance.lean` and documented in `proofs/notes.md`
 - [x] 🔴 Open Problem 4: Composition of affordance sets Φ ∘ Φ' — RESOLVED
   - `composeSequential_inhabits_impl`: sequential composition produces `Nonempty (AffordanceSet.impl S₀)` witness
-  - `composeParallel_inhabits_impl`: parallel composition produces `Nonempty (AffordanceSet.impl (S₁ ⊗ S₂))` witness  
+  - `composeParallel_inhabits_impl`: parallel composition produces `Nonempty (AffordanceSet.impl (S₁ ⊗ S₂))` witness
   - `composeSequential_in_impl`: membership is type inhabitation (proved by `rfl`)
   - All three theorems in `Core/Affordance.lean` (added April 2026)
 
 ---
 
 ## PHASE 5 — Full Mechanized Proof
+
 > Gate: all non-open theorems proved in Lean 4, no sorry remaining
-> Status: not started
-> Estimated effort: 12–24 months (requires collaborator)
+> Status: 🟡 in progress (3 proof obligations open; 4 resolved; ADRs written)
+> Estimated effort: 12–24 months (requires collaborator for ADR-0002)
 
 **What this phase produces:**
 A mechanically verified proof of the Composable Future theory.
@@ -505,17 +511,37 @@ Open problems either resolved or formally stated as axioms.
 
 ### P5.1 — Complete Proof Obligations
 
-- [ ] 🔴 Prove left identity (Phase 1 sorry)
-- [ ] 🔴 Prove right identity (Phase 1 sorry)
-- [ ] 🔴 Prove closure (Phase 1 sorry)
-- [ ] 🔴 Prove or disprove general associativity (Phase 2 outcome)
-- [ ] 🔴 Prove non-commutativity of ⊗ (Phase 1 sorry)
-- [ ] 🔴 Prove Kleisli associativity (Phase 3 — likely done by P3)
-- [ ] 🔴 Prove affordance composition well-typedness (Phase 4 sorry)
+> Audit 2026-04-29: P5.1 was written before Phases 1–4 were complete.
+> Items below have been re-assessed against the actual Lean codebase.
+
+- [x] 🔴 Prove left identity — DONE: `Laws.left_identity` (requires `well_formed` hypothesis)
+  - Unconditional version deferred pending ADR-0002 (trajectory enrichment)
+- [x] 🔴 Prove right identity — DONE: `Laws.right_identity` (requires `well_formed` hypothesis)
+  - Unconditional version deferred pending ADR-0002
+- [x] 🔴 Prove closure — DONE: `Laws.closure` (trivial existence proof)
+- [ ] 🔴 Prove substantive associativity — OPEN
+  - Current: `Laws.seqBind_endpoint_assoc` is endpoint-extraction only (closes by `rfl`)
+  - Required: path-composing associativity via `List.append_assoc`
+  - **ADR-0002** (one-way door): add `path : List ParadigmaticState` to `Trajectory`
+- [ ] 🔴 Prove non-commutativity of ⊗ — OPEN
+  - Current: `Laws.parTensor_component_order` (structural witness only)
+  - Required: `∃ F G, parTensor F G ≠ parTensor G F` (strict inequality)
+  - **ADR-0003** (two-way door): concrete counterexample with `Nat`/`Bool` assumptions
+- [x] 🔴 Prove Kleisli associativity — DONE: `Probabilistic.kleisli_assoc`
+  - Currently over placeholder `PMF α := α`; genuine proof pending **ADR-0004**
+- [x] 🔴 Prove affordance composition well-typedness — DONE (v0.2)
+  - `Affordance.seqBind_Φ_eq` + `seqBind_mem_affordanceSet` + `composeSequential_mem`
+
+**Genuinely open P5.1 work** (in recommended order):
+
+1. ADR-0004 (two-way, one file, ~30 lines) — PMF upgrade
+2. ADR-0003 (two-way, one file, ~20 lines) — non-commutativity counterexample
+3. ADR-0002 (one-way, 8 files, ~200 lines) — trajectory enrichment (requires collaborator)
 
 ### P5.2 — Open Problems Disposition
 
 For each of the 5 open problems, one of:
+
 - Proved in Lean (closes the problem)
 - Counterexample found (closes the problem negatively)
 - Reduced to known open problem in mathematics (honest deferral)
@@ -530,9 +556,9 @@ For each of the 5 open problems, one of:
 ### P5.3 — Publication
 
 - [ ] 🔴 Full formalization paper — target journal
-  - Candidate: *Journal of Pure and Applied Algebra*
-  - Or: *Logical Methods in Computer Science*
-  - Or: *Applied Categorical Structures*
+  - Candidate: _Journal of Pure and Applied Algebra_
+  - Or: _Logical Methods in Computer Science_
+  - Or: _Applied Categorical Structures_
 
 - [ ] 🟡 ACT conference submission
   - Applied Category Theory conference
@@ -547,6 +573,7 @@ For each of the 5 open problems, one of:
 ## COLLABORATOR PROFILE (needed for Phase 2–5)
 
 When ready to seek a collaborator, they need:
+
 ```
 Required:
   - Lean 4 / Mathlib experience
@@ -569,14 +596,14 @@ Where to find:
 
 ## PROGRESS TRACKING
 
-| Phase | Description | Status | Gate |
-|-------|-------------|--------|------|
-| 0 | Audit + repo foundation | ✅ complete | All 5 syntheses filled; DOI live |
-| 1 | Lean 4 scaffold | ✅ complete | `lake build` passes, no sorry |
-| 2 | Stateless associativity proof | ✅ complete | `assoc_stateless` proved + indexed monad + paper drafted |
-| 3 | Probabilistic extension | ✅ complete | Kleisli proved (no sorry); Furter et al. documented |
-| 4 | Φ as dependent type | ✅ complete | OP1 ✅ OP2 ✅ OP4 ✅ all resolved; v0.2 derived-Φ refactor |
-| 5 | Full mechanized proof | ⬜ not started | No sorry + all OPs resolved |
+| Phase | Description                   | Status         | Gate                                                       |
+| ----- | ----------------------------- | -------------- | ---------------------------------------------------------- |
+| 0     | Audit + repo foundation       | ✅ complete    | All 5 syntheses filled; DOI live                           |
+| 1     | Lean 4 scaffold               | ✅ complete    | `lake build` passes, no sorry                              |
+| 2     | Stateless associativity proof | ✅ complete    | `assoc_stateless` proved + indexed monad + paper drafted   |
+| 3     | Probabilistic extension       | ✅ complete    | Kleisli proved (no sorry); Furter et al. documented        |
+| 4     | Φ as dependent type           | ✅ complete    | OP1 ✅ OP2 ✅ OP4 ✅ all resolved; v0.2 derived-Φ refactor |
+| 5     | Full mechanized proof         | ⬜ not started | No sorry + all OPs resolved                                |
 
 ---
 

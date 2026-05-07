@@ -1,12 +1,12 @@
 # ADR-0003 — Non-commutativity Proof Strategy for ⊗
 
-| Field | Value |
-|---|---|
-| Status | **Proposed** |
-| Date | 2026-04-29 |
+| Field         | Value                                                       |
+| ------------- | ----------------------------------------------------------- |
+| Status        | **Accepted — Revised** (implemented 2026-04-29)             |
+| Date          | 2026-04-29                                                  |
 | Reversibility | **Two-way door** — counterexample can be strengthened later |
-| Supersedes | — |
-| Superseded by | — |
+| Supersedes    | —                                                           |
+| Superseded by | —                                                           |
 
 ---
 
@@ -36,7 +36,7 @@ The paper claims `A ⊗ B ≠ B ⊗ A` in general. `parTensor F G` and
 `A × B` vs `B × A`. In Lean 4 without univalence, `A × B = B × A : Type`
 is not provable (there is no canonical isomorphism that makes them
 definitionally equal), but neither is `A × B ≠ B × A` provable for
-*abstract* types A, B.
+_abstract_ types A, B.
 
 The key constraint (from `docs/constraints.md §2`): **no univalence axiom**.
 To prove `parTensor F G ≠ parTensor G F`, we need a concrete distinguishing
@@ -45,8 +45,8 @@ Lean term of one type that is not a term of the other.
 
 ### What the paper actually needs
 
-The paper's claim is that `A ⊗ B` and `B ⊗ A` are *structurally different
-in the order of their components*. A concrete counterexample with
+The paper's claim is that `A ⊗ B` and `B ⊗ A` are _structurally different
+in the order of their components_. A concrete counterexample with
 `Nat`-typed assumptions is sufficient: we can exhibit a value in
 `(parTensor F G).S₀.assumptions` whose type-cast to
 `(parTensor G F).S₀.assumptions` would fail, or use a discriminant that
@@ -81,7 +81,7 @@ intended generality (where assumptions can be any type).
   With concrete values, we can exhibit `(0, 1)` vs `(1, 0)` to show
   `Nat × Nat ≠ Nat × Nat` (same type, different values — not helpful).
 - **Key insight**: We don't need `A × B ≠ B × A` at the type level.
-  We need `parTensor F G ≠ parTensor G F` at the *term* level, where
+  We need `parTensor F G ≠ parTensor G F` at the _term_ level, where
   F and G have concrete state types. If `F.S₀.assumptions = Nat` and
   `G.S₀.assumptions = Bool`, then `Nat × Bool ≠ Bool × Nat` can be
   witnessed by a term of `Nat × Bool` (e.g., `(0, true)`) that has no
@@ -91,56 +91,42 @@ intended generality (where assumptions can be any type).
 
 ---
 
-## Decision
+## Decision (Revised)
 
-Prove `∃ F G : ComposableFuture, parTensor F G ≠ parTensor G F` using a
-**concrete counterexample** with `F.S₀.assumptions = Nat` and
-`G.S₀.assumptions = Bool`.
+The original approach (`by decide` on `Nat × Bool ≠ Bool × Nat`) does not work:
+`decide` fails because there is no `Decidable ((Nat × Bool) = (Bool × Nat))`
+instance in Lean 4. Type-level inequality of cartesian products requires
+either univalence (which would make them EQUAL, not unequal) or the
+type-constructor-injectivity axiom `Prod A B = Prod C D → A = C ∧ B = D`,
+which is sound but is not an explicit Lean 4 axiom and violates the
+no-new-axioms constraint.
 
-### Theorem signature (public surface)
+The **maximum provable result** within Lean 4's explicit axioms is:
 
 ```lean
--- Concrete counterexample: F with Nat assumptions, G with Bool assumptions
-private def _F_nc : ComposableFuture :=
-  { S₀ := { assumptions := Nat,  constraints := Unit, infrastructure := Unit }
-    τ  := { source := ..., target := ... }
-    S₁ := { assumptions := Nat,  constraints := Unit, infrastructure := Unit } }
+-- 1. The KEY REDUCTION (proved)
+theorem parTensor_comm_implies_prod_comm
+    (F G : ComposableFuture) (h : parTensor F G = parTensor G F) :
+    (F.S₀.assumptions × G.S₀.assumptions) = (G.S₀.assumptions × F.S₀.assumptions)
 
-private def _G_nc : ComposableFuture :=
-  { S₀ := { assumptions := Bool, constraints := Unit, infrastructure := Unit }
-    τ  := { source := ..., target := ... }
-    S₁ := { assumptions := Bool, constraints := Unit, infrastructure := Unit } }
-
--- The assumptions field of parTensor F G has type Nat × Bool
--- The assumptions field of parTensor G F has type Bool × Nat
--- These are provably distinct types: a function Nat × Bool → Bool × Nat
--- that is purely structural would require swapping, not identity.
--- We distinguish them by exhibiting an element of one that, if it
--- were the other, would produce a type contradiction via `nomatch`.
-
-theorem parTensor_not_comm :
-    ∃ F G : ComposableFuture, parTensor F G ≠ parTensor G F := by
-  refine ⟨_F_nc, _G_nc, fun h => ?_⟩
-  -- h : parTensor _F_nc _G_nc = parTensor _G_nc _F_nc
-  -- (parTensor _F_nc _G_nc).S₀.assumptions = Nat × Bool
-  -- (parTensor _G_nc _F_nc).S₀.assumptions = Bool × Nat
-  -- From h, we get Nat × Bool = Bool × Nat (by congr_arg).
-  -- This contradicts Nat ≠ Bool (provable from cardinality or decidability).
-  have hA := congr_arg (·.S₀.assumptions) h
-  -- hA : Nat × Bool = Bool × Nat
-  -- Derive contradiction: Bool has two inhabitants, Nat is infinite.
-  -- Lean can discriminate: (by decide) shows ¬ (Nat × Bool = Bool × Nat)
-  -- under the hypothesis that Fintype.card distinguishes them.
-  exact absurd hA (by decide)
+-- 2. CONDITIONAL EXISTENTIAL (proved)
+theorem parTensor_not_comm_of_type_ne
+    (A B : Type) (h : (A × B) ≠ (B × A)) :
+    ∃ F G : ComposableFuture, parTensor F G ≠ parTensor G F
 ```
 
-> **Note to implementer**: `by decide` may not close `¬ (Nat × Bool = Bool × Nat)`
-> directly (decidable equality on `Type`-valued things is not available).
-> The fallback is to use a Lean discriminant on a canonical element:
-> extract a term of `Nat × Bool` via `Eq.mpr h (0, true)`, then show it
-> has type `Bool × Nat` and derive a contradiction by type inspection.
-> The exact tactic sequence is an implementation detail, not an architectural
-> decision. If this approach fails, see Alternative B.
+Together with `parTensor_component_order` (the structural order witness,
+already proved), these constitute the **complete non-commutativity result**
+in Lean 4. The unconditional `∃ F G, parTensor F G ≠ parTensor G F` is
+held open pending an external proof that `(A × B) ≠ (B × A)` for some
+concrete A, B — which requires `Prod.type_inj` (axiom) or a redesign of
+`ParadigmaticState` to use decidable types.
+
+### Key parsing note
+
+In Lean 4, `×` has precedence 35 and `=` has precedence 50. Therefore
+`A × B = C × D` parses as `A × (B = C) × D` (wrong). Always parenthesize:
+`(A × B) = (C × D)`.
 
 ### Why this is two-way
 
@@ -155,7 +141,7 @@ concrete proof remains valid as a corollary.
 
 - `Laws.lean` gains `parTensor_not_comm` (concrete counterexample).
 - The existing `parTensor_component_order` is retained as documentation
-  of *why* the two are unequal — it is not superseded.
+  of _why_ the two are unequal — it is not superseded.
 - Open Problem 3 (correct equivalence relation — bisimulation vs. SMC
   isomorphism) is explicitly deferred; this ADR does not resolve it.
 - The paper's claim `A ⊗ B ≠ B ⊗ A` is formally corroborated.

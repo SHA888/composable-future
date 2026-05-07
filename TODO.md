@@ -523,10 +523,12 @@ Open problems either resolved or formally stated as axioms.
   - Current: `Laws.seqBind_endpoint_assoc` is endpoint-extraction only (closes by `rfl`)
   - Required: path-composing associativity via `List.append_assoc`
   - **ADR-0002** (one-way door): add `path : List ParadigmaticState` to `Trajectory`
-- [ ] 🔴 Prove non-commutativity of ⊗ — OPEN
-  - Current: `Laws.parTensor_component_order` (structural witness only)
-  - Required: `∃ F G, parTensor F G ≠ parTensor G F` (strict inequality)
-  - **ADR-0003** (two-way door): concrete counterexample with `Nat`/`Bool` assumptions
+- [~] 🔴 Prove non-commutativity of ⊗ — PARTIAL (**ADR-0003 ✅ revised**, 2026-04-29)
+  - `Laws.parTensor_comm_implies_prod_comm`: if parTensor commutes → type products commute (proved)
+  - `Laws.parTensor_not_comm_of_type_ne`: given `(A×B) ≠ (B×A)`, exhibits `∃ F G, parTensor F G ≠ parTensor G F` (proved)
+  - **Remaining gap**: unconditional `∃ F G, parTensor F G ≠ parTensor G F` requires `Prod.type_inj` axiom
+    (type-constructor injectivity is sound but not an explicit Lean 4 axiom; violates no-new-axioms constraint)
+  - `decide` fails: no `Decidable ((A×B) = (B×A))` instance; univalence makes types EQUAL not unequal
 - [x] 🔴 Prove Kleisli associativity — DONE: `Probabilistic.kleisli_assoc`
   - Proved via `PMF.bind_bind` (Chapman-Kolmogorov) over Mathlib's real `PMF` — **ADR-0004 ✅ implemented** (commit 5fe6c89)
 - [x] 🔴 Prove affordance composition well-typedness — DONE (v0.2)
@@ -535,7 +537,7 @@ Open problems either resolved or formally stated as axioms.
 **Genuinely open P5.1 work** (in recommended order):
 
 1. ~~ADR-0004 (two-way, one file, ~30 lines) — PMF upgrade~~ **✅ DONE** (commit 5fe6c89)
-2. ADR-0003 (two-way, one file, ~20 lines) — non-commutativity counterexample
+2. ~~ADR-0003 (two-way, one file, ~20 lines) — non-commutativity counterexample~~ **✅ revised, partial** (see above)
 3. ADR-0002 (one-way, 8 files, ~200 lines) — trajectory enrichment (requires collaborator)
 
 ### P5.2 — Open Problems Disposition

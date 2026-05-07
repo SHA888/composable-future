@@ -119,4 +119,64 @@ theorem parTensor_component_order (F G : ComposableFuture) :
     ((parTensor G F).S₀.assumptions = (G.S₀.assumptions × F.S₀.assumptions)) :=
   ⟨rfl, rfl⟩
 
+/-- Non-commutativity reduction: `parTensor F G = parTensor G F` implies
+    that the assumption types commute as cartesian products.
+
+    This is the KEY REDUCTION for the non-commutativity claim: to prove
+    `parTensor F G ≠ parTensor G F`, it suffices to show
+    `F.S₀.assumptions × G.S₀.assumptions ≠ G.S₀.assumptions × F.S₀.assumptions`.
+
+    The converse (`parTensor_not_comm_of_type_ne`) shows the existential holds
+    whenever product types fail to commute. -/
+theorem parTensor_comm_implies_prod_comm
+    (F G : ComposableFuture)
+    (h : parTensor F G = parTensor G F) :
+    (F.S₀.assumptions × G.S₀.assumptions) = (G.S₀.assumptions × F.S₀.assumptions) := by
+  have h1 := congr_arg (fun cf => cf.S₀.assumptions) h
+  -- h1 : (parTensor F G).S₀.assumptions = (parTensor G F).S₀.assumptions
+  -- Definitionally equivalent to the goal; `change` replaces via definitional equality.
+  change (F.S₀.assumptions × G.S₀.assumptions) = (G.S₀.assumptions × F.S₀.assumptions) at h1
+  exact h1
+
+/-- **Non-commutativity existential** (conditional on product-type asymmetry).
+
+    Given `h : A × B ≠ B × A`, there exist futures F G such that
+    `parTensor F G ≠ parTensor G F`. Concretely, F and G are built from
+    states with `assumptions = A` and `assumptions = B` respectively.
+
+    ## The remaining gap
+
+    In Lean 4 without univalence, `A × B ≠ B × A` cannot be proved for
+    abstract `A B : Type`. Specifically:
+    - `decide` fails: no `Decidable (A × B = B × A)` instance exists
+    - `nomatch` / `cases` work on VALUE-level terms, not TYPE-level equalities
+    - Type constructor injectivity (`Prod A B = Prod C D → A = C ∧ B = D`)
+      is TRUE in all standard models but is not an explicit Lean 4 axiom
+
+    The combination of `parTensor_component_order` (structural witness) and
+    this theorem (conditional existential) constitutes the maximum provable
+    non-commutativity result within Lean 4's explicit axioms. Closing the gap
+    to an unconditional `∃ F G, parTensor F G ≠ parTensor G F` would require
+    adding `axiom Prod.type_inj`, which violates the no-new-axioms constraint.
+    This is tracked as part of Open Problem 3 (equivalence relation for futures).
+
+    See also `docs/adr/0003-noncommutativity-strategy.md` for the design history. -/
+theorem parTensor_not_comm_of_type_ne
+    (A B : Type) (h : (A × B) ≠ (B × A)) :
+    ∃ F G : ComposableFuture, parTensor F G ≠ parTensor G F := by
+  -- F has assumptions = A, G has assumptions = B
+  let S_A : ParadigmaticState := { assumptions := A, constraints := Unit
+                                  , infrastructure := Unit }
+  let S_B : ParadigmaticState := { assumptions := B, constraints := Unit
+                                  , infrastructure := Unit }
+  let F : ComposableFuture := { S₀ := S_A
+                               , τ := { source := S_A, target := S_A }
+                               , S₁ := S_A }
+  let G : ComposableFuture := { S₀ := S_B
+                               , τ := { source := S_B, target := S_B }
+                               , S₁ := S_B }
+  -- If parTensor F G = parTensor G F, then A × B = B × A — contradiction with h
+  refine ⟨F, G, fun heq => ?_⟩
+  exact h (parTensor_comm_implies_prod_comm F G heq)
+
 end ComposableFuture

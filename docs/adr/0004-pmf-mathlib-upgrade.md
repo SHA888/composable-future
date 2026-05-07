@@ -2,8 +2,8 @@
 
 | Field         | Value                                                                       |
 | ------------- | --------------------------------------------------------------------------- |
-| Status        | **Accepted** (implemented 2026-04-29, commit 5fe6c89)                       |
-| Date          | 2026-04-29                                                                  |
+| Status        | **Accepted** (implemented 2026-05-07, commit 5fe6c89)                       |
+| Date          | 2026-05-07                                                                  |
 | Reversibility | **Two-way door** — placeholder can be restored if Mathlib PMF causes issues |
 | Supersedes    | —                                                                           |
 | Superseded by | —                                                                           |

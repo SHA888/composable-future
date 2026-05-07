@@ -2,8 +2,8 @@
 
 | Field         | Value                                                       |
 | ------------- | ----------------------------------------------------------- |
-| Status        | **Accepted — Revised** (implemented 2026-04-29)             |
-| Date          | 2026-04-29                                                  |
+| Status        | **Accepted — Revised** (implemented 2026-05-08)             |
+| Date          | 2026-05-08                                                  |
 | Reversibility | **Two-way door** — counterexample can be strengthened later |
 | Supersedes    | —                                                           |
 | Superseded by | —                                                           |

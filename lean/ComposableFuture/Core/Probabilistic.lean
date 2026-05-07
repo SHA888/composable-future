@@ -1,11 +1,33 @@
+import Mathlib.Probability.ProbabilityMassFunction.Monad
 import ComposableFuture.Core.Future
 
 /-!
-# Probabilistic Extension
+# Probabilistic Extension (v0.2 — Mathlib PMF)
 
 This module extends Composable Future with probabilistic trajectories
-using Kleisli categories over a probability monad. This addresses the
-probabilistic extension in §6 of the paper and connects to Furter et al. (2025).
+using Kleisli categories over Mathlib's `PMF` (Probability Mass Function).
+This closes Open Problem 13 and addresses the probabilistic extension in
+§6 of the paper, connecting to Furter et al. (2025).
+
+## Change from v0.1
+
+v0.1 used a placeholder `PMF α := α` (the identity functor) whose Kleisli
+category is just the category of functions. The monad laws closed trivially
+by `rfl`, proving nothing about probability distributions.
+
+v0.2 uses Mathlib's `PMF α` — a genuine discrete probability distribution
+over `α` whose probabilities (`ℝ≥0∞` values) sum to 1. The Kleisli
+category is now the category of **Markov kernels**, with composition
+implementing the Chapman-Kolmogorov equation via `tsum`. The monad laws
+are discharged by Mathlib's proved lemmas:
+
+- `PMF.pure_bind`: `(pure a).bind f = f a`         (left identity)
+- `PMF.bind_pure`: `p.bind pure = p`               (right identity)
+- `PMF.bind_bind`: `(p.bind f).bind g = p.bind (fun a => (f a).bind g)` (assoc)
+
+All three are `@[simp]` in Mathlib; the proofs below are therefore
+non-trivial (they hold by genuine probability theory, not by definitional
+equality of a placeholder).
 
 ## Mathematical Foundation
 
@@ -14,71 +36,25 @@ A probabilistic trajectory is a Markov kernel:
 τ : α → PMF β
 ```
 
-where `PMF` (Probability Mass Function) represents a discrete probability
-distribution (placeholder for Mathlib's `PMF` type).
-
 Kleisli composition implements the Chapman-Kolmogorov equation:
 ```
 (τ₁ >=> τ₂)(a) = bind (τ₁ a) τ₂
+                = Σ_b (τ₁ a)(b) · (τ₂ b)(_)
 ```
-
-## Design Note
-
-`ProbabilisticTrajectory` is parameterized over plain `Type` arguments
-(not `ParadigmaticState` values directly) because `PMF` requires a `Type`
-argument. `ProbabilisticFuture` uses a product of all three state components
-(`assumptions × constraints × infrastructure`) to represent a full state element,
-consistent with the 4-tuple definition F = (S₀, τ, S₁, Φ).
 
 ## Connection to Furter et al. (2025)
 
 Furter et al. extend symmetric monoidal categories with uncertainty via
-Markov kernels. Our probabilistic extension uses the same Kleisli category
-structure over the probability monad.
-
-The change-of-base construction (`detToProb`) embeds every deterministic
-trajectory as a Dirac delta, showing the probabilistic extension is conservative.
+Markov kernels. Our `ProbabilisticTrajectory` is exactly their Markov
+kernel morphism; `kleisliBind` is their Kleisli composition; `detToProb`
+is the deterministic embedding into the Markov category.
 -/
 
 namespace ComposableFuture
 
--- ============================================================
--- P3.1: Probability Monad — Free-Monad Placeholder (Open Problem 13)
--- ============================================================
-
-/-- Probability Mass Function over a plain type α.
-
-At v0.1 this is the *free monad on the empty effect signature*, i.e. just
-an alias for `α`. This makes `PMF` the trivial distribution (a point
-mass), enough to state and prove the monad laws below by `rfl`.
-
-The Kleisli category of this trivial monad is the category of functions,
-so `ProbabilisticTrajectory α β = α → β` at v0.1 — a faithful embedding
-of deterministic transitions.
-
-TODO (Open Problem 13): Replace with `import Mathlib.Probability.ProbabilityMassFunction.Basic`
-and use `PMF` from Mathlib. The monad laws below will then be discharged
-by `PMF.pure_bind`, `PMF.bind_pure`, `PMF.bind_assoc` from Mathlib.
--/
-def PMF (α : Type) : Type := α
-
-/-- Dirac delta: probability 1 at a, 0 elsewhere. (Identity at v0.1.) -/
-def PMF.pure {α : Type} (a : α) : PMF α := a
-
-/-- Monadic bind: (bind p f)(b) = Σ_{a} p(a) · f(a)(b) -/
-def PMF.bind {α β : Type} (p : PMF α) (f : α → PMF β) : PMF β := f p
-
-/-- Left identity monad law: bind (pure a) f = f a -/
-theorem PMF.pure_bind {α β : Type} (a : α) (f : α → PMF β) :
-  PMF.bind (PMF.pure a) f = f a := rfl
-
-/-- Right identity monad law: bind p pure = p -/
-theorem PMF.bind_pure {α : Type} (p : PMF α) :
-  PMF.bind p PMF.pure = p := rfl
-
-/-- Associativity monad law: bind (bind p f) g = bind p (fun x => bind (f x) g) -/
-theorem PMF.bind_assoc {α β γ : Type} (p : PMF α) (f : α → PMF β) (g : β → PMF γ) :
-  PMF.bind (PMF.bind p f) g = PMF.bind p (fun x => PMF.bind (f x) g) := rfl
+-- Mathlib's PMF involves ENNReal arithmetic (tsum), which is noncomputable.
+-- Wrap all probabilistic definitions in a noncomputable section.
+noncomputable section
 
 -- ============================================================
 -- P3.2: Probabilistic Trajectory (Markov Kernel)
@@ -88,19 +64,19 @@ theorem PMF.bind_assoc {α β γ : Type} (p : PMF α) (f : α → PMF β) (g : �
 
   τ : α → PMF β
 
-Maps each source element to a distribution over target elements.
-Corresponds to:
+Maps each source element to a genuine discrete probability distribution
+over target elements. Corresponds to:
 - Markov kernels in probability theory
-- Stochastic matrices in Markov chain theory
+- Stochastic matrices (over countable types) in Markov chain theory
 - Probabilistic morphisms in Markov categories (Furter et al. 2025)
--/
+
+Uses Mathlib's `PMF` — probabilities are `ℝ≥0∞` values summing to 1. -/
 def ProbabilisticTrajectory (α β : Type) : Type := α → PMF β
 
 /-- Lift a ParadigmaticState to its full element type (product of all components).
 
 Used to index ProbabilisticTrajectory over the complete state, not just
-one component. Ensures consistency with the full 4-tuple F = (S₀, τ, S₁, Φ).
--/
+one component. Ensures consistency with F = (S₀, τ, S₁, Φ). -/
 def ParadigmaticState.toType (S : ParadigmaticState) : Type :=
   S.assumptions × S.constraints × S.infrastructure
 
@@ -108,107 +84,124 @@ def ParadigmaticState.toType (S : ParadigmaticState) : Type :=
 -- P3.3: Kleisli Category Construction
 -- ============================================================
 
-/-- Identity Markov kernel: Dirac delta at the input element. -/
+/-- Identity Markov kernel: Dirac delta at the input element.
+
+  probId α a = δ_a  (probability 1 at a, 0 elsewhere)
+
+This is `PMF.pure` from Mathlib. -/
 def probId (α : Type) : ProbabilisticTrajectory α α :=
   fun a => PMF.pure a
 
-/-- Kleisli composition of Markov kernels (Chapman-Kolmogorov).
+/-- Kleisli composition of Markov kernels (Chapman-Kolmogorov equation).
 
-  (τ₁ >=> τ₂)(a) = bind (τ₁ a) τ₂
--/
+  (τ₁ >=> τ₂)(a) = (τ₁ a).bind τ₂
+                  = Σ_{b} (τ₁ a)(b) · τ₂(b)
+
+This is the standard Kleisli composition in the category of Markov kernels.
+Uses Mathlib's `PMF.bind` which computes the weighted sum via `tsum`. -/
 def kleisliBind {α β γ : Type}
-  (τ₁ : ProbabilisticTrajectory α β)
-  (τ₂ : ProbabilisticTrajectory β γ) :
-  ProbabilisticTrajectory α γ :=
-  fun a => PMF.bind (τ₁ a) τ₂
+    (τ₁ : ProbabilisticTrajectory α β)
+    (τ₂ : ProbabilisticTrajectory β γ) :
+    ProbabilisticTrajectory α γ :=
+  fun a => (τ₁ a).bind τ₂
 
-infixr:55 " >=> " => kleisliBind
+-- Note: Lean 4 already defines `>=>` as `Fish.kleisli` for any `Monad`.
+-- Since `PMF` has a `Monad` instance, the built-in `>=>` works for
+-- `ProbabilisticTrajectory` directly. We expose `kleisliBind` as a
+-- named definition for use in theorem statements; it equals `Fish.kleisli`.
+-- Do NOT define `infixr:55 " >=> " => kleisliBind` — that would create
+-- an ambiguity with the built-in operator.
 
 -- ============================================================
 -- P3.4: Probabilistic Future Structure
 -- ============================================================
 
-/-- Probabilistic composable future: 4-tuple (S₀, τ, S₁, Φ) with probabilistic τ.
+/-- Probabilistic composable future with a Markov kernel trajectory.
 
-The trajectory τ is a Markov kernel over the full element type of each state
-(`ParadigmaticState.toType`), covering assumptions, constraints, and
-infrastructure — consistent with the deterministic `Trajectory` structure.
--/
+The trajectory τ is a genuine Markov kernel over the full element type of
+each state (`ParadigmaticState.toType`). -/
 structure ProbabilisticFuture where
   S₀ : ParadigmaticState
   S₁ : ParadigmaticState
   τ  : ProbabilisticTrajectory S₀.toType S₁.toType
 
-/-- The affordance set of a probabilistic future: futures reachable from its target state.
-    v0.2: derived, not stored. -/
+end -- noncomputable section
+
+/-- The affordance set of a probabilistic future: futures reachable from S₁. -/
 def ProbabilisticFuture.Φ (F : ProbabilisticFuture) : Set ComposableFuture :=
   AffordanceSet F.S₁
 
-/-- Well-formedness for probabilistic futures.
-
-Analogous to `ComposableFuture.well_formed` in Future.lean. Currently trivially
-satisfied since well-formedness is encoded in the Markov kernel type.
-Phase 4 will strengthen this to require Φ to be well-typed over S₁.
--/
+/-- Well-formedness: trivially true — the Markov kernel type encodes S₀/S₁. -/
 def ProbabilisticFuture.well_formed (_F : ProbabilisticFuture) : Prop := True
--- v0.2: well_formed is trivially true since the Markov kernel type already
--- encodes S₀/S₁ in its type, and Φ is derived from S₁.
 
 -- ============================================================
--- P3.5: Category Laws (Kleisli Category)
+-- P3.5: Kleisli Category Laws
 -- ============================================================
+-- All three laws are proved using Mathlib's @[simp] lemmas on PMF.
+-- These are non-trivial proofs: they hold by genuine probability theory
+-- (Dirac delta, Chapman-Kolmogorov), not by definitional equality.
 
-/-- Left identity: id >=> τ = τ (pointwise) -/
+/-- Left identity: `id >=> τ = τ` (pointwise).
+
+Proof: `(probId α >=> τ) a = (PMF.pure a).bind τ = τ a` by `PMF.pure_bind`. -/
 theorem kleisli_left_id {α β : Type}
-  (τ : ProbabilisticTrajectory α β) (a : α) :
-  (probId α >=> τ) a = τ a := by
-  simp only [kleisliBind, probId]
-  exact PMF.pure_bind a τ
+    (τ : ProbabilisticTrajectory α β) (a : α) :
+    kleisliBind (probId α) τ a = τ a := by
+  simp [kleisliBind, probId, PMF.pure_bind]
 
-/-- Right identity: τ >=> id = τ (pointwise) -/
+/-- Right identity: `τ >=> id = τ` (pointwise).
+
+Proof: `(τ >=> probId β) a = (τ a).bind PMF.pure = τ a` by `PMF.bind_pure`. -/
 theorem kleisli_right_id {α β : Type}
-  (τ : ProbabilisticTrajectory α β) (a : α) :
-  (τ >=> probId β) a = τ a := by
-  simp only [kleisliBind]
-  exact PMF.bind_pure (τ a)
+    (τ : ProbabilisticTrajectory α β) (a : α) :
+    kleisliBind τ (probId β) a = τ a := by
+  simp only [kleisliBind]         -- reduces to: (τ a).bind (probId β) = τ a
+  exact PMF.bind_pure (τ a)       -- probId β = fun a => PMF.pure a, eta-equal to PMF.pure
 
-/-- Associativity: (τ₁ >=> τ₂) >=> τ₃ = τ₁ >=> (τ₂ >=> τ₃) (pointwise)
+/-- Associativity: `(τ₁ >=> τ₂) >=> τ₃ = τ₁ >=> (τ₂ >=> τ₃)` (pointwise).
 
-Known result: follows from PMF.bind_assoc (monad associativity).
-Under the v0.1 placeholder (`PMF α := α`) this closes by `rfl`.
--/
+Proof: Chapman-Kolmogorov associativity via `PMF.bind_bind`. -/
 theorem kleisli_assoc {α β γ δ : Type}
-  (τ₁ : ProbabilisticTrajectory α β)
-  (τ₂ : ProbabilisticTrajectory β γ)
-  (τ₃ : ProbabilisticTrajectory γ δ)
-  (a : α) :
-  ((τ₁ >=> τ₂) >=> τ₃) a = (τ₁ >=> (τ₂ >=> τ₃)) a := by
-  simp only [kleisliBind]
-  exact PMF.bind_assoc (τ₁ a) τ₂ τ₃
+    (τ₁ : ProbabilisticTrajectory α β)
+    (τ₂ : ProbabilisticTrajectory β γ)
+    (τ₃ : ProbabilisticTrajectory γ δ)
+    (a : α) :
+    kleisliBind (kleisliBind τ₁ τ₂) τ₃ a = kleisliBind τ₁ (kleisliBind τ₂ τ₃) a := by
+  unfold kleisliBind               -- expand both sides fully
+  simp [PMF.bind_bind]             -- apply Chapman-Kolmogorov associativity
 
 -- ============================================================
 -- P3.6: Change-of-Base Construction
 -- ============================================================
 
+noncomputable section
+
 /-- Embed a deterministic function into a probabilistic trajectory (Dirac delta).
 
-  detToProb f a = δ_{f(a)}
+  detToProb f a = δ_{f(a)}  (probability 1 at f(a), 0 elsewhere)
 
-Every deterministic trajectory is a special (degenerate) case of a
-probabilistic one — the probabilistic extension is conservative.
--/
+Every deterministic trajectory is a degenerate Markov kernel — the probabilistic
+extension is conservative over the deterministic theory. -/
 def detToProb {α β : Type} (f : α → β) : ProbabilisticTrajectory α β :=
   fun a => PMF.pure (f a)
 
-/-- detToProb preserves identity: detToProb id = probId (pointwise) -/
-theorem detToProb_id (α : Type) (a : α) :
-  detToProb (id : α → α) a = probId α a := by
-  simp only [detToProb, probId, id]
+end -- noncomputable section
 
-/-- detToProb preserves composition: detToProb (g ∘ f) = detToProb f >=> detToProb g (pointwise) -/
+/-- `detToProb` preserves identity: `detToProb id = probId` (pointwise).
+
+Proof: `PMF.pure (id a) = PMF.pure a` by `id` reduction. -/
+theorem detToProb_id (α : Type) (a : α) :
+    detToProb (id : α → α) a = probId α a := by
+  simp [detToProb, probId]
+
+/-- `detToProb` preserves composition: `detToProb (g ∘ f) = detToProb f >=> detToProb g`
+(pointwise).
+
+Proof: `PMF.pure (g (f a)) = (PMF.pure (f a)).bind (PMF.pure ∘ g)` by `PMF.pure_bind`.
+This shows the Dirac embedding is a functor from `Type` (functions) into the
+Kleisli category of Markov kernels. -/
 theorem detToProb_comp {α β γ : Type} (f : α → β) (g : β → γ) (a : α) :
-  detToProb (g ∘ f) a = (detToProb f >=> detToProb g) a := by
-  simp only [detToProb, kleisliBind]
-  exact (PMF.pure_bind (f a) (fun b => PMF.pure (g b))).symm
+    detToProb (g ∘ f) a = kleisliBind (detToProb f) (detToProb g) a := by
+  simp [detToProb, kleisliBind, PMF.pure_bind]
 
 end ComposableFuture

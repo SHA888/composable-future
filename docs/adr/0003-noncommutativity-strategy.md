@@ -75,19 +75,22 @@ intended generality (where assumptions can be any type).
 ## Constraint check (docs/constraints.md)
 
 - **No univalence axiom**: rules out proofs of `Nat ≠ Bool : Type` directly.
-- **`DecidableEq` on concrete types**: `Nat` has `DecidableEq`; `Nat × Nat`
-  has `DecidableEq`. This enables concrete distinction.
-- **Lean 4 `Prod.mk.injEq`**: `(a, b) = (c, d) ↔ a = c ∧ b = d`.
-  With concrete values, we can exhibit `(0, 1)` vs `(1, 0)` to show
-  `Nat × Nat ≠ Nat × Nat` (same type, different values — not helpful).
-- **Key insight**: We don't need `A × B ≠ B × A` at the type level.
-  We need `parTensor F G ≠ parTensor G F` at the _term_ level, where
-  F and G have concrete state types. If `F.S₀.assumptions = Nat` and
-  `G.S₀.assumptions = Bool`, then `Nat × Bool ≠ Bool × Nat` can be
-  witnessed by a term of `Nat × Bool` (e.g., `(0, true)`) that has no
-  canonical interpretation in `Bool × Nat` without explicit swapping.
-  More concretely: we can show the two structures are not definitionally
-  equal via `nomatch` or `cases`.
+- **`DecidableEq` on concrete types**: `Nat` has `DecidableEq`; `Bool` has
+  `DecidableEq`. This enables comparison of VALUES, not types.
+- **`decide` on type equality**: FAILS — there is no `Decidable ((A × B) = (B × A))`
+  instance. Lean 4's kernel can check definitional equality but that is not
+  accessible as a `Decidable` predicate on `Type`-valued terms.
+- **`nomatch` / `cases`**: Work on VALUE-level term constructors, not on
+  type equality hypotheses. `h : Nat × Bool = Bool × Nat` is a `Prop`-valued
+  term; `nomatch h` does not apply.
+- **Cardinality**: `|A × B| = |A| × |B| = |B × A|` — always equal.
+  Cardinality never distinguishes `A × B` from `B × A`.
+- **`Prod.type_inj` (`Prod A B = Prod C D → A = C ∧ B = D`)**: Sound in all
+  standard models (follows from kernel canonicity) but not an explicit Lean 4
+  axiom. Adding it would violate the no-new-axioms constraint.
+- **Lean 4 precedence trap**: `×` is `infixr:35`, `=` is `infixl:50`.
+  `A × B = C × D` parses as `A × (B = C) × D` (wrong). Always write
+  `(A × B) = (C × D)`.
 
 ---
 
@@ -139,37 +142,64 @@ concrete proof remains valid as a corollary.
 
 ## Consequences
 
-- `Laws.lean` gains `parTensor_not_comm` (concrete counterexample).
-- The existing `parTensor_component_order` is retained as documentation
-  of _why_ the two are unequal — it is not superseded.
+- `Laws.lean` gains two new theorems:
+  - `parTensor_comm_implies_prod_comm` — the key reduction (proved)
+  - `parTensor_not_comm_of_type_ne` — the conditional existential (proved)
+- The existing `parTensor_component_order` is retained as the structural
+  order witness; it is not superseded.
+- The unconditional `∃ F G, parTensor F G ≠ parTensor G F` is **held open**:
+  it is not proved and not axiomatised. It is a known consequence of
+  `parTensor_not_comm_of_type_ne` once `(A × B) ≠ (B × A)` is supplied.
 - Open Problem 3 (correct equivalence relation — bisimulation vs. SMC
   isomorphism) is explicitly deferred; this ADR does not resolve it.
-- The paper's claim `A ⊗ B ≠ B ⊗ A` is formally corroborated.
+- The paper's claim `A ⊗ B ≠ B ⊗ A` is **structurally witnessed** by
+  `parTensor_component_order` (the components are in opposite order) but
+  **not fully corroborated** as a strict propositional inequality without
+  the `Prod.type_inj` axiom.
 
-**Gate**: `lake build` passes; `parTensor_not_comm` contains no `sorry`
-and does not introduce any `axiom` beyond core Lean 4.
+**Gate**: `lake build` passes; both new theorems contain no `sorry` and
+do not introduce any `axiom` beyond core Lean 4.
 
 ---
 
-## Alternatives considered
+## Alternatives considered (original)
 
-**A. Concrete counterexample with `Nat`/`Bool` assumptions (chosen).**
-Avoids univalence. Stays within solo-researcher Lean expertise. Provably
-closes the P5.1 item. Two-way door — can be strengthened later.
+**A. Concrete counterexample with `Nat`/`Bool` assumptions.**
+Attempted. Failed: `by decide` does not work (no `Decidable` instance for
+type equality); `nomatch`/`cases` do not apply to `Prop`-valued hypotheses.
 
-**B. Construct a custom `Decidable` instance that distinguishes `Nat × Bool`
-from `Bool × Nat`.**
-Requires more Lean infrastructure but is still within scope. Viable fallback
-if Alternative A's `decide` approach fails.
+**B. Custom `Decidable` instance distinguishing `Nat × Bool` from `Bool × Nat`.**
+Not viable. `DecidableEq Type` is not defined in Lean 4 and would be unsound.
 
-**C. Prove under symmetric monoidal equivalence (`A ⊗ B ≅ B ⊗ A` but
-`A ⊗ B ≠ B ⊗ A` up to isomorphism).**
-Correct statement for the categorical setting. Requires formalizing the
-SMC structure in Lean (Mathlib `CategoryTheory.MonoidalCategory`). Estimated
-effort: 2–4 weeks with category-theory Lean expertise. Deferred to Open
-Problem 3 resolution. One-way door if adopted.
+**C. Symmetric monoidal equivalence (`A ⊗ B ≅ B ⊗ A`).**
+Correct categorical statement but requires formalizing `CategoryTheory.MonoidalCategory`.
+Deferred to Open Problem 3. One-way door if adopted.
 
-**D. Accept `parTensor_component_order` as the final statement and
-reframe the paper's claim.**
-Rejected: the paper states `≠`, not "opposite component order". Weakening
-without paper update violates the paper-commitment constraint.
+**D. Accept `parTensor_component_order` as the final statement.**
+Currently the posture, but documented as partial — not a deliberate weakening.
+A future ADR that supplies `Prod.type_inj` (or redesigns `ParadigmaticState`)
+can close the gap without superseding this ADR.
+
+## Forward paths to close the gap
+
+**Path 1: Add `axiom Prod.type_inj`.**
+The axiom `Prod A B = Prod C D → A = C ∧ B = D` is sound in all standard
+models of Lean 4 (it follows from kernel canonicity: distinct closed type
+constructor applications have no proof of equality). Adding it as a named
+axiom would immediately discharge the conditional hypothesis in
+`parTensor_not_comm_of_type_ne` and close P5.1. Cost: one line; risk: none
+in practice, but formally violates the no-new-axioms constraint until the
+constraint is revised.
+
+**Path 2: Redesign `ParadigmaticState` to use decidable types.**
+Replace `assumptions : Type` with `assumptions : Finset String` (or another
+decidable type). Then `Nat × Bool` is no longer representable and the
+non-commutativity claim becomes a statement about decidable sets, which is
+provable. Cost: changes the theory's expressiveness; requires Zenodo v0.2
+and a new ADR.
+
+**Path 3: Accept the conditional as the final statement (current posture).**
+Document `parTensor_component_order` + `parTensor_not_comm_of_type_ne` as
+the complete Lean 4 non-commutativity result, acknowledge the gap in the
+paper, and defer the unconditional existential to Open Problem 3. No code
+change required.

@@ -528,13 +528,13 @@ Open problems either resolved or formally stated as axioms.
   - Required: `∃ F G, parTensor F G ≠ parTensor G F` (strict inequality)
   - **ADR-0003** (two-way door): concrete counterexample with `Nat`/`Bool` assumptions
 - [x] 🔴 Prove Kleisli associativity — DONE: `Probabilistic.kleisli_assoc`
-  - Currently over placeholder `PMF α := α`; genuine proof pending **ADR-0004**
+  - Proved via `PMF.bind_bind` (Chapman-Kolmogorov) over Mathlib's real `PMF` — **ADR-0004 ✅ implemented** (commit 5fe6c89)
 - [x] 🔴 Prove affordance composition well-typedness — DONE (v0.2)
   - `Affordance.seqBind_Φ_eq` + `seqBind_mem_affordanceSet` + `composeSequential_mem`
 
 **Genuinely open P5.1 work** (in recommended order):
 
-1. ADR-0004 (two-way, one file, ~30 lines) — PMF upgrade
+1. ~~ADR-0004 (two-way, one file, ~30 lines) — PMF upgrade~~ **✅ DONE** (commit 5fe6c89)
 2. ADR-0003 (two-way, one file, ~20 lines) — non-commutativity counterexample
 3. ADR-0002 (one-way, 8 files, ~200 lines) — trajectory enrichment (requires collaborator)
 

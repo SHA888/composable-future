@@ -1,12 +1,12 @@
 # ADR-0004 — Upgrade Placeholder PMF to Mathlib PMF
 
-| Field | Value |
-|---|---|
-| Status | **Proposed** |
-| Date | 2026-04-29 |
+| Field         | Value                                                                       |
+| ------------- | --------------------------------------------------------------------------- |
+| Status        | **Accepted** (implemented 2026-04-29, commit 5fe6c89)                       |
+| Date          | 2026-04-29                                                                  |
 | Reversibility | **Two-way door** — placeholder can be restored if Mathlib PMF causes issues |
-| Supersedes | — |
-| Superseded by | — |
+| Supersedes    | —                                                                           |
+| Superseded by | —                                                                           |
 
 ---
 
@@ -141,6 +141,7 @@ theorem PMF.bind_assoc (p : PMF α) (f : α → PMF β) (g : β → PMF γ) :
 ### File change scope
 
 Only `lean/ComposableFuture/Core/Probabilistic.lean` changes:
+
 - Remove `def PMF (α : Type) : Type := α` and the three placeholder
   definitions.
 - Add `import Mathlib.Probability.ProbabilityMassFunction.Basic`.

@@ -549,10 +549,17 @@ For each of the 5 open problems, one of:
 - Reduced to known open problem in mathematics (honest deferral)
 - Accepted as axiom with justification (honest limitation)
 
-- [ ] 🔴 OP1: Associativity under path-dependent τ — disposition documented
+- [x] 🔴 OP1: Associativity under path-dependent τ — **RESOLVED: Proved in Lean** (ADR-0002, commit 1a857bb)
+  - `Laws.seqBind_assoc`: unconditional for all `ComposableFuture` via `List.append_assoc`
+  - `Effect.EffectfulFuture.seq_assoc`: value-less indexed futures
+  - `Effect.EffectfulComputation.bind_assoc`: indexed monad with values
+  - `Indexed.IndexedFuture.assoc`: graded monad (indexed by `TrajectoryType`)
+  - `Stateless.assoc_stateless`: stateless subtype (specialization)
+  - All five theorems proved without `sorry`. Path concatenation is the key mechanism.
 - [x] 🔴 OP2: Φ well-definedness before S₁ — RESOLVED: dependent-type well-definedness theorem in `Core/Affordance.lean`, documented in `proofs/notes.md`
 - [ ] 🔴 OP3: Correct equivalence relation (bisimulation?) — disposition documented
-- [ ] 🔴 OP4: Composition of affordance sets Φ ∘ Φ' — disposition documented
+- [x] 🔴 OP4: Composition of affordance sets Φ ∘ Φ' — **RESOLVED: Proved in Lean** (Phase 4)
+  - `composeSequential_inhabits_impl`, `composeParallel_inhabits_impl`, `composeSequential_in_impl` in `Core/Affordance.lean`
 - [ ] 🔴 OP5: Completeness (all futures reachable by finite composition) — disposition documented
 
 ### P5.3 — Publication

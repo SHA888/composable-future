@@ -557,20 +557,19 @@ For each of the 5 open problems, one of:
   - `Stateless.assoc_stateless`: stateless subtype (specialization)
   - All five theorems proved without `sorry`. Path concatenation is the key mechanism.
 - [x] 🔴 OP2: Φ well-definedness before S₁ — RESOLVED: dependent-type well-definedness theorem in `Core/Affordance.lean`, documented in `proofs/notes.md`
-- [-] 🔴 OP3: Correct equivalence relation (bisimulation?) — **DEFERRED: Reduced to type-theoretic boundary + design question**
-  - *Non-commutativity sub-problem*: `parTensor_not_comm_of_type_ne` (conditional on `(A×B) ≠ (B×A)`) is the maximum
-    provable under the no-new-axioms constraint. Unconditional proof requires `Prod.type_inj`
-    (type-constructor injectivity), which is sound in all standard models but is not an explicit Lean 4 axiom.
-  - *Equivalence relation design*: strict equality is the wrong equivalence for symmetric-monoidal reasoning.
-    The correct relation is symmetric-monoidal isomorphism — `parTensor F G ≅ parTensor G F` (isomorphic
-    but not equal) — requiring quotient types or setoids in Lean 4. Standard category theory; non-trivial
-    engineering. No approach is precluded; all are deferred.
-  - *Bisimulation connection*: Wang (2021) history-preserving bisimilarity is a candidate if trajectory
-    history matters. Strong/weak bisimulation from process algebra are alternatives if only state
-    reachability matters. Choice depends on whether path equality or endpoint equality is the intended
-    notion of "same transition". Currently underspecified.
-  - **Disposition**: Accepted as open — well-bounded (two concrete sub-problems), not blocked by any
-    Lean limitation, but requires a design commitment before any Lean work begins.
+- [~] 🔴 OP3: Correct equivalence relation (bisimulation?) — **PARTIAL: SMC isomorphism implemented**
+  - *SMC commutativity* ✅ `Core/Equivalence.lean` (new file):
+    - `StateIso S T`: component-wise `Equiv` bijections (assumptions, constraints, infrastructure)
+    - `FutureIso F G`: state isomorphisms on source and target; `refl`, `symm`, `trans` (equivalence relation)
+    - `parTensor_comm_iso F G : FutureIso (parTensor F G) (parTensor G F)` — proved via `Equiv.prodComm`
+    - `parTensor_comm_iso_self_inv`: braiding is self-inverse at the element level
+    - No new axioms. `def` (not `theorem`) because `FutureIso` is `Type`-valued, not `Prop`-valued.
+  - *Bisimulation sub-problem* ⬜ still open:
+    - Trajectory equivalence (strong/weak bisimulation) is the deferred half of OP3
+    - `FutureIso` intentionally excludes trajectory equality — trajectory equivalence is a separate design
+      decision depending on whether path equality or reachability is the intended notion
+    - Wang (2021) history-preserving bisimilarity is a candidate; strong/weak bisimulation from process
+      algebra are alternatives. Requires a design commitment before Lean work begins.
 - [x] 🔴 OP4: Composition of affordance sets Φ ∘ Φ' — **RESOLVED: Proved in Lean** (Phase 4)
   - `composeSequential_inhabits_impl`, `composeParallel_inhabits_impl`, `composeSequential_in_impl` in `Core/Affordance.lean`
 - [-] 🔴 OP5: Completeness (all futures reachable by finite composition) — **DEFERRED: Trivial form resolved; non-trivial form underspecified**

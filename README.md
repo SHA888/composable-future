@@ -2,7 +2,7 @@
 
 A formal theory of paradigmatic futures as composable algebraic structures.
 
-**Status:** Phase 5 in progress — 0 `sorry`, 0 warnings; ADR-0004 ✅ ADR-0003 🟡 ADR-0002 pending  
+**Status:** Phase 5 in progress — 0 `sorry`, 0 warnings; ADR-0004 ✅ ADR-0003 🟡 ADR-0002 ✅  
 **Track:** Theory (public) + Applied formalization (private)  
 **Latest:** Level 1 positioning paper (8 pages) ready for arXiv submission
 
@@ -82,21 +82,16 @@ Where `Id` is the null future — a transition that changes nothing.
 (A >>= B) >>= C  =  A >>= (B >>= C)
 ```
 
-\*Status: **Endpoint-extraction version proved; substantive version open.\***
+*Status: **Proved — five independent theorems, all substantive.***
 
-- **Endpoint-extraction associativity** (`Laws.seqBind_endpoint_assoc`,
-  `Stateless.assoc_stateless_endpoint`, `IndexedFuture.endpoint_assoc`):
-  proved by `rfl`. The v0.1 `seqBind` extracts only `F.τ.source` and
-  `H.τ.target`, so associativity is the trivial fact that endpoint pairing
-  is associative — not that paradigm trajectories compose associatively.
-- **Weak form** (`WeakAssoc.weak_assoc_affordance`,
-  `WeakAssoc.weak_assoc_states`): affordance-level and state-level
-  equivalence-up-to. These are honest as stated.
-- **Substantive (path-composing) associativity**: open Phase 2 work.
-  Requires `Trajectory` to carry an internal path so `seqBind` actually
-  concatenates trajectory data. The proof would then follow from
-  `List.append_assoc`. See `proofs/notes.md` §"Open: Substantive
-  Associativity" for the sketch.
+- **`Laws.seqBind_assoc`**: unconditional for all `ComposableFuture` via `List.append_assoc`
+- **`Effect.EffectfulFuture.seq_assoc`**: value-less indexed futures
+- **`Effect.EffectfulComputation.bind_assoc`**: indexed monad with values
+- **`Indexed.IndexedFuture.assoc`**: graded monad (indexed by `TrajectoryType`)
+- **`Stateless.assoc_stateless`**: stateless subtype (specialization)
+
+`Trajectory` carries `path : List ParadigmaticState`; `seqBind` concatenates paths;
+associativity follows from `List.append_assoc`. No `sorry`. (ADR-0002, 2026-05-13)
 
 **Commutativity of parallel**
 
@@ -245,7 +240,7 @@ composable-future/
 │   ├── constraints.md       # Project constraint inventory
 │   └── adr/
 │       ├── 0001-record-proof-decisions.md
-│       ├── 0002-trajectory-enrichment.md    # Pending (collaborator needed)
+│       ├── 0002-trajectory-enrichment.md    # Accepted (2026-05-13)
 │       ├── 0003-noncommutativity-strategy.md  # Accepted — Revised (2026-05-08)
 │       └── 0004-pmf-mathlib-upgrade.md       # Accepted (2026-05-07)
 ├── lean/                # Lean 4 formalization (Phases 1–4 complete)
@@ -295,7 +290,7 @@ After install, restart your terminal (or `source ~/.bashrc` on Linux) so `lake` 
 
 - Build project: `cd lean && lake build` — should report **0 errors, 0 warnings, 0 sorry**
 - The codebase is sorry-free; all Phase 1–4 theorems are proved
-- Next open work: implement ADR-0002 (trajectory enrichment — see `docs/adr/0002-trajectory-enrichment.md`)
+- ADR-0002 (trajectory enrichment) is complete; next open work: OP3 equivalence relation design
 - Add proof attempts and notes to `proofs/notes.md`
 - Follow naming conventions in `CONTRIBUTING.md`
 
@@ -331,27 +326,26 @@ After install, restart your terminal (or `source ~/.bashrc` on Linux) so `lake` 
 | -------- | ----------------------------------------------------------------- | ---------------------------------- |
 | ADR-0004 | Upgrade placeholder `PMF` to Mathlib’s real `PMF`                 | ✅ done (2026-05-07)               |
 | ADR-0003 | Non-commutativity of ⊗                                            | 🟡 conditional result (2026-05-08) |
-| ADR-0002 | Add `path` field to `Trajectory`; prove substantive associativity | ⏳ pending collaborator            |
+| ADR-0002 | Add `path` field to `Trajectory`; prove substantive associativity | ✅ done (2026-05-13)               |
 
 ### Immediate Next Steps
 
 1. **arXiv submission** — Find math.CT or cs.LO endorser (submission ID 7444737, endorsement code NBFD6A)
-2. **ADR-0002 — Trajectory enrichment** (8 files, ~200 lines; one-way door; requires Lean collaborator)
-   - Add `path : List ParadigmaticState` to `Trajectory`
-   - Redefine `seqBind` to concatenate paths
-   - Prove substantive associativity via `List.append_assoc`
-3. **ADR-0003 gap** — Supply `(A×B) ≠ (B×A)` for some concrete types to close the unconditional existential
+2. **ADR-0003 gap** — Close the unconditional `∃ F G, parTensor F G ≠ parTensor G F`
    - Three forward paths documented in `docs/adr/0003-noncommutativity-strategy.md`
+   - Candidate approach: `FutureIso` (SMC isomorphism) to prove commutativity-up-to-iso instead
+3. **OP3** — Commit to an equivalence relation design (bisimulation vs. SMC isomorphism) and implement
 
 ---
 
 ## Open Problems
 
-**OP1: Associativity under path-dependence** ✅ **RESOLVED**
+**OP1: Associativity under path-dependence** ✅ **RESOLVED** (ADR-0002, 2026-05-13)
 
-- Endpoint-extraction associativity: `Laws.seqBind_endpoint_assoc` (proved by `rfl`)
-- Indexed monad construction: `IndexedFuture.endpoint_assoc` via graded monad
-- Weak form: `WeakAssoc.weak_assoc_affordance` (affordance-level FutureEquiv)
+- `Laws.seqBind_assoc`: unconditional, all `ComposableFuture`, via `List.append_assoc`
+- `Effect.EffectfulFuture.seq_assoc` / `EffectfulComputation.bind_assoc`: indexed monad variants
+- `Indexed.IndexedFuture.assoc`: graded monad variant
+- `Stateless.assoc_stateless`: stateless subtype variant
 
 **OP2: Is Φ well-defined before S₁ is realized?** ✅ **RESOLVED** (v0.2)
 

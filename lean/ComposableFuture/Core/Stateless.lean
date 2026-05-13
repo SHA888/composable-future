@@ -21,16 +21,16 @@ def StatelessFuture.mk (F : ComposableFuture) (h : F.isStateless) : StatelessFut
   ⟨F, h⟩
 
 /-- Sequential bind preserves statelessness.
-    Theorem: If F and G are stateless and compatible, then F >>= G is stateless. -/
+    If F and G are stateless (empty paths), then seqBind concatenates empty paths,
+    producing an empty path, so the result is stateless. -/
 theorem seqBind_preserves_stateless
   (F G : ComposableFuture)
   (h : F.S₁ = G.S₀)
-  (_hF : F.isStateless)
-  (_hG : G.isStateless) :
-  (seqBind F G h).isStateless := by
-  -- Trivial proof since isStateless is currently True for all trajectories
-  -- TODO Phase 2.2: Replace with actual proof after trajectory refactor
-  simp [ComposableFuture.isStateless, Trajectory.isStateless]
+  (hF : F.isStateless)
+  (hG : G.isStateless) :
+  (ComposableFuture.seqBind F G h).isStateless := by
+  unfold ComposableFuture.isStateless Trajectory.isStateless at hF hG ⊢
+  simp [ComposableFuture.seqBind, hF, hG]
 
 /-- Sequential bind as an operation on stateless futures. -/
 def StatelessFuture.seqBind
@@ -44,7 +44,7 @@ def StatelessFuture.seqBind
 /-- Identity future is stateless. -/
 theorem idFuture_isStateless (S : ParadigmaticState) :
   (ComposableFuture.idFuture S).isStateless := by
-  simp [ComposableFuture.isStateless, Trajectory.isStateless]
+  simp [ComposableFuture.idFuture, ComposableFuture.isStateless, Trajectory.isStateless]
 
 /-- Identity future as a stateless future. -/
 def StatelessFuture.id (S : ParadigmaticState) : StatelessFuture :=
@@ -77,21 +77,12 @@ When restricted to stateless futures, Composable Future forms a category:
 straightforward once the indexed trajectory refactor is complete.
 -/
 
-/-- Endpoint-extraction associativity for stateless futures.
+/-- Substantive associativity for stateless futures.
 
-Inherits the same caveat as `Laws.seqBind_endpoint_assoc`: this is
-associativity of endpoint extraction, not of trajectory composition.
-Because `Trajectory.isStateless` is currently `True` for every trajectory
-(see Future.lean §"Phase 2.1: Placeholder"), this theorem is in fact
-exactly the unrestricted version restricted to a vacuous subtype.
-
-The substantive stateless theorem — "function composition of stateless
-trajectories is associative" — requires (a) giving stateless trajectories
-a function representation `S₀.toType → S₁.toType` and (b) defining
-`seqBind` via function composition. Then associativity follows from
-`Function.comp.assoc`. This is Phase 2.2 work.
+Inherits the same mechanism as `ComposableFuture.seqBind_assoc`:
+path concatenation is associative via `List.append_assoc`.
 -/
-theorem assoc_stateless_endpoint
+theorem assoc_stateless
     (F G H : StatelessFuture)
     (h₁ : F.val.S₁ = G.val.S₀)
     (h₂ : G.val.S₁ = H.val.S₀)
@@ -99,10 +90,9 @@ theorem assoc_stateless_endpoint
     (h₄ : F.val.S₁ = (StatelessFuture.seqBind G H h₂).val.S₀) :
     (StatelessFuture.seqBind (StatelessFuture.seqBind F G h₁) H h₃).val =
     (StatelessFuture.seqBind F (StatelessFuture.seqBind G H h₂) h₄).val := by
-  -- Proof: Both sides construct the same future:
-  -- {S₀ := F.val.S₀, τ := {source := F.val.τ.source, target := H.val.τ.target}, S₁ := H.val.S₁, Φ := H.val.Φ}
-  -- This holds by definitional equality of `seqBind`.
-  simp [StatelessFuture.seqBind, ComposableFuture.seqBind] at h₃ h₄
-  simp [StatelessFuture.seqBind, ComposableFuture.seqBind]
+  -- The underlying `ComposableFuture` equality follows from `seqBind_assoc`
+  -- via `List.append_assoc`. The `isStateless` proofs are equal by proof
+  -- irrelevance (handled by `simp`).
+  simp [StatelessFuture.seqBind, ComposableFuture.seqBind, List.append_assoc]
 
 end ComposableFuture

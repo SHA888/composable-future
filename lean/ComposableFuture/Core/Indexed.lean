@@ -95,10 +95,13 @@ def IndexedFuture.Φ {t : TrajectoryType} (F : IndexedFuture t) : Set Composable
 
 /-- Indexed sequential bind.
 
-    Composition of trajectory types is tracked in the index:
-    bind : IndexedFuture t₁ → IndexedFuture t₂ → IndexedFuture (t₁ ⊗ t₂)
+Composition of trajectory types is tracked in the index:
+bind : IndexedFuture t₁ → IndexedFuture t₂ → IndexedFuture (t₁ ⊗ t₂)
 
-    This is the graded monad multiplication μ_{t₁,t₂}. -/
+This is the graded monad multiplication μ_{t₁,t₂}.
+
+v0.2 (ADR-0002): the trajectory path is concatenated: `F.τ.path ++ G.τ.path`.
+-/
 def IndexedFuture.seqBind
     {t₁ t₂ : TrajectoryType}
     [TrajectoryTypeCompose TrajectoryType]
@@ -108,7 +111,7 @@ def IndexedFuture.seqBind
     IndexedFuture (TrajectoryTypeCompose.compose t₁ t₂) :=
   { S₀ := F.S₀
     S₁ := G.S₁
-    τ := { source := F.τ.source, target := G.τ.target }
+    τ := { source := F.τ.source, path := F.τ.path ++ G.τ.path, target := G.τ.target }
     well_formed := by
       constructor
       · -- τ.source = F.S₀
@@ -118,14 +121,15 @@ def IndexedFuture.seqBind
 
 /-- Identity indexed future at the unit trajectory type.
     This is the graded monad unit η : A → T_I A.
-    The identity future is always indexed by the unit trajectory type. -/
+    The identity future is always indexed by the unit trajectory type.
+    Path is empty (no intermediate states). -/
 def IndexedFuture.idFuture
     [TrajectoryTypeCompose TrajectoryType]
     (S : ParadigmaticState) :
     IndexedFuture (TrajectoryTypeCompose.unit (T := TrajectoryType)) :=
   { S₀ := S
     S₁ := S
-    τ := { source := S, target := S }
+    τ := { source := S, path := [], target := S }
     well_formed := by exact ⟨rfl, rfl⟩ }
 
 /-! ## Indexed Endpoint-Extraction Associativity
@@ -143,11 +147,12 @@ to be a non-trivial free monoid over trajectory stages, and (b) the
 underlying `Trajectory` to carry a path that `seqBind` actually
 concatenates. Both are open Phase 2 refactors. -/
 
-/-- Endpoint-extraction associativity for indexed futures.
+/-- Substantive associativity for indexed futures.
 
-See the section header above for the honest framing of what this proves
-versus what a substantive indexed-monad associativity would require. -/
-theorem IndexedFuture.endpoint_assoc
+With path concatenation, associativity follows from `List.append_assoc`.
+The `cast` is still needed for the index type, but the underlying future
+ equality is now substantive (path-based). -/
+theorem IndexedFuture.assoc
     {t₁ t₂ t₃ : TrajectoryType}
     [tc : TrajectoryTypeCompose TrajectoryType]
     (F : IndexedFuture t₁)
@@ -160,16 +165,17 @@ theorem IndexedFuture.endpoint_assoc
     cast (congr_arg IndexedFuture (tc.assoc t₁ t₂ t₃))
       (IndexedFuture.seqBind (IndexedFuture.seqBind F G h₁) H h₃) =
     IndexedFuture.seqBind F (IndexedFuture.seqBind G H h₂) h₄ := by
-  -- With `TrajectoryType := Unit`, the compose-associativity witness reduces to
-  -- `rfl`, so `cast (congr_arg IndexedFuture rfl) x = x` definitionally. Both
-  -- sides of the equation then unfold to the same `IndexedFuture ()` record
-  -- (same S₀, S₁, τ, Φ; `well_formed` proofs identified by proof irrelevance).
-  rfl
+  -- With `TrajectoryType := Unit`, `tc.assoc` reduces to `rfl`, so `cast` is
+  -- definitionally identity. The equality then reduces to `ComposableFuture`
+  -- equality with path concatenation, which closes by `simp [IndexedFuture.seqBind,
+  -- List.append_assoc]`.
+  simp [IndexedFuture.seqBind, List.append_assoc]
 
 /-- Left identity for indexed futures.
     The identity future has type unit, so composition is unit ⊗ t = t.
 
-    We use `cast` with the identity law to convert the result type. -/
+    We use `cast` with the identity law to convert the result type.
+    With path concatenation (id has empty path), the proof simplifies. -/
 theorem IndexedFuture.left_id
     {t : TrajectoryType}
     [tc : TrajectoryTypeCompose TrajectoryType]
@@ -180,24 +186,19 @@ theorem IndexedFuture.left_id
       (IndexedFuture.seqBind
         (IndexedFuture.idFuture S) F
         (by simp [IndexedFuture.idFuture, h])) = F := by
-  -- With `TrajectoryType := Unit`, `tc.left_id t : compose () t = t` reduces
-  -- to `rfl`, so `cast` is identity. What remains is to show the resulting
-  -- `IndexedFuture` equals `F` — both sides have `S₀ = S = F.S₀`
-  -- (using `h`), the same `S₁`, τ = { source := S, target := F.τ.target }
-  -- on the left vs. `F.τ` on the right (which agrees via `F.well_formed.1`
-  -- under the substitution `h`), and the same Φ.
   subst h
-  rcases F with ⟨F_S₀, F_S₁, ⟨τ_src, τ_tgt⟩, ⟨hsrc, _htgt⟩⟩
-  -- Reduce structure projections in hypotheses so `simp_all` can close.
-  dsimp only at hsrc _htgt
-  -- `hsrc : τ_src = F_S₀` — substitute to align trajectory endpoints.
-  subst hsrc
-  simp_all [IndexedFuture.seqBind, IndexedFuture.idFuture]
+  cases F with | mk S₀ S₁ τ wf =>
+  simp [IndexedFuture.seqBind, IndexedFuture.idFuture, List.nil_append]
+  ext
+  · exact wf.1.symm
+  · rfl
+  · rfl
 
 /-- Right identity for indexed futures.
     The identity future has type unit, so composition is t ⊗ unit = t.
 
-    We use `cast` with the identity law to convert the result type. -/
+    We use `cast` with the identity law to convert the result type.
+    With path concatenation (id has empty path), the proof simplifies. -/
 theorem IndexedFuture.right_id
     {t : TrajectoryType}
     [tc : TrajectoryTypeCompose TrajectoryType]
@@ -208,16 +209,13 @@ theorem IndexedFuture.right_id
       (IndexedFuture.seqBind F
         (IndexedFuture.idFuture S)
         (by simp [IndexedFuture.idFuture, h])) = F := by
-  -- Dual to `left_id`. `tc.right_id t` reduces to `rfl` under
-  -- `TrajectoryType := Unit`, `cast` vanishes, and after substituting `h`
-  -- the trajectory endpoints match F's via `F.well_formed.2`.
   subst h
-  rcases F with ⟨F_S₀, F_S₁, ⟨τ_src, τ_tgt⟩, ⟨_hsrc, htgt⟩⟩
-  -- Reduce structure projections in hypotheses so `simp_all` can close.
-  dsimp only at _hsrc htgt
-  -- `htgt : τ_tgt = F_S₁` — substitute to align trajectory endpoints.
-  subst htgt
-  simp_all [IndexedFuture.seqBind, IndexedFuture.idFuture]
+  cases F with | mk S₀ S₁ τ wf =>
+  simp [IndexedFuture.seqBind, IndexedFuture.idFuture, List.append_nil]
+  ext
+  · rfl
+  · rfl
+  · exact wf.2.symm
 
 /-! ## Concrete Trajectory Types
 

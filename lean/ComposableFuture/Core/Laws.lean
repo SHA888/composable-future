@@ -34,30 +34,37 @@ namespace ComposableFuture
 /-- Left identity law (for well-formed futures): Id >>= F = F.
 
 The well-formedness hypothesis is essential: `seqBind` builds the composed
-trajectory from `F.τ.source`, not `F.S₀`, so without `F.τ.source = F.S₀`
-(one half of `well_formed`) the equation does not hold. Dropping this
-hypothesis is the honest obstacle for the unrestricted statement.
+trajectory from `F.τ.source` and `F.τ.path`. For the path to match,
+we need `F.τ.source = F.S₀` (first half of `well_formed`). The path equality
+`[] ++ F.τ.path = F.τ.path` is trivial.
 
 v0.2: Φ is no longer a stored field, so no affordance equality is needed. -/
 theorem left_identity (F : ComposableFuture) (hF : F.well_formed) :
     seqBind (idFuture F.S₀) F (by rfl) = F := by
-  rcases F with ⟨F_S₀, ⟨τ_src, τ_tgt⟩, F_S₁⟩
-  rcases hF with ⟨hsrc, _htgt⟩
-  simp_all [seqBind, idFuture]
+  cases F with | mk S₀ τ S₁ =>
+  simp [seqBind, idFuture, List.nil_append]
+  ext
+  · exact hF.1.symm
+  · rfl
+  · rfl
 
 /-- Right identity law (for well-formed futures): F >>= Id = F.
 
 The well-formedness hypothesis is required symmetrically: `seqBind` uses
 `G.τ.target`, which under `G = idFuture F.S₁` equals `F.S₁`, so we need
-`F.τ.target = F.S₁` (the other half of `well_formed`).
+`F.τ.target = F.S₁` (the other half of `well_formed`). The path equality
+`F.τ.path ++ [] = F.τ.path` is trivial.
 
 v0.2: Φ is no longer a stored field, so no `[Subsingleton]` guard is needed.
 The law holds unconditionally for any well-formed F. -/
 theorem right_identity (F : ComposableFuture) (hF : F.well_formed) :
     seqBind F (idFuture F.S₁) (by rfl) = F := by
-  rcases F with ⟨F_S₀, ⟨τ_src, τ_tgt⟩, F_S₁⟩
-  rcases hF with ⟨_hsrc, htgt⟩
-  simp_all [seqBind, idFuture]
+  cases F with | mk S₀ τ S₁ =>
+  simp [seqBind, idFuture, List.append_nil]
+  ext
+  · rfl
+  · rfl
+  · exact hF.2.symm
 
 /-- Closure law: sequential composition produces a valid future.
     This is trivially satisfied by the existence of `seqBind` itself. -/
@@ -74,26 +81,21 @@ theorem seqBind_well_formed (F G : ComposableFuture) (h : F.S₁ = G.S₀)
   · exact hF.1
   · exact hG.2
 
-/-- Endpoint-extraction associativity of sequential bind.
+/-- Substantive associativity of sequential bind.
 
-This is **not** the substantive paradigm-composition associativity. The
-v0.1 `seqBind` extracts only `F.τ.source` and `H.τ.target` and discards
-all intermediate trajectory data, so both sides of the equation reduce
-to the same record `{S₀ := F.S₀, τ := {source := F.τ.source,
-target := H.τ.target}, S₁ := H.S₁, Φ := H.Φ}` by definitional equality.
-What this theorem actually says: "endpoint extraction is associative."
-What it does **not** say: "trajectory composition is associative."
+With the enriched `Trajectory` carrying a `path` field, `seqBind` now
+concatenates paths: `(F >>= G).τ.path = F.τ.path ++ G.τ.path`.
+Associativity then follows from `List.append_assoc`.
 
-The substantive version requires `Trajectory` to carry an internal path
-(e.g. `List ParadigmaticState`) so that `seqBind` concatenates paths
-non-trivially. The proof would then follow from `List.append_assoc`
-rather than `rfl`. This is the open Phase 2 refactor; see
-`proofs/attempt-associativity.md`. -/
-theorem seqBind_endpoint_assoc
-    (F G H : ComposableFuture) (hFG : F.S₁ = G.S₀) (hGH : G.S₁ = H.S₀) :
-    seqBind (seqBind F G hFG) H (by exact hGH) =
-    seqBind F (seqBind G H hGH) (by exact hFG) := by
-  simp [seqBind]
+This is the theorem that matches the paper's claim: sequential composition
+of futures is associative. The proof term contains `List.append_assoc`,
+not `rfl`. -/
+theorem seqBind_assoc
+    (F G H : ComposableFuture)
+    (h₁ : F.S₁ = G.S₀) (h₂ : G.S₁ = H.S₀) :
+    seqBind (seqBind F G h₁) H (by exact h₂) =
+    seqBind F (seqBind G H h₂) (by exact h₁) := by
+  simp [seqBind, List.append_assoc]
 
 /-- Component-order witness for parTensor's non-commutativity.
 
@@ -170,10 +172,10 @@ theorem parTensor_not_comm_of_type_ne
   let S_B : ParadigmaticState := { assumptions := B, constraints := Unit
                                   , infrastructure := Unit }
   let F : ComposableFuture := { S₀ := S_A
-                               , τ := { source := S_A, target := S_A }
+                               , τ := { source := S_A, path := [], target := S_A }
                                , S₁ := S_A }
   let G : ComposableFuture := { S₀ := S_B
-                               , τ := { source := S_B, target := S_B }
+                               , τ := { source := S_B, path := [], target := S_B }
                                , S₁ := S_B }
   -- If parTensor F G = parTensor G F, then A × B = B × A — contradiction with h
   refine ⟨F, G, fun heq => ?_⟩

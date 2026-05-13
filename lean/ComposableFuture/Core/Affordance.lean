@@ -86,13 +86,15 @@ Given:
 
 Produces a composed descriptor certifying S₀ affords reaching S₂.
 
-Note: trajectory data is collapsed to endpoints only — parallel to `seqBind`
-for plain futures. The substantive path-composing version is Phase 2 work. -/
+v0.2 (ADR-0002): the trajectory path is concatenated: `φ₁.trajectory_spec.path ++ φ₂.trajectory_spec.path`.
+-/
 def composeSequential {S₀ : ParadigmaticState}
     (φ₁ : AffordanceDescriptor S₀) (φ₂ : AffordanceDescriptor φ₁.S₁) :
     AffordanceDescriptor S₀ where
   S₁              := φ₂.S₁
-  trajectory_spec := { source := S₀, target := φ₂.S₁ }
+  trajectory_spec := { source := S₀
+                      , path   := φ₁.trajectory_spec.path ++ φ₂.trajectory_spec.path
+                      , target := φ₂.S₁ }
   source_eq       := rfl
   target_eq       := rfl
 
@@ -102,12 +104,16 @@ Given:
 - φ₁ : AffordanceDescriptor S₁  (S₁ affords reaching S₁')
 - φ₂ : AffordanceDescriptor S₂  (S₂ affords reaching S₂')
 
-Produces a descriptor for the joint state (S₁ ⊗ S₂) affording (S₁' ⊗ S₂'). -/
+Produces a descriptor for the joint state (S₁ ⊗ S₂) affording (S₁' ⊗ S₂').
+
+v0.2: path is empty (parallel composition does not sequence paths). -/
 def composeParallel {S₁ S₂ : ParadigmaticState}
     (φ₁ : AffordanceDescriptor S₁) (φ₂ : AffordanceDescriptor S₂) :
     AffordanceDescriptor (S₁ ⊗ S₂) where
   S₁              := φ₁.S₁ ⊗ φ₂.S₁
-  trajectory_spec := { source := S₁ ⊗ S₂, target := φ₁.S₁ ⊗ φ₂.S₁ }
+  trajectory_spec := { source := S₁ ⊗ S₂
+                      , path   := []
+                      , target := φ₁.S₁ ⊗ φ₂.S₁ }
   source_eq       := rfl
   target_eq       := rfl
 
@@ -137,7 +143,7 @@ theorem affordanceSet_nonempty (S₀ : ParadigmaticState) :
 theorem affordanceDescriptor_nonempty (S₀ : ParadigmaticState) :
     Nonempty (AffordanceDescriptor S₀) :=
   ⟨{ S₁             := S₀
-     trajectory_spec := { source := S₀, target := S₀ }
+     trajectory_spec := { source := S₀, path := [], target := S₀ }
      source_eq       := rfl
      target_eq       := rfl }⟩
 

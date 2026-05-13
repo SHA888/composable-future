@@ -40,39 +40,17 @@ structure ParadigmaticState where
   infrastructure : Type
   deriving Repr
 
-/-- A trajectory represents a transition between paradigmatic states. -/
+/-- A trajectory represents a transition between paradigmatic states.
+    v0.2 (ADR-0002): enriched with an internal path of intermediate states.
+    The `path` field records the sequence of paradigmatic states visited
+    (excluding the source, which is stored separately, but including any
+    intermediate stages). The `target` is the final state. -/
 structure Trajectory where
   source : ParadigmaticState
+  path   : List ParadigmaticState
   target : ParadigmaticState
   deriving Repr
 
-/-- Endpoint-determination of `Trajectory`: equal `source` and `target` imply
-    equal trajectories.
-
-    **This is a v0.1/v0.2 fact, not a theorem about trajectories in general.** It
-    holds only because `Trajectory` currently has no fields beyond its two
-    endpoints. Phase 2's trajectory enrichment (adding an internal path,
-    e.g. `List ParadigmaticState` of intermediate stages) will make this
-    statement false: two distinct paths between the same endpoints exist.
-
-    The deliberately specific name `endpoint_ext` (rather than `ext_eq`) is
-    intended to surface this dependency at every call site. Any caller that
-    invokes this lemma is implicitly asserting that the two trajectories'
-    *endpoints alone* should determine equality — which is precisely what
-    the Phase 2 refactor is meant to undo. Such call sites are therefore
-    pre-flagged as needing to be revisited.
-
-    See also: `Core/Effect.lean` (callers in identity-law proofs) and
-    `proofs/attempt-associativity.md` for the design history. -/
-theorem Trajectory.endpoint_ext {τ₁ τ₂ : Trajectory}
-    (h₁ : τ₁.source = τ₂.source)
-    (h₂ : τ₁.target = τ₂.target) :
-    τ₁ = τ₂ := by
-  cases τ₁
-  cases τ₂
-  subst h₁
-  subst h₂
-  rfl
 
 /-- A composable future is a 3-tuple (S₀, τ, S₁).
 
@@ -102,16 +80,24 @@ def ComposableFuture.Φ (F : ComposableFuture) : Set ComposableFuture :=
   AffordanceSet F.S₁
 
 /-- A trajectory is stateless if it does not depend on history.
-    Phase 2.1: Placeholder — all trajectories currently considered stateless.
-    Phase 2.2: Replace with actual definition after trajectory refactor.
-
-    Formal definition will be:
-    ∀ {S₀ S₁ S₂} (h₁ h₂ : List ParadigmaticState),
-      h₁.getLast? = some S₀ → h₂.getLast? = some S₀ →
-      τ.apply h₁ = τ.apply h₂ -/
-def Trajectory.isStateless (_τ : Trajectory) : Prop := True
+    With the enriched path field, a stateless trajectory has an empty path
+    and its behavior is independent of prior context. -/
+def Trajectory.isStateless (τ : Trajectory) : Prop :=
+  τ.path = []
 
 /-- A composable future is stateless if its trajectory is stateless. -/
 def ComposableFuture.isStateless (F : ComposableFuture) : Prop := F.τ.isStateless
+
+/-- Extensionality for Trajectory: two trajectories are equal if their source,
+    path, and target are equal. -/
+@[ext]
+theorem Trajectory.ext {τ₁ τ₂ : Trajectory}
+    (hs : τ₁.source = τ₂.source)
+    (hp : τ₁.path = τ₂.path)
+    (ht : τ₁.target = τ₂.target) :
+    τ₁ = τ₂ := by
+  cases τ₁; cases τ₂
+  subst hs hp ht
+  rfl
 
 end ComposableFuture

@@ -501,8 +501,8 @@ before S₁ is realized?) and Open Problem 4 (does Φ ∘ Φ' hold?).
 ## PHASE 5 — Full Mechanized Proof
 
 > Gate: all non-open theorems proved in Lean 4, no sorry remaining
-> Status: 🟡 in progress (3 proof obligations open; 4 resolved; ADRs written)
-> Estimated effort: 12–24 months (requires collaborator for ADR-0002)
+> Status: 🟡 in progress (2 proof obligations open; 5 resolved; all ADRs complete)
+> Estimated effort: 6–12 months (all ADRs ✅ completed; remaining items independent)
 
 **What this phase produces:**
 A mechanically verified proof of the Composable Future theory.
@@ -519,10 +519,10 @@ Open problems either resolved or formally stated as axioms.
 - [x] 🔴 Prove right identity — DONE: `Laws.right_identity` (requires `well_formed` hypothesis)
   - Unconditional version deferred pending ADR-0002
 - [x] 🔴 Prove closure — DONE: `Laws.closure` (trivial existence proof)
-- [ ] 🔴 Prove substantive associativity — OPEN
-  - Current: `Laws.seqBind_endpoint_assoc` is endpoint-extraction only (closes by `rfl`)
-  - Required: path-composing associativity via `List.append_assoc`
-  - **ADR-0002** (one-way door): add `path : List ParadigmaticState` to `Trajectory`
+- [x] 🔴 Prove substantive associativity — DONE: **ADR-0002** ✅ (commit 1a857bb)
+  - Trajectory enriched with `path : List ParadigmaticState` field
+  - `Laws.seqBind_assoc` proved via `List.append_assoc` (substantive, not endpoint-extraction)
+  - Indexed futures and effectful computations also proved substantive associativity
 - [~] 🔴 Prove non-commutativity of ⊗ — PARTIAL (**ADR-0003 ✅ revised**, 2026-04-29)
   - `Laws.parTensor_comm_implies_prod_comm`: if parTensor commutes → type products commute (proved)
   - `Laws.parTensor_not_comm_of_type_ne`: given `(A×B) ≠ (B×A)`, exhibits `∃ F G, parTensor F G ≠ parTensor G F` (proved)
@@ -538,7 +538,7 @@ Open problems either resolved or formally stated as axioms.
 
 1. ~~ADR-0004 (two-way, one file, ~30 lines) — PMF upgrade~~ **✅ DONE** (commit 5fe6c89)
 2. ~~ADR-0003 (two-way, one file, ~20 lines) — non-commutativity counterexample~~ **✅ revised, partial** (see above)
-3. ADR-0002 (one-way, 8 files, ~200 lines) — trajectory enrichment (requires collaborator)
+3. ~~ADR-0002 (one-way, 8 files, ~200 lines) — trajectory enrichment~~ **✅ DONE** (commit 1a857bb)
 
 ### P5.2 — Open Problems Disposition
 
@@ -617,18 +617,16 @@ Where to find:
     - Replace placeholder `def PMF (α : Type) : Type := α` with Mathlib's `PMF`
     - Discharge `kleisli_left_id`, `kleisli_right_id`, `kleisli_assoc` via Mathlib lemmas
 
-3.  Enrich Trajectory with internal path (Phase 2 refactor)
-    - Add `path : List ParadigmaticState` field to `Trajectory`
-    - Redefine `seqBind` to concatenate paths: `F.τ.path ++ [F.S₁] ++ G.τ.path`
-    - Prove substantive associativity via `List.append_assoc`
-    - Update all callers of `Trajectory.endpoint_ext` (pre-flagged by name)
-
-4.  Find math.CT arXiv endorser (P0.4)
+2.  Find math.CT arXiv endorser (P0.4)
     - Submission ID: 7444737 (saved, check if expired)
     - Endorsement code: NBFD6A
     - Check abstract pages of Katis et al. 2009, Orchard et al. 2014
 
-5.  Cross-post preprint to PhilArchive (P0.4 🟢 nice-to-have)
+3.  Cross-post preprint to PhilArchive (P0.4 🟢 nice-to-have)
 
-6.  Post DOI to categorytheory.zulipchat.com (P0.4 🟢 nice-to-have)
+4.  Post DOI to categorytheory.zulipchat.com (P0.4 🟢 nice-to-have)
+
+5.  Address remaining open problems (OP3: equivalence relation, OP5: completeness)
+    - OP3: design symmetric-monoidal equivalence relation for futures
+    - OP5: prove or disprove completeness (all futures reachable via finite composition)
 ```

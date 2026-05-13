@@ -557,10 +557,36 @@ For each of the 5 open problems, one of:
   - `Stateless.assoc_stateless`: stateless subtype (specialization)
   - All five theorems proved without `sorry`. Path concatenation is the key mechanism.
 - [x] 🔴 OP2: Φ well-definedness before S₁ — RESOLVED: dependent-type well-definedness theorem in `Core/Affordance.lean`, documented in `proofs/notes.md`
-- [ ] 🔴 OP3: Correct equivalence relation (bisimulation?) — disposition documented
+- [-] 🔴 OP3: Correct equivalence relation (bisimulation?) — **DEFERRED: Reduced to type-theoretic boundary + design question**
+  - *Non-commutativity sub-problem*: `parTensor_not_comm_of_type_ne` (conditional on `(A×B) ≠ (B×A)`) is the maximum
+    provable under the no-new-axioms constraint. Unconditional proof requires `Prod.type_inj`
+    (type-constructor injectivity), which is sound in all standard models but is not an explicit Lean 4 axiom.
+  - *Equivalence relation design*: strict equality is the wrong equivalence for symmetric-monoidal reasoning.
+    The correct relation is symmetric-monoidal isomorphism — `parTensor F G ≅ parTensor G F` (isomorphic
+    but not equal) — requiring quotient types or setoids in Lean 4. Standard category theory; non-trivial
+    engineering. No approach is precluded; all are deferred.
+  - *Bisimulation connection*: Wang (2021) history-preserving bisimilarity is a candidate if trajectory
+    history matters. Strong/weak bisimulation from process algebra are alternatives if only state
+    reachability matters. Choice depends on whether path equality or endpoint equality is the intended
+    notion of "same transition". Currently underspecified.
+  - **Disposition**: Accepted as open — well-bounded (two concrete sub-problems), not blocked by any
+    Lean limitation, but requires a design commitment before any Lean work begins.
 - [x] 🔴 OP4: Composition of affordance sets Φ ∘ Φ' — **RESOLVED: Proved in Lean** (Phase 4)
   - `composeSequential_inhabits_impl`, `composeParallel_inhabits_impl`, `composeSequential_in_impl` in `Core/Affordance.lean`
-- [ ] 🔴 OP5: Completeness (all futures reachable by finite composition) — disposition documented
+- [-] 🔴 OP5: Completeness (all futures reachable by finite composition) — **DEFERRED: Trivial form resolved; non-trivial form underspecified**
+  - *Trivial form (resolved)*: every `ComposableFuture` has `path : List ParadigmaticState`, so all paths are
+    finite by construction. Any future with path `[s₁, …, sₙ]` decomposes by path induction into (n+1)
+    single-step futures (path length 0) composed via `seqBind`. Completeness holds trivially for this
+    interpretation — no proof needed, it follows from the type.
+  - *Non-trivial form (underspecified)*: "are all real-world paradigmatic transitions expressible in the theory?"
+    requires (a) specifying a target model (which real-world transitions count?), and (b) choosing a generating
+    set of "atomic" futures. Neither is defined. Analogous to expressiveness in process algebra (can every
+    concurrent behavior be expressed in CCS?) — a significant semantic question.
+  - *Lean dependency*: if the generating set is fixed, completeness reduces to a normal-form theorem:
+    every finite-path future rewrites to a composition of generators. Provable by `List.length` induction.
+    Straightforward once the design question is settled.
+  - **Disposition**: Accepted as open — the trivial form is closed by the type system; the non-trivial
+    form is deferred pending a semantic model that specifies what transitions exist outside the formalization.
 
 ### P5.3 — Publication
 

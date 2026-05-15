@@ -32,7 +32,27 @@
   tabsize=2
 }
 
-\lstset{language=Lean, basicstyle=\ttfamily\small}
+\lstset{language=Lean, basicstyle=\ttfamily\small, extendedchars=true,
+  literate=
+    {→}{{$\rightarrow$}}1
+    {∀}{{$\forall$}}1
+    {∃}{{$\exists$}}1
+    {≠}{{$\neq$}}1
+    {≃}{{$\simeq$}}1
+    {≅}{{$\cong$}}1
+    {∪}{{$\cup$}}1
+    {∩}{{$\cap$}}1
+    {×}{{$\times$}}1
+    {∈}{{$\in$}}1
+    {Φ}{{$\Phi$}}1
+    {τ}{{$\tau$}}1
+    {λ}{{$\lambda$}}1
+    {∘}{{$\circ$}}1
+    {₀}{{\textsubscript{0}}}1
+    {₁}{{\textsubscript{1}}}1
+    {₂}{{\textsubscript{2}}}1
+    {₃}{{\textsubscript{3}}}1
+}
 
 % Notation
 \newcommand{\Future}{\mathcal{F}}
@@ -56,7 +76,7 @@ Fakultas Kedokteran, Universitas Udayana}
 \maketitle
 
 \begin{abstract}
-We propose \emph{Composable Future}, a formal theory of paradigmatic transitions as composable algebraic structures. A future is a 4-tuple $F = (S_0, \tau, S_1, \Phi)$ where $S_0$ and $S_1$ are paradigmatic states, $\tau$ is a trajectory of change, and $\Phi$ is an affordance set of accessible futures from $S_1$. We define four primitive operators (sequential bind, parallel tensor, fork, merge) and prove fundamental laws: identity, closure, well-formedness preservation, and associativity. The associativity result holds for all futures by definitional equality of sequential bind, and is further structured via an indexed monad construction for path-dependent trajectories. We resolve the central open problem (associativity under path-dependence) via Orchard et al.'s indexed monad framework, and establish the correct equivalence relation between futures (OP3): path-trace isomorphism implemented as \texttt{FutureIso} + \texttt{PathIso} + \texttt{TrajectoryEquiv} in Lean~4, giving \texttt{ComposableFuture} the structure of a setoid. The theory occupies the intersection of category theory, paradigm change studies, process algebra, affordance theory, and futures formalization — a structure not currently named or investigated in any of these domains.
+We propose \emph{Composable Future}, a formal theory of paradigmatic transitions as composable algebraic structures. A future is a 4-tuple $F = (S_0, \tau, S_1, \Phi)$ where $S_0$ and $S_1$ are paradigmatic states, $\tau$ is a trajectory of change, and $\Phi$ is an affordance set of accessible futures from $S_1$. We define four primitive operators (sequential bind, parallel tensor, fork, merge) and prove fundamental laws: identity (substantive in the affordance component, ADR-0005), closure, well-formedness preservation, and associativity. The trajectory carries an explicit \emph{path} of intermediate states; sequential bind concatenates paths, so associativity is \emph{substantive} --- it holds by \texttt{List.append\_assoc} on the concatenated paths, not by definitional collapse of trajectories --- and is further structured via an indexed monad construction for path-dependent trajectories. We resolve the central open problem (associativity under path-dependence) by carrying path-dependence in the trajectory itself, complemented by Orchard et al.'s indexed monad framework, and establish the correct equivalence relation between futures (OP3): path-trace isomorphism implemented as \texttt{FutureIso} + \texttt{PathIso} + \texttt{TrajectoryEquiv} in Lean~4, giving \texttt{ComposableFuture} the structure of a setoid. The theory occupies the intersection of category theory, paradigm change studies, process algebra, affordance theory, and futures formalization — a structure not currently named or investigated in any of these domains.
 \end{abstract}
 
 \section{Introduction}
@@ -84,7 +104,7 @@ where:
 \item $\Phi$ is an affordance set — what new compositions become possible from $S_1$
 \end{itemize}
 
-The central contribution is proving that these futures compose associatively, and that the composition laws (identity, closure, associativity, well-formedness preservation) hold formally. Path-dependence — the fact that $\tau$ may depend on the history of prior transitions — does not block associativity; instead, it is captured structurally via an indexed monad construction.
+The central contribution is proving that these futures compose associatively, and that the composition laws (identity, closure, associativity, well-formedness preservation) hold formally. Path-dependence --- the fact that $\tau$ may depend on the history of prior transitions --- is carried explicitly in the trajectory's \texttt{path} field; sequential bind concatenates paths, so associativity is a substantive consequence of list-append associativity (not a definitional artifact), and is additionally structured via an indexed monad construction.
 
 \subsection{Contributions}
 
@@ -138,21 +158,63 @@ S = (\text{assumptions}, \text{constraints}, \text{infrastructure})
 \]
 Each component is a type (in the sense of dependent type theory), not a concrete value. This allows $S$ to be defined at the specification level, before any particular instantiation.
 
+\textbf{Remark (State Identity Criterion).} Two paradigmatic states are
+\emph{equal} when their three component types are propositionally equal:
+$S = S' \iff S.\text{assumptions} = S'.\text{assumptions} \land
+S.\text{constraints} = S'.\text{constraints} \land
+S.\text{infrastructure} = S'.\text{infrastructure}$. This strict criterion is
+deliberately fine: $A \times B$ and $B \times A$ are \emph{not} equal under it
+(no univalence). The intended working notion of ``same paradigm'' is the
+\emph{weaker} component-wise bijection $\simeq$, captured by \texttt{StateIso}
+(and lifted to futures by \texttt{FutureIso}), under which \texttt{ComposableFuture}
+forms a setoid (\S\ref{sec:op3}). Equality is for construction; isomorphism is
+for identity of paradigms.
+
 \subsection{Trajectory}
 
-A trajectory $\tau$ is a transition between paradigmatic states:
+A trajectory $\tau$ is a transition between paradigmatic states, carrying an
+internal path of intermediate states (ADR-0002):
 \[
-\tau : S_0 \to S_1
+\tau = (\text{source} : S_0,\ \text{path} : \text{List}~\mathcal{S},\ \text{target} : S_1)
 \]
-The trajectory encodes the mechanism of change. In the stateless case, $\tau$ is path-independent (does not depend on the history of prior transitions). In the general case, $\tau$ may be path-dependent, and this is captured via an effect index (trajectory type).
+The trajectory encodes the mechanism of change. In the stateless case the path
+is empty and $\tau$ is path-independent; in the general case the \texttt{path}
+field records the sequence of intermediate paradigmatic states, making
+path-dependence a first-class part of the trajectory rather than an external
+effect index. Sequential composition concatenates paths (\S\ref{sec:assoc}),
+which is what makes associativity \emph{substantive} rather than definitional.
 
 \subsection{Affordance Set}
 
-An affordance set $\Phi(S_1)$ is a type-level function specifying what compositions become possible from $S_1$. Formally:
+An affordance set specifies what compositions become possible from a state.
+Formally it is a map into the powerset of futures:
 \[
-\Phi : S_1 \to \text{Type}
+\Phi : S_1 \to \mathcal{P}(\Future)
 \]
-This is a dependent type, allowing affordances to be defined before $S_1$ is concretely realized. The exact structure of $\Phi$ is an open problem (Phase 4).
+where $\Phi(S) = \texttt{AffordanceSet}~S = \{F \in \Future : F.S_0 = S\}$ is
+the set of all futures whose source is $S$. This is well-defined before $S_1$
+is concretely realized (OP2, resolved) and closed under composition (OP4,
+resolved).
+
+\textbf{Remark (Affordance Circularity and Its Lean Realization).} The
+definition is prima facie circular: a future $F$ contains $\Phi$, and
+$\Phi : S_1 \to \mathcal{P}(\Future)$ ranges over futures. In set theory this
+is handled by stratification; in a proof assistant it is a strict-positivity
+question. A naively \emph{stored} field $\Phi : \texttt{Set}~\Future$ is
+\textbf{not} admissible in Lean~4: $\texttt{Set}~T = T \to \texttt{Prop}$
+places $\Future$ in a negative (contravariant) position --- a strict-positivity
+violation that the Lean kernel rejects (verified 2026-05-15). The
+formalization therefore stores the affordance set \emph{state-anchored} as
+$\Phi : \texttt{Set}~\mathcal{S}$ (a set of \emph{anchor states}) and recovers
+the powerset-of-futures view by the projection
+$\texttt{afforded}~F := \{G : G.S_0 \in F.\Phi\}$. For a well-formed future
+this is provably content-equivalent to the intended object,
+$\texttt{afforded}~F = \texttt{AffordanceSet}~F.S_1$
+\big[Lean: \texttt{afforded\_eq\_affordanceSet}\big]. The literal
+$\texttt{Set}~\Future$ field is recoverable only via a coinductive
+\texttt{ComposableFuture}, which is deferred indefinitely; the state-anchored
+encoding is the faithful, kernel-accepted realization (ADR-0005). This
+resolves the circularity concern raised against the v0.1 preprint.
 
 \subsection{Composable Future}
 
@@ -160,10 +222,34 @@ A composable future is a 4-tuple:
 \[
 F = (S_0, \tau, S_1, \Phi)
 \]
-with a well-formedness condition:
+with a well-formedness condition (ADR-0005):
 \[
-\well(F) \equiv \tau.\text{source} = S_0 \land \tau.\text{target} = S_1
+\well(F) \equiv \tau.\text{source} = S_0 \ \land\ \tau.\text{target} = S_1
+            \ \land\ F.\Phi = \texttt{AffordanceSet}~S_1
 \]
+The third conjunct anchors the affordance set to the realized target state:
+a well-formed future affords exactly the futures accessible from $S_1$. It is
+this conjunct that makes the identity laws (\S\ref{sec:laws}) substantive
+rather than definitional --- the Lean proof of right identity uses it
+essentially (it is not discharged by \texttt{rfl} or a \texttt{Subsingleton}
+instance).
+
+\subsection{Interpretations of $F$}
+
+The 4-tuple admits three compatible readings. They are instantiations of one
+structure, not competing definitions:
+\begin{itemize}
+\item \textbf{Morphism reading} (\S\S3--4): $F$ is a categorical morphism
+  $S_0 \to S_1$; $\seqBind$ is composition; the laws are the category axioms.
+\item \textbf{Affordance reading} (\S\ref{sec:op3} and the affordance set): $\Phi$
+  is a relational structure over states (Chemero \cite{chemero2003}); identity
+  of paradigms is \texttt{FutureIso}, not strict equality.
+\item \textbf{Probabilistic reading} (\S6): $\tau$ is a Markov kernel
+  $S_0 \to \mathcal{P}(S_1)$ and composition is Kleisli bind (Furter et al.
+  \cite{furter2025}).
+\end{itemize}
+Each subsequent section fixes one reading; the formalization shows them
+mutually consistent (the same operators and laws hold under all three).
 
 \section{Operators and Laws}
 
@@ -173,71 +259,136 @@ with a well-formedness condition:
 \[
 F \seqBind G \quad \text{(when } F.S_1 = G.S_0 \text{)}
 \]
-Constructs a new future by composing $F$ and $G$ sequentially:
+Constructs a new future by composing $F$ and $G$ sequentially, concatenating
+trajectory paths:
 \[
-F \seqBind G = (F.S_0, \{\text{source} := F.\tau.\text{source}, \text{target} := G.\tau.\text{target}\}, G.S_1, G.\Phi)
+F \seqBind G = \big(F.S_0,\ \{F.\tau.\text{source},\
+F.\tau.\text{path} \mathbin{+\!\!+} G.\tau.\text{path},\
+G.\tau.\text{target}\},\ G.S_1,\ G.\Phi\big)
 \]
 
 \subsubsection{Parallel Tensor}
 \[
 F \parTensor G
 \]
-Combines two futures in parallel. Both proceed; outputs are combined. (Open Problem 2: state product structure.)
+Both proceed in the joint paradigm: states combine by component-wise
+cartesian product, and the affordance set is the product
+$\Phi^{F} \times \Phi^{G} = \{\,\texttt{paradigmaticTensor}~a~b : a \in F.\Phi,\
+b \in G.\Phi\,\}$. (Open Problem~2, state product structure, is
+\textbf{resolved}; commutativity is up to the symmetric-monoidal braiding,
+\S\ref{sec:op3}.)
 
 \subsubsection{Fork}
 \[
 F \fork G
 \]
-A branch point where one of two futures is realized. (Open Problem 4: sum type for trajectories.)
+A branch point where one of two futures is realized; the result carries
+$\Phi^{F} \cup \Phi^{G}$ (coproduct of affordances). \textbf{Remark
+(Deferral).} Paper~1 fixes the left-biased reading sufficient for the
+algebra. \emph{When} branching occurs, whether it is observer-relative, and
+whether the unrealized branch's history coexists are parameters of the
+theory; their formal account requires the time enrichment of Paper~2 and is
+deliberately deferred.
 
 \subsubsection{Merge}
 \[
 F \merge G
 \]
-Two independent futures reconverge. (Open Problem 7: state merge operation.)
+Two independent futures reconverge; the result carries $\Phi^{F} \cap \Phi^{G}$
+(symmetric convergence). \textbf{Remark (Scope).} The present definition covers
+the \emph{symmetric} case only. \emph{Absorptive} merge --- asymmetric
+resource transfer with termination of the absorbed source --- is a Paper~2
+question, requiring the resource enrichment of Coecke, Fritz, and Spekkens
+\cite{coecke2016}.
 
 \subsubsection{Identity}
 \[
 \id_S
 \]
-The null future — a transition that changes nothing. $\id_S = (S, \{\text{source} := S, \text{target} := S\}, S, \Phi_{\text{empty}})$.
+The null future — a transition that changes nothing:
+\[
+\id_S = (S,\ \{\text{source} := S,\ \text{path} := [\,],\ \text{target} := S\},\ S,\ \Phi(S))
+\]
+where $\Phi(S) = \texttt{AffordanceSet}~S$ is the set of all futures accessible
+from $S$ (\textbf{Option B}, ADR-0005). A transition that changes nothing
+changes nothing about what is accessible, so the null future \emph{preserves}
+the full affordance set rather than zeroing it.
 
-\subsection{Fundamental Laws}
+\textbf{Remark 4.1 (Null Future Preserves Affordances; revising the v0.1
+preprint).} The earlier preprint stated that the affordance set of
+$F \seqBind \id_{S_1}$ is $\Phi_\emptyset = \emptyset$. This is corrected:
+\[
+\Phi(F \seqBind \id_{S_1}) = F.\Phi,
+\]
+because composing with the null future preserves all affordances accessible
+from $S_1$ --- a transition that changes nothing changes nothing about what is
+accessible (Chemero's relational ontology of affordances \cite{chemero2003}
+supports this: if neither the composition context nor the state features
+change, the relational structure is preserved). The operation that genuinely
+zeros affordances is the \emph{terminate} operator, a fifth unary operator
+deferred to Paper~2, where it becomes substantive under resource enrichment
+(Coecke, Fritz, and Spekkens \cite{coecke2016}). The v0.1 Remark~4.1 conflated
+identity with termination; Option~B separates them.
+
+\subsection{Fundamental Laws}\label{sec:laws}
 
 \subsubsection{Left Identity}
 \[
 \id_{S_0} \seqBind F = F
 \]
-(Open Problem 9: proof pending affordance set structure.)
+\textbf{Proved} for well-formed $F$ \big[Lean: \texttt{Laws.left\_identity}\big].
+Formerly stated as Open Problem~9 (pending affordance structure); resolved by
+ADR-0005. With Option~B, $\id_{S_0}$ carries $\Phi = \texttt{AffordanceSet}~S_0$
+and $\seqBind$ propagates the right operand's affordances, so both sides carry
+$F.\Phi$; the path equality is $[\,]\mathbin{+\!\!+}F.\tau.\text{path} =
+F.\tau.\text{path}$. No \texttt{Subsingleton} guard is required.
 
 \subsubsection{Right Identity}
 \[
 F \seqBind \id_{S_1} = F
 \]
-(Open Problem 10: proof pending affordance set structure.)
+\textbf{Proved} for well-formed $F$ \big[Lean: \texttt{Laws.right\_identity}\big].
+Formerly Open Problem~10; resolved by ADR-0005. The proof is \emph{substantive}
+in the affordance conjunct of $\well(F)$: $F \seqBind \id_{S_1}$ carries
+$\Phi = \id_{S_1}.\Phi = \texttt{AffordanceSet}~S_1$, and matching this against
+$F.\Phi$ uses $\well(F)$'s third conjunct $F.\Phi = \texttt{AffordanceSet}~S_1$
+essentially (verified by \texttt{\#print}: the proof term depends on this
+hypothesis, not on \texttt{rfl} or \texttt{Subsingleton}; it uses only the
+\texttt{propext} axiom).
 
 \subsubsection{Closure}
 \[
 \forall F, G \in \Future : F \seqBind G \in \Future
 \]
-\textbf{Proved.} Any composition of valid futures is itself a valid future. Trivial existence proof: $\langle F \seqBind G, \text{rfl} \rangle$.
+\textbf{Proved} \big[Lean: \texttt{Laws.closure}\big]. Any composition of valid futures is itself a valid future.
 
 \subsubsection{Well-Formedness Preservation}
 \[
 \well(F) \land \well(G) \land F.S_1 = G.S_0 \implies \well(F \seqBind G)
 \]
-\textbf{Proved.} Sequential bind preserves well-formedness. Proof: $\text{simp}[\text{seqBind}, \text{well\_formed}]$ then extract source from $F$ and target from $G$.
+\textbf{Proved} \big[Lean: \texttt{Laws.seqBind\_well\_formed}\big]. Sequential
+bind preserves all three well-formedness conjuncts: the source comes from $F$,
+the target and the affordance anchor ($\Phi = G.\Phi = \texttt{AffordanceSet}~G.S_1$)
+come from $G$.
 
 \subsubsection{Associativity}
 \[
 (F \seqBind G) \seqBind H = F \seqBind (G \seqBind H)
 \]
-\textbf{Proved.} Associativity holds for all composable futures by definitional equality of sequential bind. Both sides construct the identical future:
+\textbf{Proved} \big[Lean: \texttt{Laws.seqBind\_assoc}\big]. Sequential bind
+\emph{concatenates} the trajectory paths
+($(F \seqBind G).\tau.\text{path} = F.\tau.\text{path} \mathbin{+\!\!+}
+G.\tau.\text{path}$), so both groupings produce the future
 \[
-(S_0, \{\text{source} := F.\tau.\text{source}, \text{target} := H.\tau.\text{target}\}, H.S_1, H.\Phi)
+(S_0,\ \{\text{source} := F.\tau.\text{source},\
+\text{path} := F.\tau.\text{path} \mathbin{+\!\!+} G.\tau.\text{path}
+\mathbin{+\!\!+} H.\tau.\text{path},\
+\text{target} := H.\tau.\text{target}\},\ H.S_1,\ H.\Phi)
 \]
+and equality follows from associativity of list append. The proof term is
+\emph{not} \texttt{rfl}: it is \texttt{List.append\_assoc}.
 
-\section{Associativity: Main Technical Results}
+\section{Associativity: Main Technical Results}\label{sec:assoc}
 
 \subsection{General Associativity}
 
@@ -246,30 +397,44 @@ F \seqBind \id_{S_1} = F
 (F \seqBind G) \seqBind H = F \seqBind (G \seqBind H)
 \]
 
-\textbf{Proof.} The sequential bind operator constructs a new future by directly extracting $F.\tau.\text{source}$ and $G.\tau.\text{target}$, without functionally composing trajectories. Both sides of the equation construct the identical future by definition. The proof in Lean is:
+\textbf{Proof.} Sequential bind builds the composed trajectory by
+concatenating the operands' \texttt{path} fields (ADR-0002). The two groupings
+yield paths $(F.\tau.\text{path} \mathbin{+\!\!+} G.\tau.\text{path})
+\mathbin{+\!\!+} H.\tau.\text{path}$ and $F.\tau.\text{path} \mathbin{+\!\!+}
+(G.\tau.\text{path} \mathbin{+\!\!+} H.\tau.\text{path})$ respectively; these
+are equal by \texttt{List.append\_assoc}, and the remaining components
+($S_0$, endpoints, $\Phi = H.\Phi$) coincide. The proof in Lean is:
 \begin{lstlisting}
-theorem assoc (F G H : ComposableFuture) 
-  (hFG : F.S₁ = G.S₀) (hGH : G.S₁ = H.S₀) :
-  seqBind (seqBind F G hFG) H (by exact hGH) =
-  seqBind F (seqBind G H hGH) (by exact hFG) := by
-  simp [seqBind]
+theorem seqBind_assoc (F G H : ComposableFuture)
+  (h₁ : F.S₁ = G.S₀) (h₂ : G.S₁ = H.S₀) :
+  seqBind (seqBind F G h₁) H (by exact h₂) =
+  seqBind F (seqBind G H h₂) (by exact h₁) := by
+  simp [seqBind, List.append_assoc]
 \end{lstlisting}
 
-This result is surprising: it shows that associativity holds for \emph{all} futures, not just stateless ones. The key insight is that the current implementation of sequential bind does not compose trajectories functionally (e.g., $\tau_3 \circ (\tau_2 \circ \tau_1)$), which would fail for path-dependent trajectories. Instead, it directly uses source and target endpoints, making associativity hold universally.
+This is the \emph{substantive} reading of associativity: paradigm
+trajectories associate because their recorded histories associate under
+concatenation --- not because trajectories are collapsed to endpoints. The
+v0.1 preprint claimed a definitional (\texttt{rfl}) proof that discarded
+intermediate history; ADR-0002 corrected this by making \texttt{path} a
+first-class field, so the result now genuinely covers path-dependent
+trajectories rather than sidestepping them.
 
 \subsection{Stateless Case}
 
-\textbf{Definition (Stateless).} A trajectory $\tau$ is stateless if it does not depend on the history of prior transitions:
-\[
-\tau \text{ is stateless} \iff \forall h_1, h_2 \text{ ending in } S_0, \tau(h_1) = \tau(h_2)
-\]
+\textbf{Definition (Stateless).} A trajectory $\tau$ is stateless if it does
+not depend on the history of prior transitions; in this formalization that is
+exactly an empty path, $\tau.\text{path} = [\,]$.
 
 \textbf{Theorem (Stateless Associativity).} For stateless futures $F, G, H$:
 \[
 (F \seqBind G) \seqBind H = F \seqBind (G \seqBind H)
 \]
 
-This is a restriction of the general result to the path-independent case. The proof is identical: both sides construct the same future by definitional equality.
+This is the specialization of the general result to empty paths, where
+\texttt{List.append\_assoc} degenerates to $[\,] = [\,]$. Strict associativity
+thus holds in the path-independent case as the trivial instance of the
+substantive theorem.
 
 \subsection{Indexed Monad Construction}
 
@@ -316,18 +481,29 @@ The cast uses the associativity law of trajectory type composition. This provide
 
 \subsection{Weak Associativity}
 
-\textbf{Definition (Future Equivalence).} Two futures $F$ and $G$ are equivalent if they have the same source, target, and affordance set:
+\textbf{Definition (Future Equivalence).} \texttt{FutureEquiv} is a
+deliberately weak, \emph{state-level} equivalence: two futures are equivalent
+when their source and target states agree,
 \[
-F \equiv G \iff F.S_0 = G.S_0 \land F.S_1 = G.S_1 \land F.\Phi = G.\Phi
+F \equiv G \iff F.S_0 = G.S_0 \ \land\ F.S_1 = G.S_1
 \]
-(Trajectories may differ, capturing path-dependence.)
+(trajectories may differ, capturing path-dependence). It deliberately does
+\emph{not} assert $\Phi$ equality --- with the stored affordance field
+(ADR-0005), same-$S_1$ does not imply same-$\Phi$ in general (only well-formed
+futures satisfy $\Phi = \texttt{AffordanceSet}~S_1$). The full
+$\Phi$-aware notion is \texttt{FutureIso} (\S\ref{sec:op3}); \texttt{FutureEquiv}
+isolates the coarser structural invariant.
 
 \textbf{Theorem (Weak Associativity).} For all composable futures $F, G, H$:
 \[
 (F \seqBind G) \seqBind H \equiv F \seqBind (G \seqBind H)
 \]
-
-This shows that even if trajectories differ due to path-dependence, the affordance structure composes associatively.
+\big[Lean: \texttt{WeakAssoc.weak\_assoc\_affordance}\big]. Both groupings share
+$S_0 = F.S_0$ and $S_1 = H.S_1$, so they are \texttt{FutureEquiv} regardless of
+the differing trajectory paths. (They additionally share $\Phi = H.\Phi$ via
+$\seqBind$'s affordance propagation, though \texttt{FutureEquiv} does not
+record this.) Even when path-dependence makes the trajectories differ, the
+state structure composes associatively.
 
 \section{Probabilistic Extension (Preview)}
 
@@ -339,48 +515,123 @@ as a Markov kernel, and composition via Kleisli bind. The Kleisli category is kn
 
 \section{Open Problems}
 
-\subsection{OP2: Well-Definedness of $\Phi$ Before $S_1$ is Realized}
+\subsection{OP2: Well-Definedness of $\Phi$ Before $S_1$ is Realized — \textbf{Resolved}}
 
-Turvey \cite{turvey1992} notes that affordances are dispositional — potential before actual. Can $\Phi$ be defined at the type level without requiring $S_1$ to be concretely instantiated? (Phase 4 target.)
+Turvey \cite{turvey1992} notes that affordances are dispositional --- potential
+before actual. \textbf{Resolved} (ADR-0005): $\Phi$ is a stored field whose
+value, $\texttt{AffordanceSet}~S = \{F : F.S_0 = S\}$, is a set comprehension
+determined by $S$ alone. It is well-defined and non-empty (it always contains
+$\id_S$) before any concrete $S_1$ is realized, because it is a specification-level
+set, not a value-level computation that depends on $S_1$ being instantiated
+\big[Lean: \texttt{affordanceSet\_nonempty}\big].
 
-\subsection{OP3: Correct Equivalence Relation Between Futures — \textbf{Resolved}}
+\subsection{OP3: Correct Equivalence Relation Between Futures — \textbf{Resolved}}\label{sec:op3}
 
 We establish path-trace isomorphism as the correct equivalence. \texttt{StateIso}~$S~T$ records component-wise bijections ($\simeq$) on the three fields of a paradigmatic state. \texttt{PathIso}~$xs~ys$ is an inductive type witnessing a pointwise \texttt{StateIso} along the intermediate state lists of two trajectories — the list-indexed analogue of strong bisimulation for deterministic systems. \texttt{TrajectoryEquiv}~$\tau_1~\tau_2$ combines \texttt{StateIso} on source and target with \texttt{PathIso} on the path. \texttt{FutureIso}~$F~G$ pairs state isomorphisms on $S_0$/$S_1$ with a \texttt{TrajectoryEquiv} on $\tau$.
 
 The choice of strong (rather than weak) bisimulation is justified by the absence of silent transitions in \texttt{Trajectory}; Wang's history-preserving bisimilarity is redundant because \texttt{Trajectory} has no branching structure. \texttt{FutureIso} is an equivalence relation (\texttt{refl}, \texttt{symm}, \texttt{trans}) and \texttt{ComposableFuture} forms a \texttt{Setoid} under \texttt{Nonempty~(FutureIso~$\cdot$~$\cdot$)}.
 
-The main result is \texttt{parTensor\_comm\_iso}: $F \otimes G \cong G \otimes F$ via \texttt{Equiv.prodComm} on state components and \texttt{PathIso.nil} on the trajectory (both \texttt{parTensor} trajectories have empty paths). All proofs are mechanized in Lean~4 with no new axioms and no \texttt{sorry}.
+The main result is \texttt{parTensor\_comm\_iso}: $F \otimes G \cong G \otimes F$ via \texttt{Equiv.prodComm} on state components and \texttt{PathIso.nil} on the trajectory (both \texttt{parTensor} trajectories have empty paths). The state- and trajectory-level isomorphism is mechanized in Lean~4 with no new axioms and no \texttt{sorry}. The single exception is the affordance component of this one witness (\texttt{parTensor\_comm\_iso.phi}): strict equality of the two product affordance sets reduces to type-level product commutativity $A \times B = B \times A$, which is independent of Lean's axioms (unprovable without univalence, irrefutable without product-constructor injectivity). It is recorded as a single documented Phase-4 \texttt{sorry}; it is the same limitation as the conditional non-commutativity result for $\otimes$ (strict $A \otimes B \neq B \otimes A$ requires product-constructor injectivity, not available without an added axiom) and is not a gap in the equivalence relation itself. The categorically correct statement --- commutativity \emph{up to} the symmetric-monoidal braiding --- is fully proved by \texttt{parTensor\_comm\_iso} at the state/trajectory level.
 
-\subsection{OP4: Composition of Affordance Sets}
+\subsection{OP4: Composition of Affordance Sets — \textbf{Resolved}}
 
-Şahin et al. \cite{sahin2007} demonstrate affordance chaining. Does $\Phi(S_1) \circ \Phi'(S_2)$ produce a well-defined affordance set for the composed state? (Phase 4 target.)
+Şahin et al. \cite{sahin2007} demonstrate affordance chaining. \textbf{Resolved}
+(ADR-0005): sequential composition propagates the right operand's affordances,
+$\Phi(F \seqBind G) = G.\Phi$, so the composed state's affordance set is
+well-defined and equals the affordances of the final state
+\big[Lean: \texttt{seqBind\_$\Phi$\_eq}, \texttt{seqBind\_mem\_affordanceSet}\big].
+Affordance chaining is therefore closed under composition.
 
 \subsection{OP5: Completeness}
 
-Are all paradigmatic futures reachable by finite composition from a given $S_0$? (Unresolved.)
+Are all paradigmatic futures reachable by finite composition from a given
+$S_0$? The trivial form is closed by the type system (every well-formed future
+with source $S_0$ is, by definition, a member of $\texttt{AffordanceSet}~S_0$).
+The non-trivial form --- a characterization of which transitions are
+\emph{externally} realizable --- requires a semantic model beyond the
+formalization and is deferred (Paper~2 enrichment territory).
 
-\subsection{Internal Open Problems}
+\subsection{Internal Open Problems — \textbf{Resolved by ADR-0005}}
 
 \begin{itemize}
-\item OP8: Empty affordance set for identity future
-\item OP9: Left identity law proof (pending OP8)
-\item OP10: Right identity law proof (pending OP8)
-\item OP17: Indexed monad identity affordance
+\item OP8 (empty affordance set for identity): \textbf{resolved} ---
+  Option~B sets $\id_S.\Phi = \texttt{AffordanceSet}~S$ (non-empty); the
+  empty-affordance operator is \emph{terminate}, deferred to Paper~2.
+\item OP9 (left identity proof): \textbf{proved}
+  \big[\texttt{Laws.left\_identity}\big].
+\item OP10 (right identity proof): \textbf{proved}
+  \big[\texttt{Laws.right\_identity}\big].
+\item OP17 (indexed-monad identity affordance): \textbf{resolved} ---
+  the indexed-future identity inherits Option~B's affordance assignment.
 \end{itemize}
+
+\section{Operational Falsifiability}
+
+The theory yields a concrete, falsifiable test distinguishing a genuine
+paradigm shift from a rebranded composition:
+
+\begin{quote}
+A claimed ``new paradigm'' is a \emph{composition} if it can be expressed as a
+finite term in the pre-existing operator set
+$\{\seqBind, \parTensor, \fork, \merge\}$ without loss. It is an
+\emph{extension} only if its expression requires a new operator that did not
+previously exist.
+\end{quote}
+
+This is not merely rhetorical: the operator set is fixed, so membership is
+decidable in principle for a given candidate. \textbf{Worked instances.} Genuine
+extensions introduced operators absent from the prior vocabulary:
+backpropagation (1986), the attention mechanism (2017), and score-matching /
+diffusion (2020) each added an irreducible compositional primitive. By
+contrast, ``Agentic AI'' is a composition:
+\[
+\text{Agent} \;=\; \text{LLM} \seqBind \text{tool-call} \seqBind
+\text{retrieval} \fork \text{control-flow}
+\]
+expressible entirely in the existing operators with no loss --- hence an
+engineering recombination, not a paradigm shift under this theory. The test
+makes the central claim refutable: exhibit a widely-acknowledged paradigm
+shift that is expressible as a finite operator term (falsifying ``real shifts
+need new operators''), or a rebranding that provably is not (falsifying the
+sufficiency of the operator set).
 
 \section{Conclusion}
 
-We have proposed composable futures as a formal theory of paradigmatic transitions, defined four primitive operators, and proved fundamental laws including associativity. The key insight is that associativity holds for all futures by definitional equality of sequential bind, and is further structured via an indexed monad construction for tracking path-dependence.
+We have proposed composable futures as a formal theory of paradigmatic
+transitions, defined four primitive operators, and proved fundamental laws.
+The key insight is that associativity is \emph{substantive}: the trajectory
+carries an explicit path of intermediate states, sequential bind concatenates
+paths, and associativity follows from \texttt{List.append\_assoc} --- the proof
+genuinely covers path-dependent trajectories rather than collapsing them to
+endpoints. Identity is likewise substantive in its affordance component
+(ADR-0005, Option~B). The theory occupies the intersection of five adjacent
+domains and resolves the central open problem (associativity under
+path-dependence) by carrying path-dependence in the trajectory itself,
+complemented by Orchard et al.'s indexed monad framework.
 
-The theory occupies the intersection of five adjacent domains and resolves the central open problem (associativity under path-dependence) via Orchard et al.'s indexed monad framework. Future work includes:
+\textbf{Status.} OP1--OP4 are resolved and mechanized; OP3 (equivalence
+relation) is closed via \texttt{FutureIso}. The non-commutativity of $\otimes$
+is resolved as a recorded decision: strict $A \otimes B \neq B \otimes A$ is
+independent of Lean's axioms (unprovable without univalence, irrefutable
+without product-constructor injectivity), and the categorically correct
+statement --- commutativity up to the symmetric-monoidal braiding --- is fully
+proved (\texttt{parTensor\_comm\_iso}). The Lean development has 0 errors and a
+single documented Phase-4 \texttt{sorry} (\texttt{parTensor\_comm\_iso.phi}),
+exactly the type-level product-commutativity limitation above; no new axioms.
 
-\begin{enumerate}
-\item \textbf{Phase 3:} Probabilistic extension via Kleisli categories (3–6 months)
-\item \textbf{Phase 4:} Formalize affordance set structure as dependent type (6–12 months)
-\item \textbf{Phase 5:} Complete mechanized proof in Lean 4 (ongoing)
-\end{enumerate}
+\textbf{Toward Paper~2 (Enriched Composable Future).} The trajectory will be
+enriched with time (Lawvere enrichment over $(\mathbb{R}_{\geq 0}, +, 0)$) and
+resources (Coecke, Fritz, and Spekkens \cite{coecke2016}). This makes the
+fifth, unary \emph{terminate} operator substantive --- it is the operation
+that genuinely zeros affordances, distinct from identity (\textbf{Remark 4.1})
+--- and provides the formal account of fork timing and \emph{absorptive}
+merge, both deferred from Paper~1's symmetric scope. Paper~3 applies the
+enriched machinery to systems-leverage analysis.
 
-The codebase is available at \url{https://github.com/SHA888/composable-future} with all proofs verified in Lean~4 (0 \texttt{sorry}, 0 warnings). OP3 (equivalence relation) is now resolved; the remaining mechanization target is the unconditional non-commutativity existential for $\otimes$.
+The codebase is available at
+\url{https://github.com/SHA888/composable-future}, with all proofs verified in
+Lean~4 (0 errors; one documented Phase-4 \texttt{sorry} as noted; no new
+axioms).
 
 \bibliographystyle{plainnat}
 \bibliography{references}

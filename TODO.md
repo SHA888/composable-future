@@ -52,40 +52,61 @@
 > Gate: all non-open theorems proved in Lean 4, no sorry remaining
 > Status: 🟡 in progress
 
-### P5.1 — ADR-0005: Restore 4-tuple (Option B — LOCKED 2026-05-15)
+### P5.1 — ADR-0005: Restore 4-tuple (Option B — DONE 2026-05-15, state-anchored)
 
-**Decision record:** `idFuture S` carries `Φ = AffordanceSet S`. The null future preserves
-all affordances accessible from S because a transition that changes nothing changes nothing
-about what is accessible. The terminate operator (Paper 2, unary) is the operation that
-genuinely zeros affordances, distinguished from identity by its resource signature under
-Coecke–Fritz–Spekkens enrichment. Remark 4.1 in the preprint conflated identity with
-termination and must be revised in v0.2.
+**Status: ✅ COMPLETE** (commit `0b1b66a`). Build: 3298 jobs, 0 errors, 0 warnings
+except 1 documented Phase-4 `sorry` (`parTensor_comm_iso.phi`).
 
-- [ ] 🔴 Add `Φ : Set ComposableFuture` field to `ComposableFuture` in `Future.lean`
+**Correction record:** ADR-0005's original `Φ : Set ComposableFuture` was
+**kernel-falsified** — `Set T = T → Prop` places `ComposableFuture` in a
+contravariant (negative) position, a strict-positivity violation
+(`(kernel) arg #4 of 'ComposableFuture.mk' has a non positive occurrence`). The
+ADR's "no strict positive occurrence" claim was wrong; its own
+Falsifying-Outcome #2 fired. Per the locked process (ADR-update then implement),
+ADR-0005 was amended and the **state-anchored** representation implemented:
+`Φ : Set ParadigmaticState` stores the affordance *anchor states*; the paper's
+`𝒫(F)` is recovered on demand by `afforded F := {G | G.S₀ ∈ F.Φ}`. The 3-tuple
+remains rejected. Content-equivalence proved: `afforded_eq_affordanceSet`.
+
+**Decision record (Option B preserved):** `idFuture S` carries `Φ = {S}` so that
+`afforded (idFuture S) = AffordanceSet S`. The null future preserves all
+affordances accessible from S because a transition that changes nothing changes
+nothing about what is accessible. The terminate operator (Paper 2, unary) is the
+operation that genuinely zeros affordances, distinguished from identity by its
+resource signature under Coecke–Fritz–Spekkens enrichment. Remark 4.1 in the
+preprint conflated identity with termination and must be revised in v0.2.
+
+- [x] ✅ Add `Φ : Set ParadigmaticState` field to `ComposableFuture` in `Future.lean`
+      (literal `Set ComposableFuture` kernel-rejected; state-anchored carrier used)
       `lean
     structure ComposableFuture where
       S₀ : ParadigmaticState
       τ  : Trajectory
       S₁ : ParadigmaticState
-      Φ  : Set ComposableFuture   -- restored; Set = α → Prop, no universe mismatch
+      Φ  : Set ParadigmaticState   -- anchor states (no positivity issue)
+
+    def ComposableFuture.afforded (F : ComposableFuture) : Set ComposableFuture :=
+      { G : ComposableFuture | G.S₀ ∈ F.Φ }   -- recovers the paper's 𝒫(F)
     `
 
-- [ ] 🔴 Update `idFuture` in `Operators.lean`
+- [x] ✅ Update `idFuture` in `Operators.lean`
       `lean
     def idFuture (S : ParadigmaticState) : ComposableFuture :=
       { S₀ := S
         τ  := { source := S, path := [], target := S }
         S₁ := S
-        Φ  := AffordanceSet S }   -- Option B: preserves affordances
+        Φ  := {S} }   -- Option B: afforded (idFuture S) = AffordanceSet S
     `
 
-- [ ] 🔴 Extend `well_formed` with Φ constraint in `Future.lean`
+- [x] ✅ Extend `well_formed` with Φ constraint in `Future.lean`
       `lean
     def ComposableFuture.well_formed (F : ComposableFuture) : Prop :=
-      F.τ.source = F.S₀ ∧ F.τ.target = F.S₁ ∧ F.Φ = AffordanceSet F.S₁
+      F.τ.source = F.S₀ ∧ F.τ.target = F.S₁ ∧ F.Φ = {F.S₁}
     `
+      (plus theorem `afforded_eq_affordanceSet`: well-formed ⇒
+      `afforded F = AffordanceSet F.S₁` — faithful to the paper's `Φ : S₁ → 𝒫(F)`)
 
-- [ ] 🔴 Update `seqBind` in `Operators.lean` — result carries `G.Φ`
+- [x] ✅ Update `seqBind` in `Operators.lean` — result carries `G.Φ`
       `lean
     def seqBind (F G : ComposableFuture) (_h : F.S₁ = G.S₀) : ComposableFuture :=
       { S₀ := F.S₀
@@ -94,36 +115,50 @@ termination and must be revised in v0.2.
         Φ  := G.Φ }
     `
 
-- [ ] 🔴 Update `parTensor` in `Operators.lean` — result carries `Φ^A × Φ^B`
-      (product affordance set: `{ (f, g) | f ∈ F.Φ ∧ g ∈ G.Φ }` — encode as `Set ComposableFuture`
-      via the diagonal or defer to a type-class; document scope explicitly)
+- [x] ✅ Update `parTensor` in `Operators.lean` — result carries `Φ^A × Φ^B`
+      (state-anchored: `{ s | ∃ a ∈ F.Φ, ∃ b ∈ G.Φ, s = paradigmaticTensor a b }`
+      — the natural set of component-wise tensored anchor states)
 
-- [ ] 🔴 Update `fork` in `Operators.lean` — result carries `F.Φ ∪ G.Φ`
-      (left-biased placeholder sufficient for Paper 1; note symmetric coproduct is Paper 2)
+- [x] ✅ Update `fork` in `Operators.lean` — result carries `F.Φ ∪ G.Φ`
+      (left-biased placeholder sufficient for Paper 1; symmetric coproduct is Paper 2)
 
-- [ ] 🔴 Update `merge` in `Operators.lean` — result carries `F.Φ ∩ G.Φ`
-      (symmetric case only; absorptive merge deferred to Paper 2 — add explicit note)
+- [x] ✅ Update `merge` in `Operators.lean` — result carries `F.Φ ∩ G.Φ`
+      (symmetric case only; absorptive merge deferred to Paper 2)
 
-- [ ] 🔴 Update `right_identity` proof in `Laws.lean` - With Option B: both sides carry `AffordanceSet F.S₁` — proof holds for well-formed F - No `Subsingleton` guard needed - Gate: proof term does not contain `sorry`
+- [x] ✅ Update `right_identity` proof in `Laws.lean` — both sides reduce to
+      `{F.S₁}`; proof holds for well-formed F via `hF.2.2 : F.Φ = {F.S₁}`.
+      No `Subsingleton` guard. Proof term contains no `sorry`; depends only on `propext`.
 
-- [ ] 🔴 Update `left_identity` proof in `Laws.lean` — symmetric
+- [x] ✅ Update `left_identity` proof in `Laws.lean` — symmetric (axiom-free)
 
-- [ ] 🔴 Update `Effect.lean` — `EffectfulFuture.effect` now trivially `F.Φ`
+- [x] ✅ `Effect.lean` — no change needed: `EffectfulFuture`/`EffectfulComputation`
+      do not carry Φ (separate indexed structures); `effect` stays `AffordanceSet S₁`.
+      Only the doc reference to `seqBind_Φ_eq` is now satisfied (it is restored).
 
-- [ ] 🔴 Update `Affordance.lean` — `AffordanceDescriptor` remains a construction helper;
-      `seqBind_Φ_eq` now holds by field equality not derivation
+- [x] ✅ Update `Affordance.lean` — `AffordanceDescriptor` remains a construction
+      helper; `toFuture` carries `Φ := {φ.S₁}`; `seqBind_Φ_eq` restored
+      (`(seqBind F G h).Φ = G.Φ` by `rfl`, field equality not derivation)
 
-- [ ] 🔴 Update `Equivalence.lean` — `FutureIso` gains `Φ` field:
+- [x] ✅ Update `Equivalence.lean` — `FutureIso` gains `phi` field:
       `lean
     structure FutureIso (F G : ComposableFuture) where
       src  : StateIso F.S₀ G.S₀
       traj : TrajectoryEquiv F.τ G.τ
       tgt  : StateIso F.S₁ G.S₁
-      phi  : F.Φ = G.Φ    -- propositional equality on Set ComposableFuture
+      phi  : F.Φ = G.Φ    -- propositional equality on Set ParadigmaticState
     `
+      `refl`/`symm`/`trans` and the identity laws satisfy `phi` definitionally.
 
-- [ ] 🔴 Gate check: `lake build` passes, 0 sorry, 0 warnings
-      Verify: `#print right_identity` proof term contains no `rfl` on `Φ` (it uses `well_formed`)
+- [x] ✅ Gate check: `lake build` passes, 0 errors, 0 warnings except 1
+      documented Phase-4 `sorry`. `#print right_identity` confirmed: proof term
+      uses `have hphi := hF.right.right` (= `hF.2.2`) substantively via
+      `congrArg (fun _a => … Φ := _a) hphi` — not `rfl`/`Subsingleton`;
+      `#print axioms` → `[propext]` only (no `sorryAx`).
+
+- [ ] 🟡 **Phase-4 carry-over:** `parTensor_comm_iso.phi := sorry` — affordance-level
+      SMC commutativity needs type-level `A×B = B×A` (univalence); same pre-existing
+      debt as `parTensor_not_comm_of_type_ne`. Permitted by ADR-0005 gate amendment.
+      Alternative if 0-sorry is required: weaken `FutureIso.phi` to equality-up-to-`StateIso`.
 
 ### P5.2 — ADR-0003 Gap (independent — run in parallel)
 
@@ -152,9 +187,15 @@ Eight critique responses (ordered by severity for LMCS/ACT venue):
       OP1 resolved: five Lean theorems, all substantive, 0 sorry
       Add footnote pointing to Lean artifact (Zenodo DOI for codebase, separate from paper DOI)
 
-- [ ] 🔴 **C3 — Affordance circularity note**
-      Add Remark after Def 2.2: `𝒫(F)` is `Set ComposableFuture = ComposableFuture → Prop`;
-      admissible in Lean 4 (no strict positive occurrence); coinductive reading available
+- [ ] 🔴 **C3 — Affordance circularity note** (CORRECTED — do not repeat the falsified claim)
+      Add Remark after Def 2.2: a *stored* `Φ : Set ComposableFuture` field is
+      **NOT** admissible in Lean 4 — `Set T = T → Prop` is a negative/contravariant
+      occurrence, a strict-positivity violation (kernel-rejected, verified 2026-05-15).
+      The formalization stores `Φ : Set ParadigmaticState` (anchor states) and
+      recovers the paper's `𝒫(F)` via `afforded F := {G | G.S₀ ∈ F.Φ}`, proved
+      content-equivalent to `AffordanceSet F.S₁` for well-formed futures
+      (`afforded_eq_affordanceSet`). A coinductive `ComposableFuture` is the only
+      route to the literal `Set ComposableFuture` type; deferred indefinitely.
 
 - [ ] 🔴 **C4 — Path-dependence argument**
       Revise §4.3: path-dependence tracked in `path : List ParadigmaticState`;

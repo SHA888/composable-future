@@ -28,7 +28,8 @@ Design justification (Wang 2021 vs. strong vs. weak bisimulation):
   complete choice
 
 ### Layer 3 — FutureIso  (full equivalence, OP3 CLOSED)
-`FutureIso F G` = `StateIso` on S₀ and S₁ + `TrajectoryEquiv` on τ.
+`FutureIso F G` = `StateIso` on S₀ and S₁ + `TrajectoryEquiv` on τ +
+`phi : F.Φ = G.Φ` (state-anchored affordance equality, ADR-0005).
 Equivalence relation: `refl`, `symm`, `trans`.
 `ComposableFuture` forms a `Setoid` under `Nonempty (FutureIso · ·)`.
 
@@ -37,14 +38,19 @@ Equivalence relation: `refl`, `symm`, `trans`.
 commutativity up to full isomorphism. Both sides produce `path = []`,
 so `PathIso.nil : PathIso [] []` witnesses the trajectory path equivalence.
 
-## Relation to ADR-0003
+## Relation to ADR-0003 / ADR-0005
 
 ADR-0003 Alternative C deferred the SMC-isomorphism proof to OP3. This module
 implements that alternative and additionally closes the bisimulation sub-problem.
 The conditional strict-inequality result (`parTensor_not_comm_of_type_ne` in
 `Laws.lean`) remains valid as a corollary and is not superseded.
 
-No new axioms; no `sorry`.
+ADR-0005 added the `phi : F.Φ = G.Φ` field (state-anchored affordance equality).
+`refl`/`symm`/`trans` and the identity laws satisfy it definitionally. The single
+exception is `parTensor_comm_iso.phi`: affordance-level commutativity reduces to
+type-level product commutativity (`A×B = B×A`), unprovable without univalence —
+the same Phase-4 debt as `parTensor_not_comm_of_type_ne`. That is the one
+permitted `sorry` (ADR-0005 gate amendment 2026-05-15); no new axioms.
 -/
 
 namespace ComposableFuture
@@ -138,29 +144,38 @@ def TrajectoryEquiv.trans {τ₁ τ₂ τ₃ : Trajectory}
 -- ============================================================
 
 /-- A full isomorphism between two composable futures:
-    `StateIso` on S₀ and S₁, plus `TrajectoryEquiv` on τ.
-    The trajectory field implements the bisimulation sub-problem: every
-    intermediate state in the path is matched by a state bijection. -/
+    `StateIso` on S₀ and S₁, `TrajectoryEquiv` on τ, and propositional
+    equality of the affordance anchor sets `phi : F.Φ = G.Φ`.
+
+    v0.3 (ADR-0005, state-anchored): `phi` is equality on
+    `Set ParadigmaticState` (no positivity issue, unlike the rejected
+    `Set ComposableFuture`). The trajectory field implements the
+    bisimulation sub-problem: every intermediate state in the path is
+    matched by a state bijection. -/
 structure FutureIso (F G : ComposableFuture) where
   src  : StateIso        F.S₀ G.S₀
   traj : TrajectoryEquiv F.τ  G.τ
   tgt  : StateIso        F.S₁ G.S₁
+  phi  : F.Φ = G.Φ
 
 def FutureIso.refl (F : ComposableFuture) : FutureIso F F where
   src  := StateIso.refl       F.S₀
   traj := TrajectoryEquiv.refl F.τ
   tgt  := StateIso.refl       F.S₁
+  phi  := rfl
 
 def FutureIso.symm {F G : ComposableFuture} (e : FutureIso F G) : FutureIso G F where
   src  := e.src.symm
   traj := e.traj.symm
   tgt  := e.tgt.symm
+  phi  := e.phi.symm
 
 def FutureIso.trans {F G H : ComposableFuture}
     (e₁ : FutureIso F G) (e₂ : FutureIso G H) : FutureIso F H where
   src  := e₁.src.trans  e₂.src
   traj := e₁.traj.trans e₂.traj
   tgt  := e₁.tgt.trans  e₂.tgt
+  phi  := e₁.phi.trans  e₂.phi
 
 /-- `ComposableFuture` forms a setoid under future isomorphism. -/
 instance : Setoid ComposableFuture where
@@ -181,9 +196,17 @@ instance : Setoid ComposableFuture where
     `PathIso.nil` witnesses the trajectory path equivalence: `parTensor`
     always produces `path = []`, so both sides trivially satisfy `PathIso [] []`.
 
-    This closes OP3 completely:
+    This closes OP3 at the state/trajectory level:
     - SMC commutativity  ✓  (src/tgt StateIso via Equiv.prodComm)
     - Bisimulation sub-problem  ✓  (traj.path = PathIso.nil, empty paths match)
+    - Affordance-level commutativity  (`phi`): the anchor sets
+      `{paradigmaticTensor a b | a∈F.Φ, b∈G.Φ}` and the F/G-swapped set differ
+      because `paradigmaticTensor a b ≠ paradigmaticTensor b a` (assumptions
+      `a×b` vs `b×a`, and `A×B ≠ B×A` without univalence). This is the same
+      type-level product-commutativity limitation documented as Phase-4 debt
+      in `Laws.lean` (`parTensor_not_comm_of_type_ne`) — a pre-existing
+      deferral, not a regression. `phi := sorry` is the single permitted
+      Phase-4 `sorry` (see ADR-0005 gate amendment 2026-05-15).
 
     `def` rather than `theorem`: `FutureIso` is `Type`-valued, not `Prop`-valued. -/
 def parTensor_comm_iso (F G : ComposableFuture) :
@@ -204,6 +227,7 @@ def parTensor_comm_iso (F G : ComposableFuture) :
     { assumptions    := Equiv.prodComm F.S₁.assumptions    G.S₁.assumptions
       constraints    := Equiv.prodComm F.S₁.constraints    G.S₁.constraints
       infrastructure := Equiv.prodComm F.S₁.infrastructure G.S₁.infrastructure }
+  phi  := sorry
 
 /-- The braiding is self-inverse at the element level. -/
 theorem parTensor_comm_iso_self_inv (F G : ComposableFuture)

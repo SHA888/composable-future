@@ -32,12 +32,10 @@ we need `F.τ.source = F.S₀` (first half of `well_formed`). The path equality
 v0.2: Φ is no longer a stored field, so no affordance equality is needed. -/
 theorem left_identity (F : ComposableFuture) (hF : F.well_formed) :
     seqBind (idFuture F.S₀) F (by rfl) = F := by
-  cases F with | mk S₀ τ S₁ =>
-  simp [seqBind, idFuture, List.nil_append]
-  ext
-  · exact hF.1.symm
-  · rfl
-  · rfl
+  obtain ⟨S₀, ⟨src, path, tgt⟩, S₁, Φ⟩ := F
+  have hsrc : src = S₀ := hF.1
+  simp only [seqBind, idFuture, List.nil_append]
+  rw [hsrc]
 
 /-- Right identity law (for well-formed futures): F >>= Id = F.
 
@@ -46,16 +44,17 @@ The well-formedness hypothesis is required symmetrically: `seqBind` uses
 `F.τ.target = F.S₁` (the other half of `well_formed`). The path equality
 `F.τ.path ++ [] = F.τ.path` is trivial.
 
-v0.2: Φ is no longer a stored field, so no `[Subsingleton]` guard is needed.
-The law holds unconditionally for any well-formed F. -/
+v0.3 (ADR-0005): no `[Subsingleton]` guard needed. `seqBind F (idFuture F.S₁)`
+carries `Φ := (idFuture F.S₁).Φ = {F.S₁}`; matching this against `F.Φ` is
+exactly `hF.2.2 : F.Φ = {F.S₁}` — the proof is substantive in the Φ conjunct,
+not definitional. -/
 theorem right_identity (F : ComposableFuture) (hF : F.well_formed) :
     seqBind F (idFuture F.S₁) (by rfl) = F := by
-  cases F with | mk S₀ τ S₁ =>
-  simp [seqBind, idFuture, List.append_nil]
-  ext
-  · rfl
-  · rfl
-  · exact hF.2.symm
+  obtain ⟨S₀, ⟨src, path, tgt⟩, S₁, Φ⟩ := F
+  have htgt : tgt = S₁ := hF.2.1
+  have hphi : Φ = {S₁} := hF.2.2
+  simp only [seqBind, idFuture, List.append_nil]
+  rw [htgt, hphi]
 
 /-- Closure law: sequential composition produces a valid future.
     This is trivially satisfied by the existence of `seqBind` itself. -/
@@ -67,10 +66,8 @@ theorem closure (F G : ComposableFuture) (h : F.S₁ = G.S₀) :
 theorem seqBind_well_formed (F G : ComposableFuture) (h : F.S₁ = G.S₀)
   (hF : F.well_formed) (hG : G.well_formed) :
   (seqBind F G h).well_formed := by
-  simp [seqBind, ComposableFuture.well_formed]
-  constructor
-  · exact hF.1
-  · exact hG.2
+  simp only [seqBind, ComposableFuture.well_formed]
+  exact ⟨hF.1, hG.2.1, hG.2.2⟩
 
 /-- Substantive associativity of sequential bind.
 
@@ -164,10 +161,12 @@ theorem parTensor_not_comm_of_type_ne
                                   , infrastructure := Unit }
   let F : ComposableFuture := { S₀ := S_A
                                , τ := { source := S_A, path := [], target := S_A }
-                               , S₁ := S_A }
+                               , S₁ := S_A
+                               , Φ := {S_A} }
   let G : ComposableFuture := { S₀ := S_B
                                , τ := { source := S_B, path := [], target := S_B }
-                               , S₁ := S_B }
+                               , S₁ := S_B
+                               , Φ := {S_B} }
   -- If parTensor F G = parTensor G F, then A × B = B × A — contradiction with h
   refine ⟨F, G, fun heq => ?_⟩
   exact h (parTensor_comm_implies_prod_comm F G heq)

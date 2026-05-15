@@ -13,19 +13,26 @@ This module defines the basic types for the Composable Future theory.
 A composable future is a 4-tuple (S₀, τ, S₁, Φ) representing a transition
 from a paradigmatic state S₀ to S₁ via trajectory τ, with affordance set Φ.
 
-## Design change (v0.3, ADR-0005)
+## Design change (v0.3, ADR-0005, state-anchored correction)
 
 v0.2 removed Φ as a stored field to resolve a universe mismatch (the attempt
 to use `AffordanceDescriptor S₀ : Type 1` while `ComposableFuture : Type 0`).
 This created a theory split: the paper's 4-tuple vs. Lean's 3-tuple.
 
-v0.3 restores Φ as a stored field `Φ : Set ComposableFuture`. This is
-type-theoretically safe: `Set ComposableFuture = ComposableFuture → Prop`
-is a function type (no strict positive occurrence violation), and `Set`
-lives in the same universe as `ComposableFuture` (no universe mismatch).
+ADR-0005 originally proposed `Φ : Set ComposableFuture`, but that is
+kernel-rejected: `Set T = T → Prop` places `ComposableFuture` in the
+contravariant (domain) position of its own field — a strict-positivity
+violation. The correction restores the 4-tuple with a *state-anchored*
+carrier: `Φ : Set ParadigmaticState`. `ParadigmaticState` does not contain
+`ComposableFuture`, so there is no positivity or universe issue.
 
-The identity future carries `Φ = AffordanceSet S` (Option B): a null
-transition changes nothing, so affordances are preserved. The terminate
+The paper's future-set object `𝒫(F)` is recovered on demand by the
+projection `ComposableFuture.afforded F := { G | G.S₀ ∈ F.Φ }`. For a
+well-formed future (`F.Φ = {F.S₁}`), `afforded F = AffordanceSet F.S₁` —
+content-equivalent to the paper's `Φ : S₁ → 𝒫(F)`.
+
+The identity future carries `Φ = {S}` (Option B): a null transition keeps S
+accessible, so `afforded (idFuture S) = AffordanceSet S`. The terminate
 operator (Paper 2) is what genuinely zeros affordances.
 -/
 
@@ -50,21 +57,25 @@ structure Trajectory where
   deriving Repr
 
 
-/-- A composable future is a 3-tuple (S₀, τ, S₁).
+/-- A composable future is a 4-tuple (S₀, τ, S₁, Φ).
 
-    v0.3 (ADR-0005): Φ cannot be stored due to strict positivity constraints
-    (`Set ComposableFuture = ComposableFuture → Prop` places the type in
-    contravariant position). Instead, Φ is computed/derived through well-formedness
-    and the equivalence relation FutureIso tracks affordance equality. -/
+    v0.3 (ADR-0005, state-anchored): Φ is a stored field
+    `Φ : Set ParadigmaticState` carrying the *anchor states* of the affordance
+    set. The literal `Set ComposableFuture` is kernel-rejected (strict
+    positivity: `Set T = T → Prop` puts the type in contravariant position).
+    The paper's future-set is recovered by the `afforded` projection below;
+    for well-formed futures it equals `AffordanceSet F.S₁` exactly. -/
 structure ComposableFuture where
   S₀ : ParadigmaticState
   τ  : Trajectory
   S₁ : ParadigmaticState
+  Φ  : Set ParadigmaticState
 
-/-- Well-formedness condition: trajectory matches the states.
-    A well-formed future has source and target states matching the trajectory. -/
+/-- Well-formedness condition: trajectory matches the states and the affordance
+    anchor is exactly the target state.
+    For a well-formed future, `F.Φ = {F.S₁}`, so `afforded F = AffordanceSet F.S₁`. -/
 def ComposableFuture.well_formed (F : ComposableFuture) : Prop :=
-  F.τ.source = F.S₀ ∧ F.τ.target = F.S₁
+  F.τ.source = F.S₀ ∧ F.τ.target = F.S₁ ∧ F.Φ = {F.S₁}
 
 /-- The affordance set at state S: the set of all composable futures whose
     source state is S.
@@ -75,6 +86,27 @@ def ComposableFuture.well_formed (F : ComposableFuture) : Prop :=
     `idFuture S`) and closed under sequential composition. -/
 def AffordanceSet (S : ParadigmaticState) : Set ComposableFuture :=
   setOf fun F => F.S₀ = S
+
+/-- The future-set afforded by `F`: every composable future whose source state
+    is one of `F`'s anchor states. This is the recovered paper object `𝒫(F)`
+    — stored indirectly via `F.Φ : Set ParadigmaticState` (the keys) and
+    reconstructed here on demand (the values). -/
+def ComposableFuture.afforded (F : ComposableFuture) : Set ComposableFuture :=
+  { G : ComposableFuture | G.S₀ ∈ F.Φ }
+
+/-- **Content equivalence with the paper.** For a well-formed future,
+    `afforded F = AffordanceSet F.S₁`. This certifies the state-anchored
+    representation is faithful to the paper's `Φ : S₁ → 𝒫(F)`:
+
+    `afforded F = {G | G.S₀ ∈ F.Φ} = {G | G.S₀ ∈ {F.S₁}} = {G | G.S₀ = F.S₁}
+                = AffordanceSet F.S₁`. -/
+theorem ComposableFuture.afforded_eq_affordanceSet
+    (F : ComposableFuture) (hF : F.well_formed) :
+    F.afforded = AffordanceSet F.S₁ := by
+  unfold ComposableFuture.afforded AffordanceSet
+  ext G
+  rw [hF.2.2]
+  exact Iff.rfl
 
 
 /-- A trajectory is stateless if it does not depend on history.

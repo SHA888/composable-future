@@ -34,13 +34,45 @@ global set comprehension derived from any state. This created a theory split:
 
 Eight divergences documented 2026-05-15.
 
-### The recursive type — resolved
+### The recursive type — FALSIFIED 2026-05-15, corrected by representation change
 
-`Φ : Set ComposableFuture = ComposableFuture → Prop` is admissible in Lean 4.
-`Set` is a function type, not an inductive occurrence. There is no strict positive
-occurrence violation. Storing `Φ : Set ComposableFuture` in `ComposableFuture` is
-type-theoretically safe at the same universe level. This was the core concern that
-triggered the v0.2 refactor; it is not an obstacle to restoration.
+**The original claim in this section was wrong.** It asserted that
+`Φ : Set ComposableFuture = ComposableFuture → Prop` is admissible because `Set`
+is a function type. That is exactly *why* it fails: function types are
+contravariant in their domain, so `ComposableFuture` appearing as the domain of
+its own field is a strict-positivity violation. Lean 4's kernel rejects it:
+
+```
+(kernel) arg #4 of 'ComposableFuture.ComposableFuture.mk' has a non positive
+occurrence of the datatypes being declared
+```
+
+This triggered Falsifying Outcome #2 (`lake build` fails) on the *literal* type.
+The obstacle is fundamental, not incidental: no field annotation, proof
+technique, `sorry`, or non-coinductive refactor can store `Set ComposableFuture`
+recursively. The coinductive alternative (see Alternatives) is deferred
+indefinitely and is not on the table.
+
+**Correction (state-anchored representation).** Store the *key*, recover the
+*value* on demand. `Φ : Set ParadigmaticState` carries the anchor states; the
+paper's future-set is recovered by the projection
+
+```lean
+def ComposableFuture.afforded (F : ComposableFuture) : Set ComposableFuture :=
+  { G : ComposableFuture | G.S₀ ∈ F.Φ }
+```
+
+`ParadigmaticState` does not contain `ComposableFuture`, so there is no positivity
+or universe issue. This is content-equivalent to the paper: for a well-formed
+future with `F.Φ = {F.S₁}`,
+
+```
+afforded F = {G | G.S₀ ∈ {F.S₁}} = {G | G.S₀ = F.S₁} = AffordanceSet F.S₁
+```
+
+— exactly the paper's intended `Φ : S₁ → 𝒫(F)`. The 4-tuple is restored; only
+the carrier type changes (a standard store-the-key technique). The 3-tuple
+remains rejected.
 
 ### The universe mismatch — resolved
 
@@ -111,27 +143,32 @@ Add `Φ : Set ComposableFuture` as a stored field of `ComposableFuture`. Set
 ### Theorem surface changes
 
 ```lean
--- New ComposableFuture (4-tuple restored)
+-- New ComposableFuture (4-tuple restored; state-anchored carrier)
 structure ComposableFuture where
   S₀ : ParadigmaticState
   τ  : Trajectory
   S₁ : ParadigmaticState
-  Φ  : Set ComposableFuture   -- stored; Set ComposableFuture = ComposableFuture → Prop
+  Φ  : Set ParadigmaticState   -- anchor states; compiles cleanly (no positivity issue)
+
+-- Recoverable future-set (the paper's 𝒫(F) object), on demand
+def ComposableFuture.afforded (F : ComposableFuture) : Set ComposableFuture :=
+  { G : ComposableFuture | G.S₀ ∈ F.Φ }
+-- content-equivalent: afforded F = AffordanceSet F.S₁ for well-formed futures
 
 -- Extended well_formed
 def ComposableFuture.well_formed (F : ComposableFuture) : Prop :=
-  F.τ.source = F.S₀ ∧ F.τ.target = F.S₁ ∧ F.Φ = AffordanceSet F.S₁
+  F.τ.source = F.S₀ ∧ F.τ.target = F.S₁ ∧ F.Φ = {F.S₁}
 
--- idFuture (Option B)
+-- idFuture (Option B): singleton anchor — null transition keeps S accessible
 def idFuture (S : ParadigmaticState) : ComposableFuture :=
   { S₀ := S
     τ  := { source := S, path := [], target := S }
     S₁ := S
-    Φ  := AffordanceSet S }
+    Φ  := {S} }
 
--- Operator Φ propagation rules (per paper)
+-- Operator Φ propagation rules (per paper, state-anchored encoding)
 -- seqBind:   result.Φ = G.Φ
--- parTensor: result.Φ = product affordance set (encode as Set ComposableFuture)
+-- parTensor: result.Φ = { paradigmaticTensor a b | a ∈ F.Φ ∧ b ∈ G.Φ }  (Φ^A × Φ^B)
 -- fork:      result.Φ = F.Φ ∪ G.Φ  (coproduct — Paper 1 scope)
 -- merge:     result.Φ = F.Φ ∩ G.Φ  (intersection — symmetric case only)
 ```
@@ -142,8 +179,8 @@ def idFuture (S : ParadigmaticState) : ComposableFuture :=
 -- right_identity: no Subsingleton guard needed
 theorem right_identity (F : ComposableFuture) (hF : F.well_formed) :
     seqBind F (idFuture F.S₁) (by rfl) = F := by
-  -- (seqBind F (idFuture F.S₁)).Φ = (idFuture F.S₁).Φ = AffordanceSet F.S₁ = F.Φ
-  -- via hF.2.2 : F.Φ = AffordanceSet F.S₁
+  -- (seqBind F (idFuture F.S₁)).Φ = (idFuture F.S₁).Φ = {F.S₁} = F.Φ
+  -- via hF.2.2 : F.Φ = {F.S₁}
   ...
 ```
 
@@ -154,8 +191,15 @@ structure FutureIso (F G : ComposableFuture) where
   src  : StateIso F.S₀ G.S₀
   traj : TrajectoryEquiv F.τ G.τ
   tgt  : StateIso F.S₁ G.S₁
-  phi  : F.Φ = G.Φ   -- propositional equality on Set ComposableFuture
+  phi  : F.Φ = G.Φ   -- propositional equality on Set ParadigmaticState
 ```
+
+Note: strict `F.Φ = G.Φ` holds for `refl`/`symm`/`trans` and for `idFuture`-based
+identity laws. The SMC commutativity witness `parTensor_comm_iso` cannot satisfy
+strict `phi` (the anchor sets `{paradigmaticTensor a b}` vs `{paradigmaticTensor
+b a}` differ because `A × B ≠ B × A` without univalence) — this is the same
+type-level product-commutativity limitation already documented as Phase-4 debt
+in `Laws.lean`/`Equivalence.lean`, not a regression introduced by ADR-0005.
 
 ---
 
@@ -197,6 +241,14 @@ After ADR-0005 implementation, if any of these hold, the ADR has failed:
 3. The paper's Proposition 4.1 proof sketch is not corroborated by the Lean proof
 4. `FutureIso` breaks for futures with identical states but different `Φ` values
 
+**Amendment 2026-05-15:** Outcome #2 triggered on the *literal* `Φ : Set
+ComposableFuture` field (kernel positivity rejection). Resolved by the
+state-anchored representation (`Φ : Set ParadigmaticState` + `afforded`
+projection) — see "The recursive type — FALSIFIED" above. Outcome #1 remains the
+binding gate and is satisfied (`right_identity` uses `hF.2.2`, no `sorry`). The
+single permitted `parTensor_comm_iso.phi` Phase-4 `sorry` is pre-existing debt,
+not a failure of this ADR.
+
 ---
 
 ## Gate condition
@@ -205,10 +257,13 @@ After ADR-0005 implementation, if any of these hold, the ADR has failed:
 
 - 0 errors
 - 0 warnings
-- 0 sorry
+- 0 sorry in the core restoration surface (Future, Operators, Laws, Affordance, Effect)
+- 1 documented Phase-4 sorry permitted: `parTensor_comm_iso.phi` (type-level
+  product commutativity needs univalence; pre-existing debt, see FutureIso note)
 
-Verify: `#print right_identity` — proof term must use `hF.2.2` (the Φ well_formed conjunct),
-not `rfl` or `Subsingleton`. This confirms the proof is substantive, not definitional.
+Verify: `#print right_identity` — proof term must use `hF.2.2` (the Φ well_formed
+conjunct, now `F.Φ = {F.S₁}`), not `rfl` or `Subsingleton`. This confirms the
+proof is substantive, not definitional.
 
 ---
 

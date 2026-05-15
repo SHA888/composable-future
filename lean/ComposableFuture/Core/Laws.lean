@@ -32,11 +32,10 @@ we need `F.τ.source = F.S₀` (first half of `well_formed`). The path equality
 v0.2: Φ is no longer a stored field, so no affordance equality is needed. -/
 theorem left_identity (F : ComposableFuture) (hF : F.well_formed) :
     seqBind (idFuture F.S₀) F (by rfl) = F := by
-  cases F with | mk S₀ τ S₁ Φ =>
+  cases F with | mk S₀ τ S₁ =>
   simp [seqBind, idFuture, List.nil_append]
   ext
   · exact hF.1.symm
-  · rfl
   · rfl
   · rfl
 
@@ -51,13 +50,12 @@ v0.2: Φ is no longer a stored field, so no `[Subsingleton]` guard is needed.
 The law holds unconditionally for any well-formed F. -/
 theorem right_identity (F : ComposableFuture) (hF : F.well_formed) :
     seqBind F (idFuture F.S₁) (by rfl) = F := by
-  cases F with | mk S₀ τ S₁ Φ =>
+  cases F with | mk S₀ τ S₁ =>
   simp [seqBind, idFuture, List.append_nil]
   ext
   · rfl
   · rfl
-  · exact hF.2.1.symm
-  · exact hF.2.2.symm
+  · exact hF.2.symm
 
 /-- Closure law: sequential composition produces a valid future.
     This is trivially satisfied by the existence of `seqBind` itself. -/

@@ -35,11 +35,6 @@ structure FutureEquiv (F G : ComposableFuture) : Prop where
   /-- Target states match -/
   S₁_eq : F.S₁ = G.S₁
 
-/-- Φ equality is derived from S₁ equality (since Φ is derived from S₁). -/
-theorem FutureEquiv.Φ_eq {F G : ComposableFuture} (h : FutureEquiv F G) :
-    F.Φ = G.Φ :=
-  congr_arg AffordanceSet h.S₁_eq
-
 /-- Future equivalence is reflexive. -/
 theorem FutureEquiv.refl (F : ComposableFuture) : FutureEquiv F F where
   S₀_eq := rfl

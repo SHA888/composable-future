@@ -30,35 +30,26 @@ def paradigmaticTensor (S₁ S₂ : ParadigmaticState) : ParadigmaticState where
   infrastructure := S₁.infrastructure × S₂.infrastructure
 
 /-- Sequential composition: F >>= G when F.S₁ = G.S₀.
-    The result carries G's affordances: seqBind F G leaves the set of futures
-    accessible from G.S₁ unchanged. -/
+    Concatenates trajectories: path becomes F.τ.path ++ G.τ.path. -/
 def seqBind (F G : ComposableFuture) (_h : F.S₁ = G.S₀) : ComposableFuture :=
   { S₀ := F.S₀
     τ  := { source := F.τ.source
           , path   := F.τ.path ++ G.τ.path
           , target := G.τ.target }
-    S₁ := G.S₁
-    Φ  := G.Φ }
-
-/-- Product affordance set: the set of futures accessible from the product state.
-    For well-formed F and G, this encodes Φ^A × Φ^B in the paper's notation. -/
-def productAffordanceSet (F G : ComposableFuture) : Set ComposableFuture :=
-  AffordanceSet (paradigmaticTensor F.S₁ G.S₁)
+    S₁ := G.S₁ }
 
 /-- Parallel composition: F ⊗ G — component-wise cartesian product of states.
 
 Source is F.S₀ ⊗ G.S₀, target is F.S₁ ⊗ G.S₁, and the trajectory connects
 the two. Both F and G "run" in the joint paradigm.
 
-Trajectory path: empty (parallel composition does not sequence the paths).
-Affordances: product of F.Φ and G.Φ. -/
+Trajectory path: empty (parallel composition does not sequence the paths). -/
 def parTensor (F G : ComposableFuture) : ComposableFuture :=
   let S₀ := paradigmaticTensor F.S₀ G.S₀
   let S₁ := paradigmaticTensor F.S₁ G.S₁
   { S₀ := S₀
     τ  := { source := S₀, path := [], target := S₁ }
-    S₁ := S₁
-    Φ  := productAffordanceSet F G }
+    S₁ := S₁ }
 
 /-- Fork: F | G — left-biased branch selection (coproduct, Paper 1 scope).
 
@@ -66,13 +57,11 @@ At v0.1 this collapses to the F branch (source F.S₀, target F.S₁).
 A genuine sum-type formulation is deferred to Phase 2 (requires
 raising state/trajectory types out of the current `Type`-only universe).
 
-Trajectory path: F's path (G is ignored).
-Affordances: union of F.Φ and G.Φ (coproduct semantics). -/
+Trajectory path: F's path (G is ignored). -/
 def fork (F G : ComposableFuture) : ComposableFuture :=
   { S₀ := F.S₀
     τ  := { source := F.τ.source, path := F.τ.path, target := F.τ.target }
-    S₁ := F.S₁
-    Φ  := F.Φ ∪ G.Φ }
+    S₁ := F.S₁ }
 
 /-- Merge: F ⊕ G — converge two independent futures (symmetric case only).
 
@@ -81,22 +70,19 @@ branches come from a joint paradigm) and collapses to F.S₁ at the
 target. Phase 2 will introduce proper pushout/coequalizer and absorptive
 merge (asymmetric resource transfer) structures.
 
-Trajectory path: F's path (G is ignored at target).
-Affordances: intersection of F.Φ and G.Φ (symmetric convergence). -/
+Trajectory path: F's path (G is ignored at target). -/
 def merge (F G : ComposableFuture) : ComposableFuture :=
   { S₀ := paradigmaticTensor F.S₀ G.S₀
     τ  := { source := paradigmaticTensor F.S₀ G.S₀
           , path   := F.τ.path
           , target := F.S₁ }
-    S₁ := F.S₁
-    Φ  := F.Φ ∩ G.Φ }
+    S₁ := F.S₁ }
 
-/-- Identity future: Id S — trivial self-loop at state S with unit affordance.
-    Path is empty (no intermediate states). Carries Φ = AffordanceSet S (all futures accessible from S). -/
+/-- Identity future: Id S — trivial self-loop at state S.
+    Path is empty (no intermediate states). -/
 def idFuture (S : ParadigmaticState) : ComposableFuture :=
   { S₀ := S
     τ  := { source := S, path := [], target := S }
-    S₁ := S
-    Φ  := AffordanceSet S }
+    S₁ := S }
 
 end ComposableFuture

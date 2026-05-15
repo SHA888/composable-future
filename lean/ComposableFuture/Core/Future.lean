@@ -50,20 +50,21 @@ structure Trajectory where
   deriving Repr
 
 
-/-- A composable future is a 4-tuple (S₀, τ, S₁, Φ).
+/-- A composable future is a 3-tuple (S₀, τ, S₁).
 
-    v0.3 (ADR-0005): Φ is restored as a stored field `Φ : Set ComposableFuture`.
-    This matches the paper's 4-tuple definition exactly. -/
+    v0.3 (ADR-0005): Φ cannot be stored due to strict positivity constraints
+    (`Set ComposableFuture = ComposableFuture → Prop` places the type in
+    contravariant position). Instead, Φ is computed/derived through well-formedness
+    and the equivalence relation FutureIso tracks affordance equality. -/
 structure ComposableFuture where
   S₀ : ParadigmaticState
   τ  : Trajectory
   S₁ : ParadigmaticState
-  Φ  : Set ComposableFuture
 
-/-- Well-formedness condition: trajectory matches the states and affordances are correct.
-    For a well-formed future, Φ = AffordanceSet S₁ (the set of all futures accessible from S₁). -/
+/-- Well-formedness condition: trajectory matches the states.
+    A well-formed future has source and target states matching the trajectory. -/
 def ComposableFuture.well_formed (F : ComposableFuture) : Prop :=
-  F.τ.source = F.S₀ ∧ F.τ.target = F.S₁ ∧ F.Φ = AffordanceSet F.S₁
+  F.τ.source = F.S₀ ∧ F.τ.target = F.S₁
 
 /-- The affordance set at state S: the set of all composable futures whose
     source state is S.

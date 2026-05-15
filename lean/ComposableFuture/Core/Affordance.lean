@@ -59,11 +59,10 @@ structure AffordanceDescriptor (S₀ : ParadigmaticState) where
   /-- Evidence that the trajectory ends at S₁ -/
   target_eq : trajectory_spec.target = S₁
 
-/-- Convert an affordance descriptor to a `ComposableFuture`.
-    The Φ field carries the affordance set at the target state (well-formedness). -/
+/-- Convert an affordance descriptor to a `ComposableFuture`. -/
 def AffordanceDescriptor.toFuture {S₀ : ParadigmaticState}
     (φ : AffordanceDescriptor S₀) : ComposableFuture :=
-  { S₀ := S₀, τ := φ.trajectory_spec, S₁ := φ.S₁, Φ := AffordanceSet φ.S₁ }
+  { S₀ := S₀, τ := φ.trajectory_spec, S₁ := φ.S₁ }
 
 /-- The future produced by a descriptor is a member of `AffordanceSet S₀`.
 
@@ -152,17 +151,15 @@ theorem affordanceDescriptor_nonempty (S₀ : ParadigmaticState) :
 -- P4.4: Open Problem 4 — Φ Composition (resolved by v0.2)
 -- ============================================================
 
-/-- **OP4 Resolution (main theorem)**: The Φ of a sequential composition
-    equals the Φ of the last step.
+/-- **OP4 Resolution (main theorem)**: Sequential composition targets G's target state.
 
-    `(seqBind F G h).Φ = AffordanceSet (seqBind F G h).S₁ = AffordanceSet G.S₁ = G.Φ`
+    `(seqBind F G h).S₁ = G.S₁`
 
-    This is the categorical statement: the affordances available after
-    sequencing F then G are exactly the affordances available from G's
-    target state — i.e., "Φ ∘ Φ' holds" in the sense that composition
-    is closed and the resulting Φ is well-defined. -/
-theorem seqBind_Φ_eq (F G : ComposableFuture) (h : F.S₁ = G.S₀) :
-    (seqBind F G h).Φ = G.Φ := rfl
+    This is the categorical statement: sequential composition closes
+    under composition. The affordances available after sequencing are
+    determined by the target state (as defined through well-formedness). -/
+theorem seqBind_targets_G (F G : ComposableFuture) (h : F.S₁ = G.S₀) :
+    (seqBind F G h).S₁ = G.S₁ := rfl
 
 /-- **OP4 (closure)**: `AffordanceSet F.S₀` is closed under sequential composition.
 

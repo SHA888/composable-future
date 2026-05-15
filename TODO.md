@@ -26,7 +26,7 @@
 [x]  OP3 — FutureIso + PathIso + TrajectoryEquiv + parTensor_comm_iso
 [x]  ADR-0005 — null future design decision locked (Option B, 2026-05-15)
 [x]  ADR-0005 — Lean implementation (state-anchored 4-tuple, commit 0b1b66a)
-[~]  Preprint v0.2 — revisions applied + PDF compiled (fa5c0de); Zenodo upload pending (user)
+[~]  Preprint v0.2 — revisions + §7 bridge + PDF recompiled 12pp (784566e); Zenodo upload PENDING (user)
 [ ]  ACT 2027 submission
 [ ]  LMCS submission
 ```
@@ -43,7 +43,7 @@
 | 3     | Probabilistic extension       | ✅ complete    | Kleisli proved (no sorry); Furter et al. documented |
 | 4     | Φ as dependent type           | ✅ complete    | OP1–OP4 resolved; v0.2 derived-Φ refactor           |
 | 5     | Full mechanized proof         | ✅ complete    | ADR-0005 ✅ + ADR-0003 Path 3 accepted; 0 errors, 1 documented Phase-4 sorry (amended gate) |
-| 6     | Paper/Lean coherence + v0.2   | 🟡 in progress | P6.1 revisions applied + PDF compiled (fa5c0de); Zenodo v0.2 upload pending (user) |
+| 6     | Paper/Lean coherence + v0.2   | 🟡 in progress | P6.1 revisions + §7 bridge + PDF 12pp (784566e); Zenodo v0.2 upload PENDING (user) |
 
 ---
 
@@ -185,14 +185,15 @@ preprint conflated identity with termination and must be revised in v0.2.
 ## PHASE 6 — Paper/Lean Coherence + Preprint v0.2
 
 > Gate: Lean 4-tuple matches paper 4-tuple; preprint v0.2 uploaded to Zenodo
-> Status: ⬜ not started
+> Status: 🟡 in progress — P6.1 revisions + §7 bridge complete; Zenodo v0.2 upload PENDING (user)
 > Depends on: ADR-0005 Lean implementation complete
 
 ### P6.1 — Preprint v0.2 Revisions
 
 Eight critique responses (ordered by severity for LMCS/ACT venue).
-**✅ All revisions applied (commit `fa5c0de`); paper compiles (11pp). Only the
-Zenodo v0.2 upload remains — a user-controlled external publish.**
+**✅ All revisions applied (commit `fa5c0de`); §7 OP1→OP2 bridge added and PDF
+recompiled (commit `784566e`, 12pp, 0 undefined refs). Only the Zenodo v0.2
+upload remains — a user-controlled external publish (STILL PENDING).**
 
 - [x] ✅ **C2 — OP1 status update** (highest priority)
       OP1 resolved: five Lean theorems, all substantive, 0 sorry
@@ -255,8 +256,14 @@ Zenodo v0.2 upload remains — a user-controlled external publish.**
       Note terminate operator as the fifth unary op deferred to Paper 2.
       Note symmetric-only scope of current merge definition.
 
-- [x] ✅ Gate (part 1): compile PDF — done (11pp, bibtex clean, no undefined refs; commit `fa5c0de`)
-- [ ] 🔴 Gate (part 2): upload Zenodo v0.2, supersede v0.1 DOI — **user-controlled** (irreversible external publish; Claude will not do this autonomously)
+- [x] ✅ **§7 OP1→OP2 bridge** (pre-ACT polish, identified in v0.2 pre-upload review)
+      "Open Problems" opened directly at OP2 with no transition; added one line
+      noting OP1 (associativity) is resolved in `§\ref{sec:assoc}`. Commit `784566e`.
+
+- [x] ✅ Gate (part 1): compile PDF — done (12pp, bibtex clean, no undefined refs;
+      commits `fa5c0de` revisions + `784566e` §7 bridge)
+- [ ] 🔴 Gate (part 2): upload Zenodo v0.2, supersede v0.1 DOI — **user-controlled**
+      (irreversible external publish; Claude will not do this autonomously) — **STILL PENDING**
 
 ### P6.2 — Publication Submissions
 
@@ -326,9 +333,9 @@ Where to find:
    ✅ P5.2 ADR-0003 gap — CLOSED (Path 3 accepted; strengthened by parTensor_comm_iso)
    ✅ Phase 5 — gate met as amended (0 errors; 1 documented Phase-4 sorry)
 
-1.  Preprint v0.2 (P6.1) — NOW (next substantive block)
-    Priority order: Remark 4.1, Def 2.3, C2, C3, C4, C1, C5, C6, C7, C8
-    Gate: Zenodo v0.2 uploaded
+1.  Upload Zenodo v0.2 (P6.1 Gate part 2) — PENDING, USER-CONTROLLED
+    All revisions + §7 bridge done; PDF compiled 12pp (commit 784566e).
+    Action: user uploads paper/composable-future-level1.pdf, supersedes v0.1 DOI.
 
 2.  ACT 2027 submission (P6.2) — after Zenodo v0.2
 

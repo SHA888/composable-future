@@ -2,7 +2,7 @@
 
 A formal theory of paradigmatic futures as composable algebraic structures.
 
-**Status:** Phase 5 in progress — 0 `sorry`, 0 warnings; ADR-0004 ✅ ADR-0003 🟡 ADR-0002 ✅  
+**Status:** Phase 5 in progress — 0 `sorry`, 0 warnings; ADR-0004 ✅ ADR-0003 🟡 ADR-0002 ✅ OP3 ✅  
 **Track:** Theory (public) + Applied formalization (private)  
 **Latest:** Level 1 positioning paper (8 pages) ready for arXiv submission
 
@@ -99,12 +99,13 @@ associativity follows from `List.append_assoc`. No `sorry`. (ADR-0002, 2026-05-1
 A ⊗ B ≠ B ⊗ A   (in general)
 ```
 
-_Status: **Structurally witnessed; strict ≠ conditional.**_
+_Status: **Structurally witnessed; strict ≠ conditional; commutative up to isomorphism (OP3 ✅).**_
 
 - **Structural witness** (`Laws.parTensor_component_order`): proved — the component order is opposite in `A ⊗ B` vs `B ⊗ A`.
 - **Key reduction** (`Laws.parTensor_comm_implies_prod_comm`): proved — if `parTensor` were commutative then all type products would commute.
 - **Conditional existential** (`Laws.parTensor_not_comm_of_type_ne`): proved — given `(A×B) ≠ (B×A)`, specific non-commuting futures exist.
 - **Unconditional** `∃ F G, parTensor F G ≠ parTensor G F`: **open** — requires `Prod.type_inj` (type-constructor injectivity), which is sound but not an explicit Lean 4 axiom. See `docs/adr/0003-noncommutativity-strategy.md`.
+- **Commutativity up to isomorphism** (`Equivalence.parTensor_comm_iso`): **proved (OP3)** — `FutureIso (parTensor F G) (parTensor G F)` via `Equiv.prodComm` on states and `PathIso.nil` on trajectories. This is the correct categorical statement: the braiding of a symmetric monoidal category.
 
 **Closure**
 
@@ -255,7 +256,8 @@ composable-future/
 │       ├── WeakAssoc.lean       # Weak associativity theorems (Phase 2)
 │       ├── Probabilistic.lean   # Kleisli/Markov kernels over Mathlib PMF (Phase 3)
 │       ├── Affordance.lean      # AffordanceDescriptor witnesses + OP2/OP4 (Phase 4)
-│       └── Effect.lean          # Indexed monad + effect system (Phase 4)
+│       ├── Effect.lean          # Indexed monad + effect system (Phase 4)
+│       └── Equivalence.lean     # FutureIso + PathIso + TrajectoryEquiv — OP3 (Phase 5)
 ├── paper/               # Publication materials
 │   ├── composable-future-level1.tex    # 8-page positioning paper
 │   ├── composable-future-level1.pdf    # Compiled PDF (236 KB)
@@ -289,8 +291,7 @@ Install elan (Lean toolchain manager):
 After install, restart your terminal (or `source ~/.bashrc` on Linux) so `lake` is in PATH.
 
 - Build project: `cd lean && lake build` — should report **0 errors, 0 warnings, 0 sorry**
-- The codebase is sorry-free; all Phase 1–4 theorems are proved
-- ADR-0002 (trajectory enrichment) is complete; next open work: OP3 equivalence relation design
+- The codebase is sorry-free; all Phase 1–4 theorems are proved, OP3 equivalence relation closed
 - Add proof attempts and notes to `proofs/notes.md`
 - Follow naming conventions in `CONTRIBUTING.md`
 
@@ -322,19 +323,19 @@ After install, restart your terminal (or `source ~/.bashrc` on Linux) so `lake` 
 
 ### Phase 5 progress
 
-| ADR      | Task                                                              | Status                             |
+| ADR / OP | Task                                                              | Status                             |
 | -------- | ----------------------------------------------------------------- | ---------------------------------- |
 | ADR-0004 | Upgrade placeholder `PMF` to Mathlib’s real `PMF`                 | ✅ done (2026-05-07)               |
 | ADR-0003 | Non-commutativity of ⊗                                            | 🟡 conditional result (2026-05-08) |
 | ADR-0002 | Add `path` field to `Trajectory`; prove substantive associativity | ✅ done (2026-05-13)               |
+| OP3      | Equivalence relation: `FutureIso` + `PathIso` + `TrajectoryEquiv` | ✅ done (2026-05-15)               |
 
 ### Immediate Next Steps
 
 1. **arXiv submission** — Find math.CT or cs.LO endorser (submission ID 7444737, endorsement code NBFD6A)
 2. **ADR-0003 gap** — Close the unconditional `∃ F G, parTensor F G ≠ parTensor G F`
    - Three forward paths documented in `docs/adr/0003-noncommutativity-strategy.md`
-   - Candidate approach: `FutureIso` (SMC isomorphism) to prove commutativity-up-to-iso instead
-3. **OP3** — Commit to an equivalence relation design (bisimulation vs. SMC isomorphism) and implement
+   - Note: commutativity-up-to-iso is now proved via `parTensor_comm_iso` (OP3 ✅)
 
 ---
 
@@ -359,11 +360,17 @@ After install, restart your terminal (or `source ~/.bashrc` on Linux) so `lake` 
 - `seqBind_mem_affordanceSet`: sequential composition is closed in `AffordanceSet F.S₀`
 - `composeSequential_mem` / `composeParallel_mem`: descriptor-based witnesses
 
+**OP3: Equivalence relation** ✅ **RESOLVED** (2026-05-15)
+
+- `PathIso`: pointwise `StateIso` along `List ParadigmaticState` — strong bisimulation adapted to deterministic path lists
+- `TrajectoryEquiv`: source + path + target isomorphism; `refl`, `symm`, `trans`
+- `FutureIso`: `StateIso` on S₀/S₁ + `TrajectoryEquiv` on τ; equivalence relation + `Setoid` instance
+- `parTensor_comm_iso`: commutativity up to `FutureIso` via `Equiv.prodComm` + `PathIso.nil`
+
 **Remaining open problems:**
 
 3. **Non-commutativity (strict)** — unconditional `∃ F G, parTensor F G ≠ parTensor G F` requires `Prod.type_inj`. Conditional result proved; three forward paths in ADR-0003.
-4. **Equivalence relation** — what is the correct equivalence between futures — bisimulation, SMC isomorphism? (Phase 5)
-5. **Completeness** — are all paradigmatic futures reachable by finite composition? (Phase 5)
+4. **Completeness** — are all paradigmatic futures reachable by finite composition? (Phase 5)
 
 See `audit/gap-summary.md` for detailed problem statements and `proofs/notes.md` for internal open problems (OP8–OP17).
 

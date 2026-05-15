@@ -26,7 +26,7 @@
 [x]  OP3 — FutureIso + PathIso + TrajectoryEquiv + parTensor_comm_iso
 [x]  ADR-0005 — null future design decision locked (Option B, 2026-05-15)
 [x]  ADR-0005 — Lean implementation (state-anchored 4-tuple, commit 0b1b66a)
-[ ]  Preprint v0.2
+[~]  Preprint v0.2 — revisions applied + PDF compiled (fa5c0de); Zenodo upload pending (user)
 [ ]  ACT 2027 submission
 [ ]  LMCS submission
 ```
@@ -43,7 +43,7 @@
 | 3     | Probabilistic extension       | ✅ complete    | Kleisli proved (no sorry); Furter et al. documented |
 | 4     | Φ as dependent type           | ✅ complete    | OP1–OP4 resolved; v0.2 derived-Φ refactor           |
 | 5     | Full mechanized proof         | ✅ complete    | ADR-0005 ✅ + ADR-0003 Path 3 accepted; 0 errors, 1 documented Phase-4 sorry (amended gate) |
-| 6     | Paper/Lean coherence + v0.2   | ⬜ next       | Lean 4-tuple = paper 4-tuple; Zenodo v0.2 uploaded  |
+| 6     | Paper/Lean coherence + v0.2   | 🟡 in progress | P6.1 revisions applied + PDF compiled (fa5c0de); Zenodo v0.2 upload pending (user) |
 
 ---
 
@@ -190,13 +190,15 @@ preprint conflated identity with termination and must be revised in v0.2.
 
 ### P6.1 — Preprint v0.2 Revisions
 
-Eight critique responses (ordered by severity for LMCS/ACT venue):
+Eight critique responses (ordered by severity for LMCS/ACT venue).
+**✅ All revisions applied (commit `fa5c0de`); paper compiles (11pp). Only the
+Zenodo v0.2 upload remains — a user-controlled external publish.**
 
-- [ ] 🔴 **C2 — OP1 status update** (highest priority)
+- [x] ✅ **C2 — OP1 status update** (highest priority)
       OP1 resolved: five Lean theorems, all substantive, 0 sorry
       Add footnote pointing to Lean artifact (Zenodo DOI for codebase, separate from paper DOI)
 
-- [ ] 🔴 **C3 — Affordance circularity note** (CORRECTED — do not repeat the falsified claim)
+- [x] ✅ **C3 — Affordance circularity note** (CORRECTED — do not repeat the falsified claim)
       Add Remark after Def 2.2: a *stored* `Φ : Set ComposableFuture` field is
       **NOT** admissible in Lean 4 — `Set T = T → Prop` is a negative/contravariant
       occurrence, a strict-positivity violation (kernel-rejected, verified 2026-05-15).
@@ -206,11 +208,11 @@ Eight critique responses (ordered by severity for LMCS/ACT venue):
       (`afforded_eq_affordanceSet`). A coinductive `ComposableFuture` is the only
       route to the literal `Set ComposableFuture` type; deferred indefinitely.
 
-- [ ] 🔴 **C4 — Path-dependence argument**
+- [x] ✅ **C4 — Path-dependence argument**
       Revise §4.3: path-dependence tracked in `path : List ParadigmaticState`;
       `seqBind` concatenates paths; `List.append_assoc` gives unconditional associativity
 
-- [ ] 🔴 **Remark 4.1 revision** (locked by ADR-0005 Option B)
+- [x] ✅ **Remark 4.1 revision** (locked by ADR-0005 Option B)
       Replace: "The affordance set of the result is Φ∅, not Φ."
       With: "The affordance set of `F >>= Id_S₁` equals `F.Φ`: composing with the null
       future preserves all affordances accessible from S₁, because a transition that changes
@@ -218,29 +220,29 @@ Eight critique responses (ordered by severity for LMCS/ACT venue):
       affordances is the terminate operator, deferred to Paper 2 where it becomes substantive
       under resource enrichment (Coecke, Fritz, Spekkens 2016)."
 
-- [ ] 🔴 **Null future definition revision** (locked by ADR-0005 Option B)
+- [x] ✅ **Null future definition revision** (locked by ADR-0005 Option B)
       Revise Def 2.3: `Id_S := (S, id_S, S, AffordanceSet S)`
       The null future preserves all affordances at S; Φ∅ = ∅ is the terminate operator,
       not the identity.
 
-- [ ] 🟡 **C1 — State identity criterion**
+- [x] ✅ **C1 — State identity criterion**
       Add Remark after Def 2.1: equality is propositional equality of the triple (A, C, I);
       `FutureIso` (Lean: `Core.Equivalence`) provides the weaker component-wise bijection notion
 
-- [ ] 🟡 **C5 — Semantic level separation**
+- [x] ✅ **C5 — Semantic level separation**
       Add §2.5 "Interpretations of F" distinguishing: - Morphism reading (§2–4): F as categorical morphism - Affordance reading (§5): Φ as relational structure - Probabilistic reading (§6): τ as Markov kernel
       These are three compatible instantiations of the same structure, not competing definitions
 
-- [ ] 🟡 **C6 — Fork/merge temporal semantics**
+- [x] ✅ **C6 — Fork/merge temporal semantics**
       Add explicit deferral Remark in §3.3 and §3.4: - Fork: when branching occurs, observer-relativity, and whether histories coexist are
       parameters of the theory; Paper 2's time enrichment provides the formal account - Merge: current definition covers symmetric case only; absorptive merge (asymmetric
       resource transfer + source termination) is a Paper 2 question
 
-- [ ] 🟡 **C7 — CT maximalism**
+- [x] ✅ **C7 — CT maximalism**
       Tag every proved claim with `[Lean: theorem_name]` in footnote or appendix table
       Example: Proposition 4.1 → `[Lean: Laws.left_identity, Laws.right_identity]`
 
-- [ ] 🟡 **C8 — Operational falsifiability**
+- [x] ✅ **C8 — Operational falsifiability**
       Add worked instance to §8 or new §8.1:
       The composition-vs-extension test: a claimed new paradigm is a composition if expressible
       as a finite term in the pre-existing operator set without loss; an extension if it requires
@@ -248,12 +250,13 @@ Eight critique responses (ordered by severity for LMCS/ACT venue):
       Rebranded compositions: "Agentic AI" = LLM + tool-calling + retrieval + control flow
       (expressible in existing operators).
 
-- [ ] 🟡 **Conclusion revision** — add Paper 2/3 forward pointer
+- [x] ✅ **Conclusion revision** — add Paper 2/3 forward pointer
       Name Lawvere enrichment (time) and Coecke–Fritz–Spekkens (resources) as Paper 2 directions.
       Note terminate operator as the fifth unary op deferred to Paper 2.
       Note symmetric-only scope of current merge definition.
 
-- [ ] 🔴 Gate: compile PDF, upload Zenodo v0.2, supersede v0.1 DOI
+- [x] ✅ Gate (part 1): compile PDF — done (11pp, bibtex clean, no undefined refs; commit `fa5c0de`)
+- [ ] 🔴 Gate (part 2): upload Zenodo v0.2, supersede v0.1 DOI — **user-controlled** (irreversible external publish; Claude will not do this autonomously)
 
 ### P6.2 — Publication Submissions
 

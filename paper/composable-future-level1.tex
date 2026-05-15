@@ -56,7 +56,7 @@ Fakultas Kedokteran, Universitas Udayana}
 \maketitle
 
 \begin{abstract}
-We propose \emph{Composable Future}, a formal theory of paradigmatic transitions as composable algebraic structures. A future is a 4-tuple $F = (S_0, \tau, S_1, \Phi)$ where $S_0$ and $S_1$ are paradigmatic states, $\tau$ is a trajectory of change, and $\Phi$ is an affordance set of accessible futures from $S_1$. We define four primitive operators (sequential bind, parallel tensor, fork, merge) and prove fundamental laws: identity, closure, well-formedness preservation, and associativity. The associativity result holds for all futures by definitional equality of sequential bind, and is further structured via an indexed monad construction for path-dependent trajectories. We resolve the central open problem (associativity under path-dependence) via Orchard et al.'s indexed monad framework. The theory occupies the intersection of category theory, paradigm change studies, process algebra, affordance theory, and futures formalization — a structure not currently named or investigated in any of these domains.
+We propose \emph{Composable Future}, a formal theory of paradigmatic transitions as composable algebraic structures. A future is a 4-tuple $F = (S_0, \tau, S_1, \Phi)$ where $S_0$ and $S_1$ are paradigmatic states, $\tau$ is a trajectory of change, and $\Phi$ is an affordance set of accessible futures from $S_1$. We define four primitive operators (sequential bind, parallel tensor, fork, merge) and prove fundamental laws: identity, closure, well-formedness preservation, and associativity. The associativity result holds for all futures by definitional equality of sequential bind, and is further structured via an indexed monad construction for path-dependent trajectories. We resolve the central open problem (associativity under path-dependence) via Orchard et al.'s indexed monad framework, and establish the correct equivalence relation between futures (OP3): path-trace isomorphism implemented as \texttt{FutureIso} + \texttt{PathIso} + \texttt{TrajectoryEquiv} in Lean~4, giving \texttt{ComposableFuture} the structure of a setoid. The theory occupies the intersection of category theory, paradigm change studies, process algebra, affordance theory, and futures formalization — a structure not currently named or investigated in any of these domains.
 \end{abstract}
 
 \section{Introduction}
@@ -94,6 +94,7 @@ The central contribution is proving that these futures compose associatively, an
 \item \textbf{Proof of associativity} for all futures (general case) and for stateless futures (restricted case)
 \item \textbf{Indexed monad construction} resolving associativity under path-dependence via Orchard et al.'s framework
 \item \textbf{Weak associativity theorems} at the affordance level, holding even when trajectories differ
+\item \textbf{Equivalence relation for futures} (OP3): \texttt{FutureIso} pairs state bijections with path-trace trajectory equivalence (\texttt{PathIso} + \texttt{TrajectoryEquiv}), forming an equivalence relation and setoid. \texttt{parTensor} is commutative up to this isomorphism via the symmetric-monoidal braiding.
 \item \textbf{Open problems inventory} identifying 5 gaps in existing literature and 12 internal research directions
 \end{enumerate}
 
@@ -342,9 +343,13 @@ as a Markov kernel, and composition via Kleisli bind. The Kleisli category is kn
 
 Turvey \cite{turvey1992} notes that affordances are dispositional — potential before actual. Can $\Phi$ be defined at the type level without requiring $S_1$ to be concretely instantiated? (Phase 4 target.)
 
-\subsection{OP3: Correct Equivalence Relation Between Futures}
+\subsection{OP3: Correct Equivalence Relation Between Futures — \textbf{Resolved}}
 
-Bisimulation is standard in process algebra. Is strong bisimulation, weak bisimulation, or a new paradigm-specific equivalence appropriate for composable futures? (Unresolved.)
+We establish path-trace isomorphism as the correct equivalence. \texttt{StateIso}~$S~T$ records component-wise bijections ($\simeq$) on the three fields of a paradigmatic state. \texttt{PathIso}~$xs~ys$ is an inductive type witnessing a pointwise \texttt{StateIso} along the intermediate state lists of two trajectories — the list-indexed analogue of strong bisimulation for deterministic systems. \texttt{TrajectoryEquiv}~$\tau_1~\tau_2$ combines \texttt{StateIso} on source and target with \texttt{PathIso} on the path. \texttt{FutureIso}~$F~G$ pairs state isomorphisms on $S_0$/$S_1$ with a \texttt{TrajectoryEquiv} on $\tau$.
+
+The choice of strong (rather than weak) bisimulation is justified by the absence of silent transitions in \texttt{Trajectory}; Wang's history-preserving bisimilarity is redundant because \texttt{Trajectory} has no branching structure. \texttt{FutureIso} is an equivalence relation (\texttt{refl}, \texttt{symm}, \texttt{trans}) and \texttt{ComposableFuture} forms a \texttt{Setoid} under \texttt{Nonempty~(FutureIso~$\cdot$~$\cdot$)}.
+
+The main result is \texttt{parTensor\_comm\_iso}: $F \otimes G \cong G \otimes F$ via \texttt{Equiv.prodComm} on state components and \texttt{PathIso.nil} on the trajectory (both \texttt{parTensor} trajectories have empty paths). All proofs are mechanized in Lean~4 with no new axioms and no \texttt{sorry}.
 
 \subsection{OP4: Composition of Affordance Sets}
 
@@ -375,7 +380,7 @@ The theory occupies the intersection of five adjacent domains and resolves the c
 \item \textbf{Phase 5:} Complete mechanized proof in Lean 4 (ongoing)
 \end{enumerate}
 
-The codebase is available at \url{https://github.com/SHA888/composable-future} with all proofs verified in Lean 4.
+The codebase is available at \url{https://github.com/SHA888/composable-future} with all proofs verified in Lean~4 (0 \texttt{sorry}, 0 warnings). OP3 (equivalence relation) is now resolved; the remaining mechanization target is the unconditional non-commutativity existential for $\otimes$.
 
 \bibliographystyle{plainnat}
 \bibliography{references}

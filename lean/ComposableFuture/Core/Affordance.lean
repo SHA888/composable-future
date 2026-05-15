@@ -59,10 +59,11 @@ structure AffordanceDescriptor (S₀ : ParadigmaticState) where
   /-- Evidence that the trajectory ends at S₁ -/
   target_eq : trajectory_spec.target = S₁
 
-/-- Convert an affordance descriptor to a `ComposableFuture`. -/
+/-- Convert an affordance descriptor to a `ComposableFuture`.
+    The Φ field carries the affordance set at the target state (well-formedness). -/
 def AffordanceDescriptor.toFuture {S₀ : ParadigmaticState}
     (φ : AffordanceDescriptor S₀) : ComposableFuture :=
-  { S₀ := S₀, τ := φ.trajectory_spec, S₁ := φ.S₁ }
+  { S₀ := S₀, τ := φ.trajectory_spec, S₁ := φ.S₁, Φ := AffordanceSet φ.S₁ }
 
 /-- The future produced by a descriptor is a member of `AffordanceSet S₀`.
 

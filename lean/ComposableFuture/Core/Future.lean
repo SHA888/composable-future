@@ -10,25 +10,23 @@ set_option linter.dupNamespace false
 # Core Future Types
 
 This module defines the basic types for the Composable Future theory.
-A composable future is a 3-tuple (S₀, τ, S₁) representing a transition
-from a paradigmatic state S₀ to S₁ via trajectory τ. The affordance set
-Φ is derived from S₁ rather than stored as a field, matching the paper's
-specification Φ : S₁ → P(F) — the set of futures reachable from S₁.
+A composable future is a 4-tuple (S₀, τ, S₁, Φ) representing a transition
+from a paradigmatic state S₀ to S₁ via trajectory τ, with affordance set Φ.
 
-## Design change (v0.2)
+## Design change (v0.3, ADR-0005)
 
-v0.1 stored `Φ : AffordanceSet S₁` as a struct field using the placeholder
-`AffordanceSet S := Unit` (Type 0). This caused a universe mismatch when
-trying to promote Φ to the richer `AffordanceDescriptor` type (Type 1).
+v0.2 removed Φ as a stored field to resolve a universe mismatch (the attempt
+to use `AffordanceDescriptor S₀ : Type 1` while `ComposableFuture : Type 0`).
+This created a theory split: the paper's 4-tuple vs. Lean's 3-tuple.
 
-v0.2 removes Φ as a stored field and defines it as a derived set:
+v0.3 restores Φ as a stored field `Φ : Set ComposableFuture`. This is
+type-theoretically safe: `Set ComposableFuture = ComposableFuture → Prop`
+is a function type (no strict positive occurrence violation), and `Set`
+lives in the same universe as `ComposableFuture` (no universe mismatch).
 
-  AffordanceSet S := {F : ComposableFuture | F.S₀ = S}
-  ComposableFuture.Φ F := AffordanceSet F.S₁
-
-This matches the paper's Φ : S₁ → P(F) exactly, eliminates the universe
-mismatch (Set ComposableFuture lives in the same universe as ComposableFuture),
-and makes the identity laws unconditional (no Subsingleton guard needed).
+The identity future carries `Φ = AffordanceSet S` (Option B): a null
+transition changes nothing, so affordances are preserved. The terminate
+operator (Paper 2) is what genuinely zeros affordances.
 -/
 
 namespace ComposableFuture
@@ -52,18 +50,20 @@ structure Trajectory where
   deriving Repr
 
 
-/-- A composable future is a 3-tuple (S₀, τ, S₁).
+/-- A composable future is a 4-tuple (S₀, τ, S₁, Φ).
 
-    v0.2: Φ is no longer a stored field. It is derived as `AffordanceSet F.S₁`
-    (see below), matching the paper's Φ : S₁ → P(F). -/
+    v0.3 (ADR-0005): Φ is restored as a stored field `Φ : Set ComposableFuture`.
+    This matches the paper's 4-tuple definition exactly. -/
 structure ComposableFuture where
   S₀ : ParadigmaticState
   τ  : Trajectory
   S₁ : ParadigmaticState
+  Φ  : Set ComposableFuture
 
-/-- Well-formedness condition: trajectory matches the states. -/
+/-- Well-formedness condition: trajectory matches the states and affordances are correct.
+    For a well-formed future, Φ = AffordanceSet S₁ (the set of all futures accessible from S₁). -/
 def ComposableFuture.well_formed (F : ComposableFuture) : Prop :=
-  F.τ.source = F.S₀ ∧ F.τ.target = F.S₁
+  F.τ.source = F.S₀ ∧ F.τ.target = F.S₁ ∧ F.Φ = AffordanceSet F.S₁
 
 /-- The affordance set at state S: the set of all composable futures whose
     source state is S.
@@ -75,9 +75,6 @@ def ComposableFuture.well_formed (F : ComposableFuture) : Prop :=
 def AffordanceSet (S : ParadigmaticState) : Set ComposableFuture :=
   setOf fun F => F.S₀ = S
 
-/-- The affordance set of a future: futures reachable from its target state. -/
-def ComposableFuture.Φ (F : ComposableFuture) : Set ComposableFuture :=
-  AffordanceSet F.S₁
 
 /-- A trajectory is stateless if it does not depend on history.
     With the enriched path field, a stateless trajectory has an empty path

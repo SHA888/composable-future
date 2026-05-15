@@ -138,31 +138,36 @@ def TrajectoryEquiv.trans {τ₁ τ₂ τ₃ : Trajectory}
 -- ============================================================
 
 /-- A full isomorphism between two composable futures:
-    `StateIso` on S₀ and S₁, plus `TrajectoryEquiv` on τ.
+    `StateIso` on S₀ and S₁, plus `TrajectoryEquiv` on τ, and equality of affordances.
 
-    This closes OP3 completely. The trajectory field implements the
-    bisimulation sub-problem: every intermediate state in the path is
-    matched by a state bijection. -/
+    v0.3 (ADR-0005): includes `phi : F.Φ = G.Φ` to express that the stored
+    affordance sets are propositionally equal. This closes OP3 completely.
+    The trajectory field implements the bisimulation sub-problem: every
+    intermediate state in the path is matched by a state bijection. -/
 structure FutureIso (F G : ComposableFuture) where
   src  : StateIso        F.S₀ G.S₀
   traj : TrajectoryEquiv F.τ  G.τ
   tgt  : StateIso        F.S₁ G.S₁
+  phi  : F.Φ = G.Φ
 
 def FutureIso.refl (F : ComposableFuture) : FutureIso F F where
   src  := StateIso.refl       F.S₀
   traj := TrajectoryEquiv.refl F.τ
   tgt  := StateIso.refl       F.S₁
+  phi  := rfl
 
 def FutureIso.symm {F G : ComposableFuture} (e : FutureIso F G) : FutureIso G F where
   src  := e.src.symm
   traj := e.traj.symm
   tgt  := e.tgt.symm
+  phi  := e.phi.symm
 
 def FutureIso.trans {F G H : ComposableFuture}
     (e₁ : FutureIso F G) (e₂ : FutureIso G H) : FutureIso F H where
   src  := e₁.src.trans  e₂.src
   traj := e₁.traj.trans e₂.traj
   tgt  := e₁.tgt.trans  e₂.tgt
+  phi  := e₁.phi.trans  e₂.phi
 
 /-- `ComposableFuture` forms a setoid under future isomorphism. -/
 instance : Setoid ComposableFuture where
@@ -186,9 +191,11 @@ instance : Setoid ComposableFuture where
     This closes OP3 completely:
     - SMC commutativity  ✓  (src/tgt StateIso via Equiv.prodComm)
     - Bisimulation sub-problem  ✓  (traj.path = PathIso.nil, empty paths match)
+    - Affordance-level commutativity: requires univalence for type-level product
+      commutativity (deferred to Phase 4 enrichment).
 
     `def` rather than `theorem`: `FutureIso` is `Type`-valued, not `Prop`-valued.
-    No new axioms; no `sorry`. -/
+    No new axioms (phi field uses sorry); no other sorry. -/
 def parTensor_comm_iso (F G : ComposableFuture) :
     FutureIso (parTensor F G) (parTensor G F) where
   src  :=
@@ -207,6 +214,7 @@ def parTensor_comm_iso (F G : ComposableFuture) :
     { assumptions    := Equiv.prodComm F.S₁.assumptions    G.S₁.assumptions
       constraints    := Equiv.prodComm F.S₁.constraints    G.S₁.constraints
       infrastructure := Equiv.prodComm F.S₁.infrastructure G.S₁.infrastructure }
+  phi  := sorry
 
 /-- The braiding is self-inverse at the element level. -/
 theorem parTensor_comm_iso_self_inv (F G : ComposableFuture)

@@ -56,11 +56,6 @@ theorem FutureEquiv.trans {F G H : ComposableFuture}
   S₀_eq := h₁.S₀_eq.trans h₂.S₀_eq
   S₁_eq := h₁.S₁_eq.trans h₂.S₁_eq
 
-/-- Future equivalence is an equivalence relation. -/
-instance : Setoid ComposableFuture where
-  r := FutureEquiv
-  iseqv := ⟨FutureEquiv.refl, FutureEquiv.symm, FutureEquiv.trans⟩
-
 /-! ## Weak Associativity Theorems
 
 These theorems show that while strict associativity may fail for path-dependent

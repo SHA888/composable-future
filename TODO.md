@@ -557,19 +557,21 @@ For each of the 5 open problems, one of:
   - `Stateless.assoc_stateless`: stateless subtype (specialization)
   - All five theorems proved without `sorry`. Path concatenation is the key mechanism.
 - [x] 🔴 OP2: Φ well-definedness before S₁ — RESOLVED: dependent-type well-definedness theorem in `Core/Affordance.lean`, documented in `proofs/notes.md`
-- [~] 🔴 OP3: Correct equivalence relation (bisimulation?) — **PARTIAL: SMC isomorphism implemented**
-  - *SMC commutativity* ✅ `Core/Equivalence.lean` (new file):
+- [x] 🔴 OP3: Correct equivalence relation (bisimulation?) — **COMPLETE: full FutureIso with trajectory equivalence**
+  - *SMC commutativity* ✅ `Core/Equivalence.lean`:
     - `StateIso S T`: component-wise `Equiv` bijections (assumptions, constraints, infrastructure)
-    - `FutureIso F G`: state isomorphisms on source and target; `refl`, `symm`, `trans` (equivalence relation)
-    - `parTensor_comm_iso F G : FutureIso (parTensor F G) (parTensor G F)` — proved via `Equiv.prodComm`
+    - `FutureIso F G`: `StateIso` on S₀/S₁ + `TrajectoryEquiv` on τ; `refl`, `symm`, `trans`
+    - `parTensor_comm_iso F G : FutureIso (parTensor F G) (parTensor G F)` — proved via `Equiv.prodComm` + `PathIso.nil`
     - `parTensor_comm_iso_self_inv`: braiding is self-inverse at the element level
-    - No new axioms. `def` (not `theorem`) because `FutureIso` is `Type`-valued, not `Prop`-valued.
-  - *Bisimulation sub-problem* ⬜ still open:
-    - Trajectory equivalence (strong/weak bisimulation) is the deferred half of OP3
-    - `FutureIso` intentionally excludes trajectory equality — trajectory equivalence is a separate design
-      decision depending on whether path equality or reachability is the intended notion
-    - Wang (2021) history-preserving bisimilarity is a candidate; strong/weak bisimulation from process
-      algebra are alternatives. Requires a design commitment before Lean work begins.
+    - `ComposableFuture` forms a `Setoid` under `Nonempty (FutureIso · ·)`
+    - No new axioms; no `sorry`. `def` (not `theorem`) because `FutureIso` is `Type 1`-valued.
+  - *Bisimulation sub-problem* ✅ CLOSED — path-trace isomorphism (strong bisimulation adapted to lists):
+    - Design commitment: `PathIso` inductive — pointwise `StateIso` along `List ParadigmaticState`
+    - Justification: no silent transitions → weak bisim reduces to strong; no branching → Wang (2021) redundant
+    - `PathIso nil/cons`: `refl`, `symm`, `trans` proved; lives in `Type 1` (ParadigmaticState : Type 1)
+    - `TrajectoryEquiv τ₁ τ₂`: source + `PathIso` on path + target; `refl`, `symm`, `trans` proved
+    - `parTensor_comm_iso` trajectory witness: `PathIso.nil` (both parTensor paths = `[]`)
+    - `WeakAssoc.instSetoidComposableFuture` (weaker `FutureEquiv`-based) superseded; removed
 - [x] 🔴 OP4: Composition of affordance sets Φ ∘ Φ' — **RESOLVED: Proved in Lean** (Phase 4)
   - `composeSequential_inhabits_impl`, `composeParallel_inhabits_impl`, `composeSequential_in_impl` in `Core/Affordance.lean`
 - [-] 🔴 OP5: Completeness (all futures reachable by finite composition) — **DEFERRED: Trivial form resolved; non-trivial form underspecified**

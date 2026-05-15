@@ -17,650 +17,278 @@
 [x]  Domain synthesis sections — COMPLETE (all 5 domains filled)
 [x]  Lean 4 scaffold — COMPLETE (lake build passes, all sorry documented)
 [x]  Lean 4 + Mathlib installation — COMPLETE
-[x]  Phase 1 gate check — COMPLETE (build passes, sorry documented, notes updated)
+[x]  Phase 1 gate check — COMPLETE
 [x]  Phase 2 gate check — COMPLETE (assoc proved, paper drafted)
 [x]  Level 1 positioning paper — COMPLETE (8 pages, 16 priors, PDF compiled)
-[ ]  arXiv submission — pending endorsement
+[x]  ADR-0002 — trajectory enrichment (path field, substantive associativity)
+[x]  ADR-0003 — non-commutativity strategy (conditional result proved)
+[x]  ADR-0004 — Mathlib PMF upgrade (Kleisli over real distributions)
+[x]  OP3 — FutureIso + PathIso + TrajectoryEquiv + parTensor_comm_iso
+[x]  ADR-0005 — null future design decision locked (Option B, 2026-05-15)
+[ ]  ADR-0005 — Lean implementation (4-tuple restoration in progress)
+[ ]  Preprint v0.2
+[ ]  ACT 2027 submission
+[ ]  LMCS submission
 ```
+
+---
 
 ## PROGRESS TRACKING
 
-| Phase | Description                   | Status      | Gate condition                         |
-| ----- | ----------------------------- | ----------- | -------------------------------------- |
-| 0     | Audit + repo foundation       | ✅ complete | Syntheses filled                       |
-| 1     | Lean 4 scaffold               | ✅ complete | lake build passes                      |
-| 2     | Stateless associativity proof | ✅ complete | assoc_stateless proved + paper drafted |
-
-## IMMEDIATE NEXT ACTIONS
-
-1.  Complete Phase 2: Write `proofs/stateless-case.md` informal proof sketch (P2.2)
-2.  Attempt Lean proof of `assoc_stateless` theorem
-3.  Find math.CT arXiv endorser before 2026-04-19
+| Phase | Description                   | Status         | Gate                                                |
+| ----- | ----------------------------- | -------------- | --------------------------------------------------- |
+| 0     | Audit + repo foundation       | ✅ complete    | All 5 syntheses filled; DOI live                    |
+| 1     | Lean 4 scaffold               | ✅ complete    | `lake build` passes, no sorry                       |
+| 2     | Stateless associativity proof | ✅ complete    | `assoc_stateless` + indexed monad + paper drafted   |
+| 3     | Probabilistic extension       | ✅ complete    | Kleisli proved (no sorry); Furter et al. documented |
+| 4     | Φ as dependent type           | ✅ complete    | OP1–OP4 resolved; v0.2 derived-Φ refactor           |
+| 5     | Full mechanized proof         | 🟡 in progress | ADR-0005 implementation + 0 sorry + 0 warnings      |
+| 6     | Paper/Lean coherence + v0.2   | ⬜ not started | Lean 4-tuple = paper 4-tuple; Zenodo v0.2 uploaded  |
 
 ---
 
-## PHASE 0 — Audit Completion + Repository Foundation
-
-> Gate: all 5 synthesis sections filled, repo structure supports live development
-> Status: ✅ COMPLETE
-
-### P0.1 — Audit Synthesis (manual reading work)
-
-Read in this order. Everything else waits until all 7 are done.
-
-- [x] 🔴 Read D5 #35 — Credible Futures (Iacona & Iaquinto, 2021)
-  - Fill `audit/domain-5-futures-formalization.md` synthesis
-  - Key question: does branching-time credibility overlap with typed possibility?
-
-- [x] 🔴 Read D1 #2 — Composable Uncertainty in SMCs (Furter et al., 2025)
-  - Fill `audit/domain-1-category-theory.md` synthesis
-  - Key question: does their Markov category machinery extend to paradigmatic states?
-
-- [x] 🔴 Read D2 #30 — Formalized Conceptual Spaces (Bechberger & Kühnberger, 2018)
-  - Fill `audit/domain-2-paradigm-change.md` synthesis
-  - Key question: does their convexity requirement block composability of S₀?
-
-- [x] 🔴 Read D3 #24 — Span(Graph) process algebra (Katis et al., 2009)
-  - Fill `audit/domain-3-process-algebra.md` synthesis
-  - Key question: does TCP's parallel composition map to ⊗?
-
-- [x] 🔴 Read D2 #13 — Are Programming Paradigms Paradigms? (Kiasari, 2025)
-  - Supplementary — establishes that Floyd's use of "paradigm" diverges from Kuhn
-  - Confirms gap in D2
-
-- [x] 🔴 Read D1 #25 — The semantic marriage of monads and effects (Orchard et al., 2014)
-  - Key for Open Problem 1 — indexed monad as candidate resolution for associativity
-  - Fill indexed monad section in synthesis
-
-- [x] 🔴 Read D4 #25 — Chemero (2003) — manual seed
-  - Confirms Φ as relational structure (abilities × environmental features)
-  - Fill `audit/domain-4-affordance-theory.md` synthesis
-
-### P0.2 — Gap Summary Completion
-
-- [x] 🔴 Fill `audit/gap-summary.md` composite gap statement
-  - One paragraph: what does not exist that Composable Future supplies
-  - This becomes §1 of the next paper
-
-- [x] 🔴 Fill confirmed priors list in gap-summary.md
-  - 8–12 papers the theory builds on (not gaps — prior art)
-  - Exact BibTeX keys for each
-
-- [x] 🔴 Fill open problems inventory in gap-summary.md
-  - Transfer gap statements from all 5 domain files
-  - Map each to one of the 5 open problems in §7 of the paper
-
-- [x] 🟡 Mark confidence level in each domain file
-  - [x] Domain 1: gap confirmed / partial / unclear
-  - [x] Domain 2: gap confirmed / partial / unclear
-  - [x] Domain 3: gap confirmed / partial / unclear
-  - [x] Domain 4: gap confirmed / partial / unclear
-  - [x] Domain 5: gap confirmed / partial / unclear
-
-### P0.3 — Repository Structure
-
-- [x] 🔴 Create `/lean/` directory scaffold
-  - [x] `lean/lakefile.lean` — Lean 4 project file
-  - [x] `lean/ComposableFuture.lean` — top-level module
-  - [x] `lean/Core/Future.lean` — F = (S₀, τ, S₁, Φ) as Lean structure (stub)
-  - [x] `lean/Core/Operators.lean` — >>=, ⊗, |, ⊕ as definitions (stub)
-  - [x] `lean/Core/Laws.lean` — identity, closure as axioms; associativity as sorry
-  - [x] `lean/Core/Probabilistic.lean` — Kleisli extension stub (empty)
-
-- [x] 🔴 Create `/proofs/` directory
-  - [x] `proofs/notes.md` — running informal proof attempts
-  - [x] `proofs/stateless-case.md` — restricted domain: τ stateless
-  - [x] `proofs/attempt-associativity.md` — dead ends, partial progress, conjectures
-
-- [x] 🟡 Update `README.md` repo structure section
-  - [x] Add `/lean` and `/proofs` to directory tree
-  - [x] Add "How to contribute" section (proof attempts, reading notes)
-
-- [x] 🟡 Add `CONTRIBUTING.md`
-  - [x] How to run audit scripts (`uv run search.py`, `uv run refinement.py`)
-  - [x] How to build Lean proofs (`lake build`)
-  - [x] Proof contribution guidelines (sorry policy, naming conventions)
-
-### P0.4 — Publication
-
-- [x] 🟢 Zenodo preprint live — https://zenodo.org/records/19433811
-  - DOI: 10.5281/zenodo.19433811
-  - Version 0.1 — April 6, 2026
-
-- [ ] 🟡 arXiv submission — complete if endorser found before 2026-04-19
-  - Submission ID: 7444737 (saved, expires 2026-04-19)
-  - Endorsement code: NBFD6A
-  - Primary: math.CT · Cross-list: cs.LO
-  - [ ] Find math.CT endorser via cited paper abstract pages
-        (check "Which authors are endorsers?" on Katis et al., Orchard et al.)
-
-- [ ] 🟢 Cross-post to PhilArchive
-  - Futures + logic community overlap
-  - No endorsement required
-
-- [ ] 🟢 Post DOI to categorytheory.zulipchat.com
-  - Get invitation first (request via archive or direct contact)
-
----
-
-## PHASE 1 — Lean 4 Scaffold (Precise Definitions) ✅ COMPLETE
-
-> Gate: F, operators, and laws fully typed in Lean 4 with no logical gaps
-> Status: ✅ COMPLETE
-> Actual effort: 2 weeks (completed April 2026)
-
-**What this phase produces:**
-A Lean 4 file that type-checks with `sorry` placeholders for unproved theorems.
-Every `sorry` is an explicit open problem. No vague mathematics allowed.
-
-### P1.1 — Lean 4 Setup
-
-- [x] 🔴 Install Lean 4 + Mathlib
-  - `curl https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -sSf | sh`
-  - `lake +leanprover/lean4:stable new composable-future`
-  - Add Mathlib dependency to `lakefile.lean`
-
-- [x] 🔴 Verify build passes on empty project
-  - `lake build` completes without errors
-
-### P1.2 — Core Types
-
-- [x] 🔴 Define `ParadigmaticState` in Lean
-  - `structure ParadigmaticState where`
-  - `  assumptions : Type`
-  - `  constraints : Type`
-  - `  infrastructure : Type`
-
-- [x] 🔴 Define `AffordanceSet` in Lean
-  - `def AffordanceSet (S : ParadigmaticState) : Type`
-  - Typed over realized state — captures dependency
-
-- [x] 🔴 Define `Trajectory` in Lean
-  - `structure Trajectory where`
-  - `  source : ParadigmaticState`
-  - `  target : ParadigmaticState`
-
-- [x] 🔴 Define `ComposableFuture` 4-tuple in Lean
-  - `structure ComposableFuture where`
-  - `  S₀ : ParadigmaticState`
-  - `  τ  : Trajectory`
-  - `  S₁ : ParadigmaticState`
-  - `  Φ  : AffordanceSet S₁`
-
-### P1.3 — Operators
-
-- [x] 🔴 Define sequential bind `>>=`
-  - `def seqBind (F G : ComposableFuture) : ComposableFuture`
-  - Requires: `F.S₁ = G.S₀`
-  - Returns: future from `F.S₀` to `G.S₁`
-
-- [x] 🔴 Define parallel tensor `⊗`
-  - `def parTensor (F G : ComposableFuture) : ComposableFuture`
-  - Both proceed; affordance sets combined
-  - Type: product of affordances
-
-- [x] 🔴 Define fork `|`
-  - `def fork (F G : ComposableFuture) : ComposableFuture`
-  - Branch point — one path realized
-  - Type: sum/coproduct of affordances
-
-- [x] 🔴 Define merge `⊕`
-  - `def merge (F G : ComposableFuture) : ComposableFuture`
-  - Two independent futures reconverge
-  - Requires: compatible target states
-
-- [x] 🔴 Define identity future `Id`
-  - `def idFuture (S : ParadigmaticState) : ComposableFuture`
-  - Null transition — changes nothing
-
-### P1.4 — Laws (Typed, Proofs as sorry)
-
-- [x] 🔴 State left identity law
-  - `theorem left_identity (F : ComposableFuture) : seqBind idFuture F = F := by sorry`
-
-- [x] 🔴 State right identity law
-  - `theorem right_identity (F : ComposableFuture) : seqBind F idFuture = F := by sorry`
-
-- [x] 🔴 State closure law
-  - `theorem closure (F G : ComposableFuture) : ∃ H, seqBind F G = H := by sorry`
-
-- [x] 🔴 State well-formedness preservation law
-  - `theorem seqBind_well_formed : seqBind preserves well_formed futures := by sorry`
-
-- [x] 🔴 State associativity law [Open Problem 1]
-  - `theorem assoc (F G H : ComposableFuture) : seqBind (seqBind F G) H = seqBind F (seqBind G H) := by sorry`
-  - Proof deferred — Open Problem 1 (see Phase 2)
-
-- [x] 🔴 State non-commutativity law
-  - `theorem parTensor_not_comm : ∃ F G, parTensor F G ≠ parTensor G F := by sorry`
-  - Proof deferred — Open Problem 3 (see Phase 4)
-
-### P1.5 — Gate Check
-
-- [x] 🔴 `lake build` passes — all files type-check
-- [x] 🔴 All `sorry` are documented with their open problem number
-- [x] 🔴 Update `proofs/notes.md` with current understanding of each sorry
-
----
-
-## PHASE 2 — Stateless Associativity Proof ✅ COMPLETE
-
-> Gate: associativity proved or disproved for stateless case (τ path-independent)
-> Status: ✅ COMPLETE
-> Actual effort: 2 weeks (completed April 2026)
-
-**What this phase produces:**
-Either a Lean proof of `assoc_stateless`, or a formal counterexample
-showing associativity breaks. Both outcomes resolve Open Problem 1.
-
-### P2.1 — Formal Setup
-
-- [x] 🔴 Define `isStateless` predicate for trajectories
-  - `τ` is stateless if it does not depend on the history of prior transitions
-  - Precise definition required before any proof attempt
-
-- [x] 🔴 Restrict `ComposableFuture` to stateless case
-  - Define `StatelessFuture` as subtype of `ComposableFuture`
-  - Prove all operators close over `StatelessFuture`
-
-- [x] 🔴 Map stateless case to existing CT literature
-  - If stateless: F is a category (objects = states, morphisms = futures)
-  - Identify which category axioms are already proved by P1 laws
-
-### P2.2 — Proof Attempt
-
-- [x] 🔴 Write informal proof sketch in `proofs/stateless-case.md`
-  - Equational reasoning with full definition unfolding (both sides)
-  - S₁ compatibility condition identified: `(F >>= G).S₁ = G.S₁ = H.S₀`
-  - Proof sketch shows associativity holds by definitional equality
-
-- [x] 🔴 Attempt Lean proof of `assoc_stateless`
-  - Theorem statement added to `Stateless.lean` with proper compatibility hypotheses
-  - Proof structure verified: both sides construct identical futures
-  - Core proof holds by `simp [seqBind]` — definitional equality confirmed
-  - **Next**: Complete the proof after trajectory refactor to indexed type
-
-- [x] 🔴 Document all dead ends in `proofs/attempt-associativity.md`
-  - Added Attempt 6 documenting the successful stateless case
-  - Key insight: path-dependence is the obstruction (Attempts 1-5 fail, Attempt 6 succeeds)
-  - Theoretical implication: stateful case may form fibered category, stateless case forms proper category
-
-### P2.3 — Indexed Monad Route ✅
-
-- [x] 🟡 Study Orchard et al. 2014/2020 — indexed/graded monad construction
-  - Orchard, Wadler, Eades (2020): "Unifying graded and parameterised monads"
-  - Fujii (2019): "A 2-Categorical Study of Graded and Indexed Monads"
-  - Key insight: TrajectoryType as grading monoid gives associativity by construction
-
-- [x] 🟡 Define `IndexedFuture` — future indexed by trajectory type
-  - `structure IndexedFuture (t : TrajectoryType) where ...` in `Core/Indexed.lean`
-  - `TrajectoryTypeCompose` typeclass provides monoid structure
-  - Associativity holds in the indexed setting via `IndexedFuture.assoc`
-
-- [x] 🟡 Prove indexed associativity
-  - `theorem IndexedFuture.assoc` uses `cast` with associativity law
-  - Left/right identity theorems also defined
-  - Proof has `sorry` for now (Phase 2.3 complete after trajectory refactor)
-
-### P2.4 — Gate Check
-
-- [x] 🔴 Outcome documented: **indexed resolution + weak associativity**
-  - `proofs/attempt-associativity.md` documents Attempt 6 (stateless success)
-  - `Core/Indexed.lean` provides indexed monad construction
-  - `Core/WeakAssoc.lean` provides weak associativity theorems
-- [x] 🔴 `proofs/stateless-case.md` contains full readable proof argument
-- [x] 🔴 Lean file updated: theorems with `sorry` + explanatory comments
-- [x] 🟡 Level 1 paper drafted (8–12 pages, targets ACT 2027 or similar venue)
-  - `paper/composable-future-level1.tex` — 8-page positioning paper
-  - `paper/references.bib` — 16 confirmed priors
-  - `paper/composable-future-level1.pdf` — compiled PDF (236 KB)
-
----
-
-## PHASE 3 — Probabilistic Extension ✅ COMPLETE
-
-> Gate: Kleisli category construction over probability monad, verified in Lean
-> Status: ✅ COMPLETE (P3.1–P3.4 done; Furter et al. mapping documented in proofs/notes.md)
-> Actual effort: completed April 2026
-
-**What this phase produces:**
-τ : S₀ → Dist S₁ as a Markov kernel. Composition via Kleisli.
-Connects the theory to Furter et al. (2025) machinery.
-
-### P3.1 — Mathematical Setup
-
-- [x] 🔴 Study Kleisli category construction in Mathlib
-  - `Dist` monad defined with `pure`, `bind`, and monad axioms
-  - Kleisli composition = `bind (τ₁ a) τ₂` (Chapman-Kolmogorov)
-
-- [x] 🔴 Define probability monad over paradigmatic states
-  - `def Dist (α : Type) : Type` in `Probabilistic.lean`
-  - Trajectory becomes: `τ : α → Dist β` (Markov kernel over element types)
-
-- [x] 🔴 Define Kleisli composition for probabilistic trajectories
-  - `def kleisliBind : ProbabilisticTrajectory α β → ProbabilisticTrajectory β γ → ProbabilisticTrajectory α γ`
-  - Notation: `τ₁ >=> τ₂`
-
-### P3.2 — Connection to Furter et al.
-
-- [x] 🟡 Map Furter et al.'s SMC of design problems to ComposableFuture
-  - Their morphisms = open systems → paradigmatic trajectories ARE modeled as open systems (Markov kernels)
-  - Documented in `proofs/notes.md` § "P3.2 — Connection to Furter et al. (2025)"
-  - Full correspondence table: ParadigmaticState ↔ objects, ProbabilisticTrajectory ↔ Markov kernels, kleisliBind ↔ Kleisli composition, parTensor ↔ ⊗, detToProb ↔ change-of-base
-  - Remaining gap: full categorical equivalence theorem deferred to Phase 2 trajectory enrichment
-
-- [x] 🟡 Define change-of-base construction
-  - `def detToProb (f : α → β) : ProbabilisticTrajectory α β` — Dirac delta embedding
-  - `theorem detToProb_id` and `theorem detToProb_comp` — functoriality proved
-  - Proves probabilistic extension is conservative over deterministic futures
-
-### P3.3 — Lean Formalization
-
-- [x] 🔴 Implement `lean/Core/Probabilistic.lean`
-  - `PMF` monad with three laws (`pure_bind`, `bind_pure`, `bind_assoc`) — **proved by `rfl`** (v0.1 placeholder `PMF α = α` makes them hold definitionally)
-  - `ProbabilisticTrajectory α β := α → PMF β`
-  - `ParadigmaticState.toType` extracts full element type (assumptions × constraints × infrastructure)
-  - `kleisliBind`, `probId`, `ProbabilisticFuture` (full state), `ProbabilisticFuture.well_formed`
-  - `detToProb` change-of-base with `detToProb_id` and `detToProb_comp` proved
-
-- [x] 🔴 State and prove probabilistic identity laws
-  - `theorem kleisli_left_id` — proved via `PMF.pure_bind`
-  - `theorem kleisli_right_id` — proved via `PMF.bind_pure`
-
-- [x] 🔴 State and prove Kleisli associativity
-  - `theorem kleisli_assoc` — proved via `PMF.bind_assoc`
-  - Known result: follows from monad associativity
-
-### P3.4 — Gate Check
-
-- [x] 🔴 `lake build` passes with probabilistic extension — ✅ `Build completed successfully`
-- [x] 🔴 Kleisli associativity proved **without sorry** — `kleisli_assoc` proved via `PMF.bind_assoc` (holds by `rfl` under v0.1 placeholder); **no sorry anywhere in the codebase**
-  - `grep sorry lean/**/*.lean` returns no matches
-  - TODO Phase 3 follow-up: upgrade placeholder `PMF` to Mathlib's `PMF` for richer distributions (OP13)
-- [x] 🔴 Connection to deterministic case documented — `detToProb` + `detToProb_id` + `detToProb_comp`
-
----
-
-## PHASE 4 — Φ as Dependent Type ✅ COMPLETE
-
-> Gate: affordance set formalized as dependent type over S₁, composability of Φ proved
-> Status: ✅ COMPLETE (all OPs resolved; v0.2 derived-Φ refactor completed April 2026)
-> Actual effort: April 2026
-
-**What this phase produces:**
-Φ as a proper dependent type. Addresses Open Problem 2 (is Φ well-defined
-before S₁ is realized?) and Open Problem 4 (does Φ ∘ Φ' hold?).
-
-### P4.1 — Type Theory Setup
-
-- [x] 🔴 Define affordance set as dependent type
-  - `AffordanceDescriptor S` — record with target state and trajectory spec
-  - Forward declaration: `opaque AffordanceSet` in `Future.lean`
-  - Implementation: `AffordanceSet.impl S := AffordanceDescriptor S` in `Affordance.lean`
-  - Located in: `lean/Core/Affordance.lean`
-  - Note: Universe level is Type 1 (ParadigmaticState contains Type fields)
-
-- [x] 🔴 Define affordance composition
-  - `composeSequential` — chain affordances S₀ → S₁ → S₂ (type-safe by construction)
-  - `composeParallel` — parallel affordances (S₁ ⊗ S₂) → (S₁' ⊗ S₂')
-  - `paradigmaticTensor` — state tensor product (cartesian product of components)
-
-- [x] 🔴 Document affordance composition well-typedness
-  - Type-correctness by construction: `composeSequential` returns `AffordanceDescriptor S₀`
-  - The type of `Φ ∘ Φ'` depends on the composed paradigmatic state
-  - Formal content: "Φ is paradigm-specific" (type-correct by construction)
-  - ✅ DONE: Membership relation formalized as `composeSequential_inhabits_impl` and `composeSequential_in_impl` in `Core/Affordance.lean`
-
-### P4.2 — Effect System Connection
-
-- [x] 🟡 Map Φ to an effect type system
-  - Affordances as computational effects
-  - `S₁` as the effect index
-  - Models the effect-system pattern internally (parallel formalization;
-    integration with Mathlib's `CategoryTheory.Monad` / indexed-monad
-    scaffolding deferred to a Phase 4 follow-up)
-  - Implemented in: `lean/Core/Effect.lean` — `Effect` alias, `EffectfulFuture`
-
-- [x] 🟡 Study Orchard et al. indexed monad + effect system
-  - Their indexed monad tracks effects via type index
-  - Φ may be the affordance index playing the same role as effect index
-  - Implemented in: `lean/Core/Effect.lean` — `EffectfulComputation` with `pure`/`bind`
-  - Formalized indexed monad laws: left identity, right identity,
-    endpoint-extraction associativity (`bind_endpoint_assoc`), plus
-    the definitional sanity check `bind_effect_right`. The three
-    Orchard & Petricek (2014) laws hold at the endpoint level; the
-    substantive (path-carrying) versions are blocked on the Phase 2
-    trajectory refactor.
-
-- **Phase-4 brittleness note (v0.1).** The earlier draft of this note listed
-  three placeholder dependencies in `Core/Effect.lean`. After the
-  2026-04-28 refactor, the picture is sharper:
-  1. ~~`Effect S = Unit` everywhere~~ — re-audited. Only the **right**-identity
-     laws (`seq_right_id`, `bind_right_id`) actually depend on `Effect`
-     being a singleton. That dependency is now surfaced as an explicit
-     `[Subsingleton (Effect S₁)]` instance argument; v0.1's `Effect = Unit`
-     discharges it automatically and the upgrade under Open Problem 1 will
-     surface the obligation at every call site rather than break silently.
-     The two extensionality lemmas and the two **left**-identity laws were
-     misdiagnosed: their proofs go through for any `Effect` via proof
-     irrelevance plus `subst`, with no Subsingleton needed. Misleading
-     comments to the contrary have been removed.
-  2. `Trajectory ≅ ParadigmaticState × ParadigmaticState` — the old
-     `Trajectory.ext_eq` is renamed to `Trajectory.endpoint_ext` (in
-     `Core/Future.lean`) so every caller's reliance on
-     endpoint-determination is named explicitly. Phase 2 trajectory
-     enrichment will invalidate this lemma, but the rename pre-flags every
-     affected proof.
-  3. `EffectfulFuture.seq` and `EffectfulComputation.bind` discard input
-     trajectory data, mirroring `composeSequential` in `Core/Affordance.lean`
-     (see `Affordance.lean:111–114`). This remains a substantive Phase 2
-     item: it requires giving `Trajectory` an internal path representation
-     so that `seq` / `bind` concatenate paths rather than rebuild endpoints
-     from type indices. Until then, `seq_endpoint_assoc` and
-     `bind_endpoint_assoc` (already labelled "endpoint-extraction" in their
-     docstrings) are the strongest available statements.
-
-  Net effect: items (1) and (2) are now resolved at the type-system level —
-  the silent `Effect = Unit` and `Trajectory = endpoints` assumptions are
-  gone, replaced by visible names and instance arguments. Item (3) remains
-  open and is part of the Phase 2 trajectory refactor.
-
-### P4.3 — Open Problem 2 Resolution
-
-- [x] 🔴 Formally state when Φ is well-defined
-  - Pre-realization: `PreRealizedAffordance S₀ := AffordanceSet S₀` (type-level spec)
-  - Post-realization: `PostRealizedAffordance S₀ := List (AffordanceDescriptor S₀)` (value-level set)
-  - Canonical map: `pre_post_correspondence : PostRealizedAffordance S₀ → PreRealizedAffordance S₀`
-  - **Theorems** (all proved in `Core/Affordance.lean`):
-    - `pre_realized_is_well_defined` — `PreRealizedAffordance S` is inhabited for every state
-    - `pre_post_correspondence_surjective` — every pre-realization has a post-realization witness
-    - `pre_post_correspondence_many_to_one` — map is non-injective (abstraction is intentional)
-
-- [x] 🔴 Document resolution in `proofs/notes.md`
-  - See `proofs/notes.md` § "OP2 Resolution — Φ Well-Definedness Before S₁ Realization"
-  - Includes falsifying conditions and connection to indexed monad in `Core/Effect.lean`
-
-### P4.4 — Gate Check
-
-- [x] 🔴 Open Problem 1: `AffordanceSet` is a proper dependent type in Lean — RESOLVED (v0.2)
-  - **Resolution**: removed `Φ` as a stored field; defined `AffordanceSet S := setOf fun F => F.S₀ = S` in `Core/Future.lean`
-  - `ComposableFuture.Φ F := AffordanceSet F.S₁` is a derived property, matching the paper's Φ : S₁ → P(F)
-  - No universe mismatch: `Set ComposableFuture` lives in the same universe as `ComposableFuture`
-  - `[Subsingleton (Effect S₁)]` guards removed from all identity laws (unconditional now)
-  - Build: `lake build` passes with zero warnings, zero errors
-- [x] 🔴 Open Problem 2 resolved — formalized as dependent-type well-definedness
-      theorem in `Core/Affordance.lean` and documented in `proofs/notes.md`
-- [x] 🔴 Open Problem 4: Composition of affordance sets Φ ∘ Φ' — RESOLVED
-  - `composeSequential_inhabits_impl`: sequential composition produces `Nonempty (AffordanceSet.impl S₀)` witness
-  - `composeParallel_inhabits_impl`: parallel composition produces `Nonempty (AffordanceSet.impl (S₁ ⊗ S₂))` witness
-  - `composeSequential_in_impl`: membership is type inhabitation (proved by `rfl`)
-  - All three theorems in `Core/Affordance.lean` (added April 2026)
-
----
-
-## PHASE 5 — Full Mechanized Proof
+## PHASE 5 — Full Mechanized Proof (continued)
 
 > Gate: all non-open theorems proved in Lean 4, no sorry remaining
-> Status: 🟡 in progress (2 proof obligations open; 5 resolved; all ADRs complete)
-> Estimated effort: 6–12 months (all ADRs ✅ completed; remaining items independent)
+> Status: 🟡 in progress
 
-**What this phase produces:**
-A mechanically verified proof of the Composable Future theory.
-Every theorem in the paper has a corresponding Lean proof.
-Open problems either resolved or formally stated as axioms.
+### P5.1 — ADR-0005: Restore 4-tuple (Option B — LOCKED 2026-05-15)
 
-### P5.1 — Complete Proof Obligations
+**Decision record:** `idFuture S` carries `Φ = AffordanceSet S`. The null future preserves
+all affordances accessible from S because a transition that changes nothing changes nothing
+about what is accessible. The terminate operator (Paper 2, unary) is the operation that
+genuinely zeros affordances, distinguished from identity by its resource signature under
+Coecke–Fritz–Spekkens enrichment. Remark 4.1 in the preprint conflated identity with
+termination and must be revised in v0.2.
 
-> Audit 2026-04-29: P5.1 was written before Phases 1–4 were complete.
-> Items below have been re-assessed against the actual Lean codebase.
+- [ ] 🔴 Add `Φ : Set ComposableFuture` field to `ComposableFuture` in `Future.lean`
+      `lean
+    structure ComposableFuture where
+      S₀ : ParadigmaticState
+      τ  : Trajectory
+      S₁ : ParadigmaticState
+      Φ  : Set ComposableFuture   -- restored; Set = α → Prop, no universe mismatch
+    `
 
-- [x] 🔴 Prove left identity — DONE: `Laws.left_identity` (requires `well_formed` hypothesis)
-  - Unconditional version deferred pending ADR-0002 (trajectory enrichment)
-- [x] 🔴 Prove right identity — DONE: `Laws.right_identity` (requires `well_formed` hypothesis)
-  - Unconditional version deferred pending ADR-0002
-- [x] 🔴 Prove closure — DONE: `Laws.closure` (trivial existence proof)
-- [x] 🔴 Prove substantive associativity — DONE: **ADR-0002** ✅ (commit 1a857bb)
-  - Trajectory enriched with `path : List ParadigmaticState` field
-  - `Laws.seqBind_assoc` proved via `List.append_assoc` (substantive, not endpoint-extraction)
-  - Indexed futures and effectful computations also proved substantive associativity
-- [~] 🔴 Prove non-commutativity of ⊗ — PARTIAL (**ADR-0003 ✅ revised**, 2026-04-29)
-  - `Laws.parTensor_comm_implies_prod_comm`: if parTensor commutes → type products commute (proved)
-  - `Laws.parTensor_not_comm_of_type_ne`: given `(A×B) ≠ (B×A)`, exhibits `∃ F G, parTensor F G ≠ parTensor G F` (proved)
-  - **Remaining gap**: unconditional `∃ F G, parTensor F G ≠ parTensor G F` requires `Prod.type_inj` axiom
-    (type-constructor injectivity is sound but not an explicit Lean 4 axiom; violates no-new-axioms constraint)
-  - `decide` fails: no `Decidable ((A×B) = (B×A))` instance; univalence makes types EQUAL not unequal
-- [x] 🔴 Prove Kleisli associativity — DONE: `Probabilistic.kleisli_assoc`
-  - Proved via `PMF.bind_bind` (Chapman-Kolmogorov) over Mathlib's real `PMF` — **ADR-0004 ✅ implemented** (commit 5fe6c89)
-- [x] 🔴 Prove affordance composition well-typedness — DONE (v0.2)
-  - `Affordance.seqBind_Φ_eq` + `seqBind_mem_affordanceSet` + `composeSequential_mem`
+- [ ] 🔴 Update `idFuture` in `Operators.lean`
+      `lean
+    def idFuture (S : ParadigmaticState) : ComposableFuture :=
+      { S₀ := S
+        τ  := { source := S, path := [], target := S }
+        S₁ := S
+        Φ  := AffordanceSet S }   -- Option B: preserves affordances
+    `
 
-**Genuinely open P5.1 work** (in recommended order):
+- [ ] 🔴 Extend `well_formed` with Φ constraint in `Future.lean`
+      `lean
+    def ComposableFuture.well_formed (F : ComposableFuture) : Prop :=
+      F.τ.source = F.S₀ ∧ F.τ.target = F.S₁ ∧ F.Φ = AffordanceSet F.S₁
+    `
 
-1. ~~ADR-0004 (two-way, one file, ~30 lines) — PMF upgrade~~ **✅ DONE** (commit 5fe6c89)
-2. ~~ADR-0003 (two-way, one file, ~20 lines) — non-commutativity counterexample~~ **✅ revised, partial** (see above)
-3. ~~ADR-0002 (one-way, 8 files, ~200 lines) — trajectory enrichment~~ **✅ DONE** (commit 1a857bb)
+- [ ] 🔴 Update `seqBind` in `Operators.lean` — result carries `G.Φ`
+      `lean
+    def seqBind (F G : ComposableFuture) (_h : F.S₁ = G.S₀) : ComposableFuture :=
+      { S₀ := F.S₀
+        τ  := { source := F.τ.source, path := F.τ.path ++ G.τ.path, target := G.τ.target }
+        S₁ := G.S₁
+        Φ  := G.Φ }
+    `
 
-### P5.2 — Open Problems Disposition
+- [ ] 🔴 Update `parTensor` in `Operators.lean` — result carries `Φ^A × Φ^B`
+      (product affordance set: `{ (f, g) | f ∈ F.Φ ∧ g ∈ G.Φ }` — encode as `Set ComposableFuture`
+      via the diagonal or defer to a type-class; document scope explicitly)
 
-For each of the 5 open problems, one of:
+- [ ] 🔴 Update `fork` in `Operators.lean` — result carries `F.Φ ∪ G.Φ`
+      (left-biased placeholder sufficient for Paper 1; note symmetric coproduct is Paper 2)
 
-- Proved in Lean (closes the problem)
-- Counterexample found (closes the problem negatively)
-- Reduced to known open problem in mathematics (honest deferral)
-- Accepted as axiom with justification (honest limitation)
+- [ ] 🔴 Update `merge` in `Operators.lean` — result carries `F.Φ ∩ G.Φ`
+      (symmetric case only; absorptive merge deferred to Paper 2 — add explicit note)
 
-- [x] 🔴 OP1: Associativity under path-dependent τ — **RESOLVED: Proved in Lean** (ADR-0002, commit 1a857bb)
-  - `Laws.seqBind_assoc`: unconditional for all `ComposableFuture` via `List.append_assoc`
-  - `Effect.EffectfulFuture.seq_assoc`: value-less indexed futures
-  - `Effect.EffectfulComputation.bind_assoc`: indexed monad with values
-  - `Indexed.IndexedFuture.assoc`: graded monad (indexed by `TrajectoryType`)
-  - `Stateless.assoc_stateless`: stateless subtype (specialization)
-  - All five theorems proved without `sorry`. Path concatenation is the key mechanism.
-- [x] 🔴 OP2: Φ well-definedness before S₁ — RESOLVED: dependent-type well-definedness theorem in `Core/Affordance.lean`, documented in `proofs/notes.md`
-- [x] 🔴 OP3: Correct equivalence relation (bisimulation?) — **COMPLETE: full FutureIso with trajectory equivalence**
-  - *SMC commutativity* ✅ `Core/Equivalence.lean`:
-    - `StateIso S T`: component-wise `Equiv` bijections (assumptions, constraints, infrastructure)
-    - `FutureIso F G`: `StateIso` on S₀/S₁ + `TrajectoryEquiv` on τ; `refl`, `symm`, `trans`
-    - `parTensor_comm_iso F G : FutureIso (parTensor F G) (parTensor G F)` — proved via `Equiv.prodComm` + `PathIso.nil`
-    - `parTensor_comm_iso_self_inv`: braiding is self-inverse at the element level
-    - `ComposableFuture` forms a `Setoid` under `Nonempty (FutureIso · ·)`
-    - No new axioms; no `sorry`. `def` (not `theorem`) because `FutureIso` is `Type 1`-valued.
-  - *Bisimulation sub-problem* ✅ CLOSED — path-trace isomorphism (strong bisimulation adapted to lists):
-    - Design commitment: `PathIso` inductive — pointwise `StateIso` along `List ParadigmaticState`
-    - Justification: no silent transitions → weak bisim reduces to strong; no branching → Wang (2021) redundant
-    - `PathIso nil/cons`: `refl`, `symm`, `trans` proved; lives in `Type 1` (ParadigmaticState : Type 1)
-    - `TrajectoryEquiv τ₁ τ₂`: source + `PathIso` on path + target; `refl`, `symm`, `trans` proved
-    - `parTensor_comm_iso` trajectory witness: `PathIso.nil` (both parTensor paths = `[]`)
-    - `WeakAssoc.instSetoidComposableFuture` (weaker `FutureEquiv`-based) superseded; removed
-- [x] 🔴 OP4: Composition of affordance sets Φ ∘ Φ' — **RESOLVED: Proved in Lean** (Phase 4)
-  - `composeSequential_inhabits_impl`, `composeParallel_inhabits_impl`, `composeSequential_in_impl` in `Core/Affordance.lean`
-- [-] 🔴 OP5: Completeness (all futures reachable by finite composition) — **DEFERRED: Trivial form resolved; non-trivial form underspecified**
-  - *Trivial form (resolved)*: every `ComposableFuture` has `path : List ParadigmaticState`, so all paths are
-    finite by construction. Any future with path `[s₁, …, sₙ]` decomposes by path induction into (n+1)
-    single-step futures (path length 0) composed via `seqBind`. Completeness holds trivially for this
-    interpretation — no proof needed, it follows from the type.
-  - *Non-trivial form (underspecified)*: "are all real-world paradigmatic transitions expressible in the theory?"
-    requires (a) specifying a target model (which real-world transitions count?), and (b) choosing a generating
-    set of "atomic" futures. Neither is defined. Analogous to expressiveness in process algebra (can every
-    concurrent behavior be expressed in CCS?) — a significant semantic question.
-  - *Lean dependency*: if the generating set is fixed, completeness reduces to a normal-form theorem:
-    every finite-path future rewrites to a composition of generators. Provable by `List.length` induction.
-    Straightforward once the design question is settled.
-  - **Disposition**: Accepted as open — the trivial form is closed by the type system; the non-trivial
-    form is deferred pending a semantic model that specifies what transitions exist outside the formalization.
+- [ ] 🔴 Update `right_identity` proof in `Laws.lean` - With Option B: both sides carry `AffordanceSet F.S₁` — proof holds for well-formed F - No `Subsingleton` guard needed - Gate: proof term does not contain `sorry`
 
-### P5.3 — Publication
+- [ ] 🔴 Update `left_identity` proof in `Laws.lean` — symmetric
 
-- [ ] 🔴 Full formalization paper — target journal
-  - Candidate: _Journal of Pure and Applied Algebra_
-  - Or: _Logical Methods in Computer Science_
-  - Or: _Applied Categorical Structures_
+- [ ] 🔴 Update `Effect.lean` — `EffectfulFuture.effect` now trivially `F.Φ`
 
-- [ ] 🟡 ACT conference submission
-  - Applied Category Theory conference
-  - Check call for papers annually
+- [ ] 🔴 Update `Affordance.lean` — `AffordanceDescriptor` remains a construction helper;
+      `seqBind_Φ_eq` now holds by field equality not derivation
 
-- [ ] 🟡 Lean proof released on GitHub with paper
-  - `lean/` directory becomes the artifact
-  - DOI via Zenodo for the codebase separately
+- [ ] 🔴 Update `Equivalence.lean` — `FutureIso` gains `Φ` field:
+      `lean
+    structure FutureIso (F G : ComposableFuture) where
+      src  : StateIso F.S₀ G.S₀
+      traj : TrajectoryEquiv F.τ G.τ
+      tgt  : StateIso F.S₁ G.S₁
+      phi  : F.Φ = G.Φ    -- propositional equality on Set ComposableFuture
+    `
+
+- [ ] 🔴 Gate check: `lake build` passes, 0 sorry, 0 warnings
+      Verify: `#print right_identity` proof term contains no `rfl` on `Φ` (it uses `well_formed`)
+
+### P5.2 — ADR-0003 Gap (independent — run in parallel)
+
+- [~] 🟡 Unconditional `∃ F G, parTensor F G ≠ parTensor G F`
+  Three forward paths in `docs/adr/0003-noncommutativity-strategy.md`: - Path 1: add `axiom Prod.type_inj` (violates no-new-axioms constraint) - Path 2: redesign `ParadigmaticState` to use decidable types (theory change) - Path 3: accept conditional result as final (current posture) - **Recommendation:** Path 3 now strengthened by OP3 `parTensor_comm_iso` —
+  non-commutativity as strict `≠` is less important when commutativity-up-to-iso is proved
+
+### P5.3 — Open Problem 5 (Completeness)
+
+- [-] 🟢 Non-trivial form deferred — requires semantic model specifying which transitions
+  exist outside the formalization. Trivial form closed by type system.
 
 ---
 
-## COLLABORATOR PROFILE (needed for Phase 2–5)
+## PHASE 6 — Paper/Lean Coherence + Preprint v0.2
 
-When ready to seek a collaborator, they need:
+> Gate: Lean 4-tuple matches paper 4-tuple; preprint v0.2 uploaded to Zenodo
+> Status: ⬜ not started
+> Depends on: ADR-0005 Lean implementation complete
+
+### P6.1 — Preprint v0.2 Revisions
+
+Eight critique responses (ordered by severity for LMCS/ACT venue):
+
+- [ ] 🔴 **C2 — OP1 status update** (highest priority)
+      OP1 resolved: five Lean theorems, all substantive, 0 sorry
+      Add footnote pointing to Lean artifact (Zenodo DOI for codebase, separate from paper DOI)
+
+- [ ] 🔴 **C3 — Affordance circularity note**
+      Add Remark after Def 2.2: `𝒫(F)` is `Set ComposableFuture = ComposableFuture → Prop`;
+      admissible in Lean 4 (no strict positive occurrence); coinductive reading available
+
+- [ ] 🔴 **C4 — Path-dependence argument**
+      Revise §4.3: path-dependence tracked in `path : List ParadigmaticState`;
+      `seqBind` concatenates paths; `List.append_assoc` gives unconditional associativity
+
+- [ ] 🔴 **Remark 4.1 revision** (locked by ADR-0005 Option B)
+      Replace: "The affordance set of the result is Φ∅, not Φ."
+      With: "The affordance set of `F >>= Id_S₁` equals `F.Φ`: composing with the null
+      future preserves all affordances accessible from S₁, because a transition that changes
+      nothing changes nothing about what is accessible. The operation that genuinely zeros
+      affordances is the terminate operator, deferred to Paper 2 where it becomes substantive
+      under resource enrichment (Coecke, Fritz, Spekkens 2016)."
+
+- [ ] 🔴 **Null future definition revision** (locked by ADR-0005 Option B)
+      Revise Def 2.3: `Id_S := (S, id_S, S, AffordanceSet S)`
+      The null future preserves all affordances at S; Φ∅ = ∅ is the terminate operator,
+      not the identity.
+
+- [ ] 🟡 **C1 — State identity criterion**
+      Add Remark after Def 2.1: equality is propositional equality of the triple (A, C, I);
+      `FutureIso` (Lean: `Core.Equivalence`) provides the weaker component-wise bijection notion
+
+- [ ] 🟡 **C5 — Semantic level separation**
+      Add §2.5 "Interpretations of F" distinguishing: - Morphism reading (§2–4): F as categorical morphism - Affordance reading (§5): Φ as relational structure - Probabilistic reading (§6): τ as Markov kernel
+      These are three compatible instantiations of the same structure, not competing definitions
+
+- [ ] 🟡 **C6 — Fork/merge temporal semantics**
+      Add explicit deferral Remark in §3.3 and §3.4: - Fork: when branching occurs, observer-relativity, and whether histories coexist are
+      parameters of the theory; Paper 2's time enrichment provides the formal account - Merge: current definition covers symmetric case only; absorptive merge (asymmetric
+      resource transfer + source termination) is a Paper 2 question
+
+- [ ] 🟡 **C7 — CT maximalism**
+      Tag every proved claim with `[Lean: theorem_name]` in footnote or appendix table
+      Example: Proposition 4.1 → `[Lean: Laws.left_identity, Laws.right_identity]`
+
+- [ ] 🟡 **C8 — Operational falsifiability**
+      Add worked instance to §8 or new §8.1:
+      The composition-vs-extension test: a claimed new paradigm is a composition if expressible
+      as a finite term in the pre-existing operator set without loss; an extension if it requires
+      a new operator. Real shifts: backprop (1986), attention (2017), score-matching (2020).
+      Rebranded compositions: "Agentic AI" = LLM + tool-calling + retrieval + control flow
+      (expressible in existing operators).
+
+- [ ] 🟡 **Conclusion revision** — add Paper 2/3 forward pointer
+      Name Lawvere enrichment (time) and Coecke–Fritz–Spekkens (resources) as Paper 2 directions.
+      Note terminate operator as the fifth unary op deferred to Paper 2.
+      Note symmetric-only scope of current merge definition.
+
+- [ ] 🔴 Gate: compile PDF, upload Zenodo v0.2, supersede v0.1 DOI
+
+### P6.2 — Publication Submissions
+
+- [ ] 🟡 ACT 2027 conference submission - Check call for papers (annual, typically January deadline) - 8-page positioning paper + Lean artifact reference - Right community for categorical structure feedback
+
+- [ ] 🟡 LMCS submission (after ACT feedback incorporated) - Logical Methods in Computer Science — diamond open access - Scope: cs.LO, formal methods, mechanized proofs - Target length: ~25 pages (critiques + ADR-0005 + enrichment forward pointer) - Lean artifact as primary contribution, not supplementary
+
+- [ ] 🟢 Zenodo — separate DOI for Lean codebase artifact
+      (distinct from paper DOI; allows Paper 2 to cite specific Lean version)
+
+- [ ] 🟢 categorytheory.zulipchat.com — post DOI after ACT submission
+
+---
+
+## PAPER 2 — Enriched Composable Future (future scope)
+
+> Not started. Blocked on Paper 1 submission (not publication).
+> Venue: Theory and Applications of Categories (TAC) or JPAA
+
+### Open items for Paper 2 scoping session
+
+- [ ] 🔴 Is absorptive merge a primitive or a derived compound?
+      Candidate: `absorb(A, B) := (A ⊗ B) >>= terminate(B_product)`
+      vs. a new primitive `⊗_abs` with asymmetric resource semantics
+
+- [ ] 🔴 Pick one concrete AI-era paradigm transition with measurable (time, resource) signature
+      as the Paper 2 worked example (generic — not tied to private Track 2)
+
+- [ ] 🔴 How does enrichment interact with the four operators' associativity laws?
+      Enriched associativity: does `List.append_assoc` survive under (ℝ₊,+,0) enrichment?
+      Lawvere's enriched category theory provides the framework; confirm it composes with
+      the existing indexed monad structure
+
+- [ ] 🟡 Bitcoin PoW orphan chain as terminate textbook example
+      `A ⊗ B >>= terminate(B)` — both paths briefly realized, one terminated
+      Landauer erasure: orphan blocks produce no persistent state but dissipate real entropy
+      Clean example for motivating time-resolved enrichment
+
+---
+
+## COLLABORATOR PROFILE (when ready)
 
 ```
 Required:
   - Lean 4 / Mathlib experience
-  - Category theory background (monad, fibered category)
-  - Willingness to work on foundational theory with open problems
+  - Category theory background (enriched categories, Lawvere)
+  - Familiarity with resource theories (Coecke–Fritz–Spekkens 2016)
 
 Useful:
-  - Indexed monad / effect system background (Phase 2–3)
-  - Dependent type theory (Phase 4)
-  - Process algebra background (Phase 1–2)
+  - Indexed monad / effect system background
+  - Dependent type theory
+  - Process algebra background
 
 Where to find:
   - categorytheory.zulipchat.com
-  - ACT conference community
-  - Lean 4 Zulip (leanprover.zulipchat.com)
-  - Authors of Orchard et al. 2014, Furter et al. 2025
+  - ACT conference community (after Paper 1 submission)
+  - leanprover.zulipchat.com
+  - Authors of Orchard et al. 2014, Coecke et al. 2016
 ```
-
----
-
-## PROGRESS TRACKING
-
-| Phase | Description                   | Status         | Gate                                                       |
-| ----- | ----------------------------- | -------------- | ---------------------------------------------------------- |
-| 0     | Audit + repo foundation       | ✅ complete    | All 5 syntheses filled; DOI live                           |
-| 1     | Lean 4 scaffold               | ✅ complete    | `lake build` passes, no sorry                              |
-| 2     | Stateless associativity proof | ✅ complete    | `assoc_stateless` proved + indexed monad + paper drafted   |
-| 3     | Probabilistic extension       | ✅ complete    | Kleisli proved (no sorry); Furter et al. documented        |
-| 4     | Φ as dependent type           | ✅ complete    | OP1 ✅ OP2 ✅ OP4 ✅ all resolved; v0.2 derived-Φ refactor |
-| 5     | Full mechanized proof         | ⬜ not started | No sorry + all OPs resolved                                |
 
 ---
 
 ## IMMEDIATE NEXT ACTIONS (in order)
 
 ```
-1.  Upgrade PMF to Mathlib's PMF (OP13)
-    - `import Mathlib.Probability.ProbabilityMassFunction.Basic`
-    - Replace placeholder `def PMF (α : Type) : Type := α` with Mathlib's `PMF`
-    - Discharge `kleisli_left_id`, `kleisli_right_id`, `kleisli_assoc` via Mathlib lemmas
+1.  Implement ADR-0005 in Lean (P5.1) — NOW
+    Files: Future.lean, Operators.lean, Laws.lean,
+           Effect.lean, Affordance.lean, Equivalence.lean
+    Option B locked: idFuture carries Φ = AffordanceSet S
+    Gate: lake build, 0 sorry, right_identity without Subsingleton
 
-2.  Find math.CT arXiv endorser (P0.4)
-    - Submission ID: 7444737 (saved, check if expired)
-    - Endorsement code: NBFD6A
-    - Check abstract pages of Katis et al. 2009, Orchard et al. 2014
+2.  ADR-0003 gap (P5.2) — parallel with P5.1
+    Recommendation: Path 3 (accept conditional + OP3 iso result)
+    No code change required if Path 3 adopted
 
-3.  Cross-post preprint to PhilArchive (P0.4 🟢 nice-to-have)
+3.  Preprint v0.2 (P6.1) — after ADR-0005 complete
+    Priority order: Remark 4.1, Def 2.3, C2, C3, C4, C1, C5, C6, C7, C8
+    Gate: Zenodo v0.2 uploaded
 
-4.  Post DOI to categorytheory.zulipchat.com (P0.4 🟢 nice-to-have)
+4.  ACT 2027 submission (P6.2) — after Zenodo v0.2
 
-5.  Address remaining open problems (OP3: equivalence relation, OP5: completeness)
-    - OP3: design symmetric-monoidal equivalence relation for futures
-    - OP5: prove or disprove completeness (all futures reachable via finite composition)
+5.  LMCS submission (P6.2) — after ACT feedback
+
+6.  Paper 2 scoping session — after Paper 1 submitted (not published)
+    Absorptive merge primitive vs derived
+    Worked example selection
+    Enrichment + associativity interaction
 ```

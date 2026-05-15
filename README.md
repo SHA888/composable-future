@@ -2,7 +2,7 @@
 
 A formal theory of paradigmatic futures as composable algebraic structures.
 
-**Status:** Phase 5 in progress — 0 `sorry`, 0 warnings; ADR-0004 ✅ ADR-0003 🟡 ADR-0002 ✅ OP3 ✅ | ⚠️ ADR-0005 Accepted — 4-tuple restoration in progress (Option B locked)
+**Status:** Phase 5 — ADR-0005 ✅ (state-anchored 4-tuple, Option B); 0 errors, 1 documented Phase-4 `sorry` (`parTensor_comm_iso.phi`), no others; ADR-0004 ✅ ADR-0003 🟡 ADR-0002 ✅ OP3 ✅
 **Track:** Theory (public) + Applied formalization (private)
 **Latest:** Level 1 positioning paper (8 pages) — Zenodo v0.1 live; v0.2 in preparation
 
@@ -49,16 +49,24 @@ F = (S₀, τ, S₁, Φ)
 | `S₀`   | Current paradigmatic state — existing assumptions, constraints, infrastructure              |
 | `τ`    | Trajectory — mechanism of change; carries `path : List ParadigmaticState` (ADR-0002)        |
 | `S₁`   | Reachable paradigmatic state                                                                |
-| `Φ`    | Affordance set — futures made compositionally accessible from `S₁` (stored field, ADR-0005) |
+| `Φ`    | Affordance set — futures compositionally accessible from `S₁` (stored field, ADR-0005)      |
 
-**ADR-0005 (Accepted, 2026-05-15):** `Φ` is restored as a stored field of type `Set ComposableFuture`.
-`idFuture S` carries `Φ = AffordanceSet S` — the null future preserves all affordances accessible
-from S because a transition that changes nothing changes nothing about what is accessible.
-The terminate operator (Paper 2, unary) is what genuinely zeros affordances, distinguished from
-identity by its resource signature under Coecke–Fritz–Spekkens enrichment.
+**ADR-0005 (Done, 2026-05-15 — state-anchored):** `Φ` is a stored field. The
+literal `Set ComposableFuture` was kernel-rejected (strict positivity:
+`Set T = T → Prop` is a negative occurrence), so `Φ : Set ParadigmaticState`
+stores the affordance *anchor states*; the paper's `𝒫(F)` is recovered by the
+projection `afforded F := {G | G.S₀ ∈ F.Φ}`, proved content-equivalent to
+`AffordanceSet F.S₁` for well-formed futures (`afforded_eq_affordanceSet`).
+Option B preserved: `idFuture S` carries `Φ = {S}`, so
+`afforded (idFuture S) = AffordanceSet S` — the null future preserves all
+affordances accessible from S because a transition that changes nothing changes
+nothing about what is accessible. The terminate operator (Paper 2, unary) is
+what genuinely zeros affordances, distinguished from identity by its resource
+signature under Coecke–Fritz–Spekkens enrichment.
 
 **v0.2 derived-Φ (superseded):** The interim 3-tuple derivation resolved a universe mismatch but
-created a paper/Lean theory split. ADR-0005 closes that split. See `docs/adr/0005-restore-4tuple.md`.
+created a paper/Lean theory split. ADR-0005's state-anchored 4-tuple closes that split.
+See `docs/adr/0005-restore-4tuple.md`.
 
 ---
 
@@ -90,7 +98,9 @@ F >>= Id = F    and    Id >>= F = F
 
 Where `Id_S` is the null future at S — a transition that changes nothing and preserves all
 affordances accessible from S. Identity holds for well-formed futures (`F.τ.source = F.S₀`,
-`F.τ.target = F.S₁`, `F.Φ = AffordanceSet F.S₁`).
+`F.τ.target = F.S₁`, `F.Φ = {F.S₁}` — equivalently `afforded F = AffordanceSet F.S₁`).
+`right_identity` is substantive in the Φ conjunct (`#print` confirms it uses
+`hF.2.2`, not `rfl`/`Subsingleton`; depends only on `propext`).
 
 **Remark (revision of preprint Remark 4.1):** The affordance set of `F >>= Id_S₁` equals `F.Φ`,
 not ∅. The null future preserves affordances; it does not eliminate them. Termination —
@@ -116,7 +126,11 @@ the operation that genuinely zeros affordances — is the terminate operator of 
 A ⊗ B ≠ B ⊗ A   (in general)
 ```
 
-\*Status: **Structurally witnessed; commutativity up to isomorphism proved (OP3 ✅).\***
+\*Status: **Structurally witnessed; commutativity up to isomorphism proved at the
+state/trajectory level (OP3 ✅). Affordance-level commutativity
+(`parTensor_comm_iso.phi`) reduces to type-level `A×B = B×A` and is the one
+documented Phase-4 `sorry` — same univalence limitation as
+`parTensor_not_comm_of_type_ne`.\***
 
 ---
 
@@ -181,7 +195,7 @@ Phase 1   Prove closure under >>= and ⊗                             ✅
 Phase 2   Settle associativity                                       ✅ (5 theorems)
 Phase 3   Probabilistic extension — Kleisli / Markov kernels         ✅
 Phase 4   Formalize Φ as dependent type / effect system              ✅
-Phase 5   Mechanized proof — restore 4-tuple, close ADR-0005         🟡 in progress
+Phase 5   Mechanized proof — ADR-0005 ✅; ADR-0003 gap 🟡            🟡 near-complete
 Phase 6   Paper/Lean coherence + preprint v0.2                       ⬜
 ```
 
@@ -210,21 +224,21 @@ Paper 3 (systems venue)        ← Meadows mapping; cites Papers 1 and 2
 **Resolved:**
 
 - **OP1: Associativity** ✅ Five independent Lean theorems, all substantive (ADR-0002)
-- **OP2: Φ well-definedness** ✅ v0.2 derivation; superseded by ADR-0005 stored-field approach
-- **OP3: Equivalence relation** ✅ `FutureIso` + `PathIso` + `TrajectoryEquiv` (2026-05-15)
+- **OP2: Φ well-definedness** ✅ superseded by ADR-0005 state-anchored stored field
+- **OP3: Equivalence relation** ✅ `FutureIso` (+ `phi`) + `PathIso` + `TrajectoryEquiv` (2026-05-15)
 - **OP4: Affordance composition** ✅ `seqBind_Φ_eq` + membership theorems
 
 **Active:**
 
 - **OP5: Completeness** — trivial form closed by type; non-trivial form deferred
 - **ADR-0003 gap** — unconditional `∃ F G, parTensor F G ≠ parTensor G F` (three paths documented)
-- **ADR-0005** — 4-tuple restoration, Option B locked; implementation in progress
+- **Phase-4 carry-over** — `parTensor_comm_iso.phi` (affordance-level SMC commutativity; needs univalence)
 
 **Critique-driven (identified 2026-05-15):**
 
 - **C1: State identity criterion** — equality not specified in paper; Lean uses propositional equality; `FutureIso` provides weaker notion. Fix: Remark after Def 2.1 in v0.2.
 - **C2: OP1 status** — paper claims unresolved; Lean resolves it. Fix: update preprint v0.2.
-- **C3: Affordance circularity** — `F` contains `Φ`, `Φ : S₁ → 𝒫(F)`. Lean's `Set ComposableFuture` is admissible (no strict positive occurrence). Fix: Remark after Def 2.2.
+- **C3: Affordance circularity** — `F` contains `Φ`, `Φ : S₁ → 𝒫(F)`. A stored `Set ComposableFuture` is **not** admissible in Lean 4 (strict-positivity violation, kernel-verified); Lean stores `Set ParadigmaticState` anchors and recovers `𝒫(F)` via `afforded`, content-equivalent to `AffordanceSet F.S₁`. Fix: Remark after Def 2.2.
 - **C4: Path-dependence** — resolved; `List.append_assoc` argument. Fix: revise §4.3 in v0.2.
 - **C5: Semantic level mixing** — morphism vs affordance vs probabilistic readings. Fix: add §2.5.
 - **C6: Fork/merge temporal semantics** — placeholder implementations. Fix: deferral Remark in §3.3–3.4.
@@ -293,7 +307,7 @@ composable-future/
 | 2     | Stateless associativity proof | ✅ complete | `assoc_stateless` + indexed monad + paper |
 | 3     | Probabilistic extension       | ✅ complete | Kleisli proved (no sorry); Mathlib PMF    |
 | 4     | Φ as dependent type           | ✅ complete | OP1–OP4 resolved; v0.2 derived-Φ          |
-| 5     | Full mechanized proof         | 🟡 progress | ADR-0005 implementation + 0 sorry         |
+| 5     | Full mechanized proof         | 🟡 progress | ADR-0005 ✅; 0 sorry except documented `parTensor_comm_iso.phi`; ADR-0003 gap open |
 | 6     | Paper/Lean coherence + v0.2   | ⬜ next     | Lean 4-tuple = paper 4-tuple; Zenodo v0.2 |
 
 ---
@@ -302,16 +316,16 @@ composable-future/
 
 ### Immediate (ordered by dependency)
 
-1. **Implement ADR-0005** — restore 4-tuple in Lean (Option B locked)
-   - Add `Φ : Set ComposableFuture` field to `ComposableFuture`
-   - `idFuture S` carries `Φ = AffordanceSet S`
-   - Extend `well_formed` with `Φ = AffordanceSet S₁`
-   - Update all operators with Φ propagation rules
-   - Gate: `lake build`, 0 sorry, `right_identity` holds without `Subsingleton`
+1. **ADR-0005** ✅ **complete** — state-anchored 4-tuple in Lean (Option B)
+   - `Φ : Set ParadigmaticState` field (literal `Set ComposableFuture` kernel-rejected)
+   - `idFuture S` carries `Φ = {S}`; `afforded` recovers `AffordanceSet S`
+   - `well_formed` extended with `F.Φ = {F.S₁}`; all operators propagate Φ
+   - Gate met: `lake build` clean, `right_identity` substantive (no `Subsingleton`),
+     only the documented Phase-4 `parTensor_comm_iso.phi` `sorry` remains
 
 2. **ADR-0003 gap** — unconditional non-commutativity (independent, can run in parallel)
 
-3. **Preprint v0.2** — after ADR-0005 complete
+3. **Preprint v0.2** — ADR-0005 complete; proceed with critique responses
    - Eight critique responses (C1–C8 documented above)
    - Revise Remark 4.1 (null future preserves Φ; terminate is Paper 2)
    - Add Paper 2/3 forward pointer to conclusion
@@ -328,7 +342,7 @@ composable-future/
 
 ```bash
 curl -sSf https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh | sh
-cd lean && lake build   # must report 0 errors, 0 warnings, 0 sorry
+cd lean && lake build   # 0 errors; only expected warning: parTensor_comm_iso.phi (documented Phase-4 sorry)
 ```
 
 ### Audit (complete — do not re-run)

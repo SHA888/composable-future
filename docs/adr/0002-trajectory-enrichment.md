@@ -2,7 +2,7 @@
 
 | Field | Value |
 |---|---|
-| Status | **Proposed** |
+| Status | **Accepted** (implemented 2026-05-13) |
 | Date | 2026-04-29 |
 | Reversibility | **One-way door** — see §Cost of reversal |
 | Supersedes | — |

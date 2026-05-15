@@ -31,8 +31,8 @@ version requires an accompanying Mathlib version bump ADR.
 | `propext` available                                  | Proof-irrelevant propositions; `well_formed` field equality holds automatically            |
 | `funext` available                                   | Function extensionality; needed for set/predicate equality                                 |
 | No decidable equality on `Type`-valued struct fields | `ParadigmaticState.assumptions : Type` — cannot use `decide` for inequality                |
-| `Set α = α → Prop : Type u` when `α : Type u`        | `Φ : Set ComposableFuture` is well-typed without universe issues (ADR-0005)                |
-| `ComposableFuture` with `Φ : Set ComposableFuture`   | No strict positive occurrence — Lean 4 accepts this; `Set` is a function type              |
+| `Set α = α → Prop` is a **negative** occurrence of `α`               | Stored `Φ : Set ComposableFuture` is **kernel-rejected** (strict positivity); use `Φ : Set ParadigmaticState` anchors (ADR-0005, state-anchored) |
+| Recover paper `𝒫(F)` via projection, not storage    | `afforded F := {G | G.S₀ ∈ F.Φ}`; `= AffordanceSet F.S₁` for well-formed F (`afforded_eq_affordanceSet`) |
 | `Trajectory.endpoint_ext` deleted (ADR-0002)         | 12 call sites pre-flagged; invalidated when `path` field added                             |
 
 ---
@@ -44,15 +44,15 @@ claims that Lean proofs must corroborate. v0.2 will update several of these.
 
 | Paper claim                                  | Current Lean status                           | Action                                                         |
 | -------------------------------------------- | --------------------------------------------- | -------------------------------------------------------------- |
-| **4-tuple F = (S₀, τ, S₁, Φ)**               | 3-tuple in v0.2; Φ derived                    | ADR-0005 — restore stored Φ field                              |
+| **4-tuple F = (S₀, τ, S₁, Φ)**               | ✅ restored — state-anchored stored Φ field   | ADR-0005 done (commit 0b1b66a)                                 |
 | Identity: `Id >>= F = F`, `F >>= Id = F`     | Proved with `well_formed` hypothesis          | Unconditional proof blocked on ADR-0005                        |
 | **Remark 4.1: result carries Φ∅**            | Directly contradicted (Φ always non-empty)    | v0.2 revision: null future preserves Φ; terminate is Paper 2   |
 | **Def 2.3: `Φ∅(S) = ∅`**                     | `AffordanceSet S` always non-empty            | v0.2 revision: `idFuture` carries `AffordanceSet S` (Option B) |
 | Closure: `∀ A B, A >>= B ∈ F`                | Proved trivially                              | ✅ gate satisfied                                              |
 | Associativity: holds for stateless τ         | Five substantive theorems, 0 sorry            | ✅ resolved — update paper OP1 status                          |
-| Non-commutativity: `A ⊗ B ≠ B ⊗ A`           | Conditional + structural witness + iso proved | ADR-0003 Path 3 (accept conditional)                           |
+| Non-commutativity: `A ⊗ B ≠ B ⊗ A`           | Conditional + structural witness + iso proved | ✅ ADR-0003 Path 3 accepted (P5.2 closed)                      |
 | Kleisli category for probabilistic extension | Proved over Mathlib PMF                       | ✅ gate satisfied                                              |
-| Φ : S₁ → P(F) as dependent type              | v0.2 derived; ADR-0005 restores stored field  | ✅ after ADR-0005                                              |
+| Φ : S₁ → P(F) as dependent type              | ✅ state-anchored stored field + `afforded`   | ✅ ADR-0005 done                                               |
 | OP1 open and unresolved                      | Five Lean proofs, 0 sorry                     | v0.2 must update OP1 status                                    |
 
 The paper cannot be revised without a new Zenodo version. Lean proofs must
@@ -82,8 +82,8 @@ below what the paper states requires a Zenodo v0.2 and a supersession ADR.**
 | Associativity mechanism    | `List.append_assoc` (substantive)                                  | ADR-0002     | 2026-05-13     |
 | PMF implementation         | Mathlib `PMF` (genuine distributions)                              | ADR-0004     | 2026-05-07     |
 | Non-commutativity strategy | Conditional result + structural witness + OP3 iso                  | ADR-0003     | 2026-05-08     |
-| **Φ storage**              | **Stored field `Φ : Set ComposableFuture`**                        | **ADR-0005** | **2026-05-15** |
-| **idFuture Φ**             | **`AffordanceSet S` (Option B — null preserves affordances)**      | **ADR-0005** | **2026-05-15** |
+| **Φ storage**              | **Stored field `Φ : Set ParadigmaticState`** (state-anchored; literal `Set ComposableFuture` kernel-rejected) | **ADR-0005** | **2026-05-15** |
+| **idFuture Φ**             | **`{S}` (Option B — `afforded (idFuture S) = AffordanceSet S`)**   | **ADR-0005** | **2026-05-15** |
 | **Terminate operator**     | **Deferred to Paper 2 (unary; resource signature under CFS 2016)** | **ADR-0005** | **2026-05-15** |
 | **Merge scope**            | **Symmetric case only in Paper 1; absorptive merge is Paper 2**    | **ADR-0005** | **2026-05-15** |
 

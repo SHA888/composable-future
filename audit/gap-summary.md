@@ -111,4 +111,6 @@ No formal treatment of paradigmatic transitions addresses whether every reachabl
 - [x] Composite gap statement written
 - [x] Priors list finalized (14 papers with BibTeX keys)
 - [x] Open problems enumerated (5, mapped to §7)
-- [ ] arXiv submission — pending endorsement (Zenodo live: doi.org/10.5281/zenodo.19433811)
+- [x] Zenodo preprint v0.1 live — doi.org/10.5281/zenodo.19433811
+- [ ] Zenodo preprint v0.2 — in preparation (Phase 6: eight critique responses; ADR-0005 ✅ + ADR-0003 Path 3 ✅ landed)
+- [-] arXiv — not available (no math.CT/cs.LO endorser; Zenodo is the primary citable record, per constraints.md §4)

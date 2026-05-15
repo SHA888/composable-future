@@ -27,8 +27,15 @@ namespace ComposableFuture
 
     The trajectories may differ (capturing path-dependence).
 
-    v0.2: `Φ_type_eq` is removed as a stored field. Since `F.Φ = AffordanceSet F.S₁`,
-    equality of Φ follows automatically from `S₁_eq` via `FutureEquiv.Φ_eq`. -/
+    v0.3 (ADR-0005): `Φ` is now a *stored field* `Set ParadigmaticState`.
+    `FutureEquiv` is a deliberately **weak, state-level** equivalence — it
+    asserts only `S₀_eq` and `S₁_eq` and says nothing about Φ. Same-S₁ does
+    **not** imply same-Φ in general (only well-formed futures satisfy
+    `Φ = {S₁}`). There is no `FutureEquiv.Φ_eq` (it was a v0.2 artifact and is
+    removed). The `seqBind` weak-associativity results below still hold because
+    `seqBind` propagates `Φ := G.Φ`, so both groupings carry `H.Φ` by
+    definition — but that is a fact about `seqBind`, not about `FutureEquiv`.
+    For the full Φ-aware equivalence use `FutureIso` (`Core.Equivalence`). -/
 structure FutureEquiv (F G : ComposableFuture) : Prop where
   /-- Source states match -/
   S₀_eq : F.S₀ = G.S₀
@@ -63,14 +70,12 @@ futures, weaker forms of associativity hold.
 
     (F >>= G) >>= H ≡ F >>= (G >>= H)
 
-    where ≡ is FutureEquiv (same S₀, S₁, Φ).
+    where ≡ is FutureEquiv (same S₀, S₁ — state level only).
 
-    **Proof**: By definition of seqBind, both sides have:
-    - S₀ = F.S₀
-    - S₁ = H.S₁
-    - Φ = H.Φ
-
-    The trajectories differ (path-dependence), but the affordance structure
+    **Proof**: By definition of seqBind, both sides have S₀ = F.S₀ and
+    S₁ = H.S₁; FutureEquiv tracks exactly these. (Both also carry Φ = H.Φ
+    via seqBind's `Φ := G.Φ` propagation, but FutureEquiv does not assert it.)
+    The trajectories differ (path-dependence), but the state structure
     is identical.
     -/
 theorem weak_assoc_affordance
@@ -83,7 +88,7 @@ theorem weak_assoc_affordance
       (ComposableFuture.seqBind (ComposableFuture.seqBind F G h₁) H h₃)
       (ComposableFuture.seqBind F (ComposableFuture.seqBind G H h₂) h₄) :=
   -- Both sides have S₀ = F.S₀ and S₁ = H.S₁ by definition of seqBind.
-  -- Φ equality follows from S₁ equality via FutureEquiv.Φ_eq.
+  -- (FutureEquiv asserts only the two state equalities.)
   ⟨rfl, rfl⟩
 
 /-- **Theorem: State-Level Weak Associativity**

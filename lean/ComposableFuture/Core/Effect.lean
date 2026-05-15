@@ -1,16 +1,23 @@
 import ComposableFuture.Core.Future
 import ComposableFuture.Core.Affordance
 
-/-! # Effect System Connection (P4.2, v0.2)
+/-! # Effect System Connection (P4.2, v0.3)
 
 This module formalizes the mapping from affordance set Φ to an effect type
 system, establishing the correspondence between affordances and computational
 effects.
 
-## Core Insight (v0.2)
+**v0.3 (ADR-0005):** `ComposableFuture` now stores `Φ : Set ParadigmaticState`,
+but `EffectfulFuture`/`EffectfulComputation` are *separate* indexed structures
+that do **not** carry Φ — so this module is unchanged. `effect` stays
+`AffordanceSet S₁`, which is exactly the `afforded` view of the stored Φ for a
+well-formed future (`afforded_eq_affordanceSet`). The "derived, not stored"
+framing below is correct *for the effect indexed structures*; on
+`ComposableFuture` itself Φ is stored.
 
-With the v0.2 definition `AffordanceSet S := {F : ComposableFuture | F.S₀ = S}`,
-the effect annotation at state S₁ is the full affordance set `AffordanceSet S₁`.
+## Core Insight
+
+The effect annotation at state S₁ is the affordance set `AffordanceSet S₁`.
 This is a proper `Set ComposableFuture` — not a placeholder `Unit` value.
 
 The `effect` annotation is now a **derived property** of the type indices, not a

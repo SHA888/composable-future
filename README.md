@@ -2,7 +2,7 @@
 
 A formal theory of paradigmatic futures as composable algebraic structures.
 
-**Status:** Phase 5 — ADR-0005 ✅ (state-anchored 4-tuple, Option B); 0 errors, 1 documented Phase-4 `sorry` (`parTensor_comm_iso.phi`), no others; ADR-0004 ✅ ADR-0003 🟡 ADR-0002 ✅ OP3 ✅
+**Status:** Phase 5 ✅ complete (gate met as amended) — ADR-0005 ✅ (state-anchored 4-tuple, Option B); ADR-0003 ✅ (Path 3 final); 0 errors, 1 documented Phase-4 `sorry` (`parTensor_comm_iso.phi`), no others; ADR-0004 ✅ ADR-0002 ✅ OP3 ✅. Next: Phase 6 (preprint v0.2)
 **Track:** Theory (public) + Applied formalization (private)
 **Latest:** Level 1 positioning paper (8 pages) — Zenodo v0.1 live; v0.2 in preparation
 
@@ -195,8 +195,8 @@ Phase 1   Prove closure under >>= and ⊗                             ✅
 Phase 2   Settle associativity                                       ✅ (5 theorems)
 Phase 3   Probabilistic extension — Kleisli / Markov kernels         ✅
 Phase 4   Formalize Φ as dependent type / effect system              ✅
-Phase 5   Mechanized proof — ADR-0005 ✅; ADR-0003 gap 🟡            🟡 near-complete
-Phase 6   Paper/Lean coherence + preprint v0.2                       ⬜
+Phase 5   Mechanized proof — ADR-0005 ✅; ADR-0003 Path 3 ✅         ✅ (amended gate)
+Phase 6   Paper/Lean coherence + preprint v0.2                       ⬜ next
 ```
 
 ---
@@ -227,12 +227,12 @@ Paper 3 (systems venue)        ← Meadows mapping; cites Papers 1 and 2
 - **OP2: Φ well-definedness** ✅ superseded by ADR-0005 state-anchored stored field
 - **OP3: Equivalence relation** ✅ `FutureIso` (+ `phi`) + `PathIso` + `TrajectoryEquiv` (2026-05-15)
 - **OP4: Affordance composition** ✅ `seqBind_Φ_eq` + membership theorems
+- **ADR-0003 gap** ✅ closed as a decision (Path 3 final): strict `≠` is independent of Lean's axioms; the categorically correct result is `parTensor_comm_iso` (commutativity up to iso)
 
 **Active:**
 
 - **OP5: Completeness** — trivial form closed by type; non-trivial form deferred
-- **ADR-0003 gap** — unconditional `∃ F G, parTensor F G ≠ parTensor G F` (three paths documented)
-- **Phase-4 carry-over** — `parTensor_comm_iso.phi` (affordance-level SMC commutativity; needs univalence)
+- **Phase-4 carry-over** — `parTensor_comm_iso.phi` (affordance-level SMC commutativity; needs univalence; one documented `sorry`)
 
 **Critique-driven (identified 2026-05-15):**
 
@@ -307,7 +307,7 @@ composable-future/
 | 2     | Stateless associativity proof | ✅ complete | `assoc_stateless` + indexed monad + paper |
 | 3     | Probabilistic extension       | ✅ complete | Kleisli proved (no sorry); Mathlib PMF    |
 | 4     | Φ as dependent type           | ✅ complete | OP1–OP4 resolved; v0.2 derived-Φ          |
-| 5     | Full mechanized proof         | 🟡 progress | ADR-0005 ✅; 0 sorry except documented `parTensor_comm_iso.phi`; ADR-0003 gap open |
+| 5     | Full mechanized proof         | ✅ complete | ADR-0005 ✅ + ADR-0003 Path 3 ✅; 0 errors, 1 documented Phase-4 `sorry` (amended gate) |
 | 6     | Paper/Lean coherence + v0.2   | ⬜ next     | Lean 4-tuple = paper 4-tuple; Zenodo v0.2 |
 
 ---
@@ -323,9 +323,10 @@ composable-future/
    - Gate met: `lake build` clean, `right_identity` substantive (no `Subsingleton`),
      only the documented Phase-4 `parTensor_comm_iso.phi` `sorry` remains
 
-2. **ADR-0003 gap** — unconditional non-commutativity (independent, can run in parallel)
+2. **ADR-0003 gap** ✅ **closed** — Path 3 final (decision, no code); strict `≠`
+   independent of Lean's axioms; `parTensor_comm_iso` is the categorically correct result
 
-3. **Preprint v0.2** — ADR-0005 complete; proceed with critique responses
+3. **Preprint v0.2** — Phase 5 complete; proceed with critique responses
    - Eight critique responses (C1–C8 documented above)
    - Revise Remark 4.1 (null future preserves Φ; terminate is Paper 2)
    - Add Paper 2/3 forward pointer to conclusion

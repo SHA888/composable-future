@@ -2,7 +2,7 @@
 
 | Field         | Value                                                       |
 | ------------- | ----------------------------------------------------------- |
-| Status        | **Accepted — Revised** (implemented 2026-05-08)             |
+| Status        | **Accepted — Final** (Path 3 chosen 2026-05-15; impl. 2026-05-08) |
 | Date          | 2026-05-08                                                  |
 | Reversibility | **Two-way door** — counterexample can be strengthened later |
 | Supersedes    | —                                                           |
@@ -203,3 +203,27 @@ Document `parTensor_component_order` + `parTensor_not_comm_of_type_ne` as
 the complete Lean 4 non-commutativity result, acknowledge the gap in the
 paper, and defer the unconditional existential to Open Problem 3. No code
 change required.
+
+---
+
+## Resolution (2026-05-15) — Path 3 chosen, P5.2 closed
+
+**Path 3 is adopted as final.** Path 1 is rejected (adding `axiom Prod.type_inj`
+violates the standing no-new-axioms constraint, `docs/constraints.md §2`, and
+would falsify the "no new axioms" claim in the README/commits); Path 2 is
+rejected (a decidable `ParadigmaticState` is a theory change requiring a Zenodo
+v0.2 and a supersession ADR). The unconditional
+`∃ F G, parTensor F G ≠ parTensor G F` is not merely hard but **independent of
+Lean's base theory**: `(A × B) = (B × A)` is unprovable without univalence and
+irrefutable without `Prod.type_inj` (the types are equinumerous and every
+Lean-definable type invariant is equiv-invariant; `A × B ≃ B × A`).
+
+The decisive strengthening is **OP3 `parTensor_comm_iso`** (in
+`Core.Equivalence`): `parTensor` is commutative *up to* full `FutureIso`
+(symmetric-monoidal braiding) — the categorically correct statement. Strict
+propositional `≠` is the wrong question once commutativity-up-to-iso is proved.
+The final Lean-4 non-commutativity result is therefore the triple
+`parTensor_component_order` (structural witness) +
+`parTensor_comm_implies_prod_comm` / `parTensor_not_comm_of_type_ne`
+(conditional existential) + `parTensor_comm_iso` (positive iso result). This
+closes **P5.2** as a recorded decision, not an open proof gap. No code change.

@@ -2,10 +2,16 @@ import ComposableFuture.Core.Future
 import ComposableFuture.Core.Operators
 
 /-!
-# Affordance Set — Membership Witnesses and Composition (Phase 4 v0.2)
+# Affordance Set — Membership Witnesses and Composition (Phase 4, v0.3)
 
-With the v0.2 definition `AffordanceSet S := {F : ComposableFuture | F.S₀ = S}`
-(in `Core.Future`), the affordance set is a proper `Set ComposableFuture`.
+**v0.3 (ADR-0005, state-anchored):** Φ is now a *stored field*
+`Φ : Set ParadigmaticState` on `ComposableFuture`. `AffordanceSet S :=
+{F : ComposableFuture | F.S₀ = S}` is still defined in `Core.Future`, but it is
+no longer the primary carrier of Φ — it is the *target* of the `afforded`
+projection (`afforded F = AffordanceSet F.S₁` for well-formed F, theorem
+`afforded_eq_affordanceSet`). `AffordanceDescriptor` remains a construction
+helper only. The OP1/OP2/OP4 notes below are retained for history; read
+"definition of Φ" as "the `afforded` view of the stored Φ".
 
 This module provides:
 

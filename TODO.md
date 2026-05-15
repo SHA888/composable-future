@@ -21,11 +21,11 @@
 [x]  Phase 2 gate check — COMPLETE (assoc proved, paper drafted)
 [x]  Level 1 positioning paper — COMPLETE (8 pages, 16 priors, PDF compiled)
 [x]  ADR-0002 — trajectory enrichment (path field, substantive associativity)
-[x]  ADR-0003 — non-commutativity strategy (conditional result proved)
+[x]  ADR-0003 — non-commutativity strategy (Path 3 accepted-final; strengthened by parTensor_comm_iso)
 [x]  ADR-0004 — Mathlib PMF upgrade (Kleisli over real distributions)
 [x]  OP3 — FutureIso + PathIso + TrajectoryEquiv + parTensor_comm_iso
 [x]  ADR-0005 — null future design decision locked (Option B, 2026-05-15)
-[ ]  ADR-0005 — Lean implementation (4-tuple restoration in progress)
+[x]  ADR-0005 — Lean implementation (state-anchored 4-tuple, commit 0b1b66a)
 [ ]  Preprint v0.2
 [ ]  ACT 2027 submission
 [ ]  LMCS submission
@@ -42,8 +42,8 @@
 | 2     | Stateless associativity proof | ✅ complete    | `assoc_stateless` + indexed monad + paper drafted   |
 | 3     | Probabilistic extension       | ✅ complete    | Kleisli proved (no sorry); Furter et al. documented |
 | 4     | Φ as dependent type           | ✅ complete    | OP1–OP4 resolved; v0.2 derived-Φ refactor           |
-| 5     | Full mechanized proof         | 🟡 in progress | ADR-0005 implementation + 0 sorry + 0 warnings      |
-| 6     | Paper/Lean coherence + v0.2   | ⬜ not started | Lean 4-tuple = paper 4-tuple; Zenodo v0.2 uploaded  |
+| 5     | Full mechanized proof         | ✅ complete    | ADR-0005 ✅ + ADR-0003 Path 3 accepted; 0 errors, 1 documented Phase-4 sorry (amended gate) |
+| 6     | Paper/Lean coherence + v0.2   | ⬜ next       | Lean 4-tuple = paper 4-tuple; Zenodo v0.2 uploaded  |
 
 ---
 
@@ -160,11 +160,20 @@ preprint conflated identity with termination and must be revised in v0.2.
       debt as `parTensor_not_comm_of_type_ne`. Permitted by ADR-0005 gate amendment.
       Alternative if 0-sorry is required: weaken `FutureIso.phi` to equality-up-to-`StateIso`.
 
-### P5.2 — ADR-0003 Gap (independent — run in parallel)
+### P5.2 — ADR-0003 Gap — ✅ CLOSED (Path 3 accepted, 2026-05-15)
 
-- [~] 🟡 Unconditional `∃ F G, parTensor F G ≠ parTensor G F`
-  Three forward paths in `docs/adr/0003-noncommutativity-strategy.md`: - Path 1: add `axiom Prod.type_inj` (violates no-new-axioms constraint) - Path 2: redesign `ParadigmaticState` to use decidable types (theory change) - Path 3: accept conditional result as final (current posture) - **Recommendation:** Path 3 now strengthened by OP3 `parTensor_comm_iso` —
-  non-commutativity as strict `≠` is less important when commutativity-up-to-iso is proved
+- [x] ✅ Unconditional `∃ F G, parTensor F G ≠ parTensor G F` — **closed as a
+  decision, not a proof gap.** The target is provably independent of Lean's base
+  theory: `(A × B) = (B × A)` is unprovable (no univalence) and irrefutable
+  (equinumerous; every Lean-definable invariant is equiv-invariant). Path 1
+  (`axiom Prod.type_inj`) rejected — violates the no-new-axioms constraint;
+  Path 2 (decidable `ParadigmaticState`) rejected — theory change + Zenodo churn.
+  **Path 3 adopted:** the conditional pair (`parTensor_comm_implies_prod_comm` +
+  `parTensor_not_comm_of_type_ne`) plus structural witness
+  (`parTensor_component_order`) is the complete Lean-4 result, strengthened by
+  OP3 `parTensor_comm_iso` (commutativity up to symmetric-monoidal iso — the
+  categorically correct statement; strict `≠` is the wrong question). See
+  `docs/adr/0003-noncommutativity-strategy.md` Decision.
 
 ### P5.3 — Open Problem 5 (Completeness)
 
@@ -310,25 +319,19 @@ Where to find:
 ## IMMEDIATE NEXT ACTIONS (in order)
 
 ```
-1.  Implement ADR-0005 in Lean (P5.1) — NOW
-    Files: Future.lean, Operators.lean, Laws.lean,
-           Effect.lean, Affordance.lean, Equivalence.lean
-    Option B locked: idFuture carries Φ = AffordanceSet S
-    Gate: lake build, 0 sorry, right_identity without Subsingleton
+   ✅ P5.1 ADR-0005 Lean implementation — DONE (state-anchored, commit 0b1b66a)
+   ✅ P5.2 ADR-0003 gap — CLOSED (Path 3 accepted; strengthened by parTensor_comm_iso)
+   ✅ Phase 5 — gate met as amended (0 errors; 1 documented Phase-4 sorry)
 
-2.  ADR-0003 gap (P5.2) — parallel with P5.1
-    Recommendation: Path 3 (accept conditional + OP3 iso result)
-    No code change required if Path 3 adopted
-
-3.  Preprint v0.2 (P6.1) — after ADR-0005 complete
+1.  Preprint v0.2 (P6.1) — NOW (next substantive block)
     Priority order: Remark 4.1, Def 2.3, C2, C3, C4, C1, C5, C6, C7, C8
     Gate: Zenodo v0.2 uploaded
 
-4.  ACT 2027 submission (P6.2) — after Zenodo v0.2
+2.  ACT 2027 submission (P6.2) — after Zenodo v0.2
 
-5.  LMCS submission (P6.2) — after ACT feedback
+3.  LMCS submission (P6.2) — after ACT feedback
 
-6.  Paper 2 scoping session — after Paper 1 submitted (not published)
+4.  Paper 2 scoping session — after Paper 1 submitted (not published)
     Absorptive merge primitive vs derived
     Worked example selection
     Enrichment + associativity interaction
